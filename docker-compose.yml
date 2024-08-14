@@ -1,0 +1,56 @@
+version: "3.8"
+
+services:
+  database:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mydatabase
+    volumes:
+      - minabtest:/var/lib/postgresql/data
+    networks:
+      - minabtest_minabnetwork
+    restart: always
+    container_name: database
+
+  hasura:
+    image: hasura/graphql-engine:v2.23.0
+    environment:
+      HASURA_GRAPHQL_DATABASE_URL: postgres://user:password@database:5432/mydatabase
+      # HASURA_GRAPHQL_ADMIN_SECRET: myadminsecretkey
+      HASURA_GRAPHQL_ENABLE_CONSOLE: "true"
+      HASURA_GRAPHQL_DEV_MODE: "true"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - database
+    networks:
+      - minabtest_minabnetwork
+    restart: always
+    container_name: hasura
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      HASURA_GRAPHQL_URL: http://hasura:8080/v1/graphql
+    volumes:
+      - ./backend/.env:/app/.env
+    ports:
+      - "5050:5050"
+    depends_on:
+      - database
+    networks:
+      - minabtest_minabnetwork
+    restart: always
+    container_name: backend
+
+volumes:
+  minabtest:
+
+networks:
+  minabtest_minabnetwork:
+    driver: bridge
+    external: true
