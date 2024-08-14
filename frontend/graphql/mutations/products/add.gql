@@ -1,0 +1,24 @@
+mutation AddProduct(
+  $name: String!
+  $description: String!
+  $price: Float!
+  $category: String!
+  $image: Upload!
+) {
+  addproduct(
+    productInput: {
+      name: $name
+      description: $description
+      price: $price
+      category: $category
+      image: $image
+    }
+  ) {
+    id
+    name
+    description
+    price
+    category
+    imageUrl
+  }
+}
