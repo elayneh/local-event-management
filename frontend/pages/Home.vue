@@ -1,7 +1,7 @@
 <template>
   <div>
-    <NuxtLink to="/uploadFile">
-      <button>Upload File</button>
+    <NuxtLink to="/products/add">
+      <button>This is the home page for the authenticated users</button>
     </NuxtLink>
   </div>
 </template>

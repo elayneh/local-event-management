@@ -28,7 +28,7 @@
                 Already have an account?
                 <NuxtLink
                   class="text-blue-500 hover:text-blue-700 font-semibold ml-1"
-                  to="/authentication/login"
+                  to="/user/login"
                   ><span>Login</span></NuxtLink
                 >
               </p>
@@ -130,7 +130,7 @@ onDone((result) => {
   authenticationStore.setId(token);
   authenticationStore.setUser(id);
   authenticationStore.setRole(role);
-  navigateTo("/home");
+  navigateTo("/products");
 });
 onError((error) => {
   console.log("Error: ", error.message);

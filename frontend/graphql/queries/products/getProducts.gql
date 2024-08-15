@@ -1,0 +1,10 @@
+query get_products {
+  products {
+    category
+    description
+    id
+    image
+    name
+    price
+  }
+}

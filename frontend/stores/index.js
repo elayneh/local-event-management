@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import Cookies from "js-cookie";
 import jwt_decode from "jwt-decode";
-import get_single_user from "@/graphql/query/getSingleUser.gql";
+import get_single_user from "@/graphql/queries/user/getSingleUser.gql";
 import authQuery from "@/composables/auth";
 
 export const useAuthStore = defineStore("auth", {

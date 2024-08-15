@@ -1,12 +1,12 @@
 mutation AddProduct(
   $name: String!
   $description: String!
-  $price: Float!
+  $price: String!
   $category: String!
-  $image: Upload!
+  $image: String!
 ) {
-  addproduct(
-    productInput: {
+  insert_products(
+    objects: {
       name: $name
       description: $description
       price: $price
@@ -14,11 +14,13 @@ mutation AddProduct(
       image: $image
     }
   ) {
-    id
-    name
-    description
-    price
-    category
-    imageUrl
+    returning {
+      id
+      name
+      description
+      price
+      category
+      image
+    }
   }
 }

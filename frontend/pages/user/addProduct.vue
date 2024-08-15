@@ -75,7 +75,7 @@ onDone((result) => {
   authenticationStore.setId(token);
   authenticationStore.setUser(id);
   authenticationStore.setRole(role);
-  navigateTo("/home");
+  navigateTo("/products");
 });
 onError((error) => {
   console.log("Error: ", error.message);

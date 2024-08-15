@@ -45,7 +45,7 @@ import * as yup from "yup";
 import CustomCard from "~/components/CustomCard.vue";
 import DynamicForm from "~/components/DynamicForm.vue";
 import { useAuthStore } from "~/stores";
-import login from "~/graphql/authentication/login.gql";
+import login from "~/graphql/mutations/user/login.gql";
 import { toast } from "vue3-toastify";
 import * as JsCookie from "js-cookie";
 
@@ -95,7 +95,7 @@ function submitHandler(values) {
     authenticationStore.setId(result.data.login.id);
     authenticationStore.setUser(result.data.login.id);
     authenticationStore.setRole(result.data.login.role);
-    navigateTo("/home");
+    navigateTo("/products");
   });
   onError((error) => {
     console.log("Error: ", error.message);
