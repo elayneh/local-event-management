@@ -1,17 +1,11 @@
 package middlewares
 
 import (
-	"fmt"
-
-	"github.com/gin-gonic/gin"
+    "log"
+    "net/http"
 )
 
-func Logger() gin.HandlerFunc {
-	return gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
-		return fmt.Sprintf("%s %d %s",
-			param.ClientIP,
-			param.StatusCode,
-			param.TimeStamp,
-		)
-	})
+// Logger logs each request
+func Logger(r *http.Request) {
+    log.Printf("%s %s %s\n", r.Method, r.RequestURI, r.RemoteAddr)
 }

@@ -9,10 +9,11 @@ require (
 )
 
 require (
-	github.com/creasty/defaults v1.5.1 // indirect
+	github.com/cloudinary/cloudinary-go/v2 v2.8.0 // indirect
+	github.com/creasty/defaults v1.7.0 // indirect
 	github.com/felixge/httpsnoop v1.0.3 // indirect
 	github.com/google/uuid v1.6.0 // indirect
-	github.com/gorilla/schema v1.2.0 // indirect
+	github.com/gorilla/schema v1.4.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	nhooyr.io/websocket v1.8.11 // indirect
 )

@@ -5,48 +5,46 @@ import (
 	"backend/middlewares"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 
-	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
 
-const uploadPath = "./uploads"
-
 func init() {
-	// Load environment variables from .env file
+
 	err := godotenv.Load(".env")
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
+}
 
-	// Create the uploads directory if it doesn't exist
-	if _, err := os.Stat(uploadPath); os.IsNotExist(err) {
-		err = os.Mkdir(uploadPath, 0755)
-		if err != nil {
-			log.Fatal("Error creating uploads directory")
-		}
-	}
+func loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		middlewares.Logger(r)
+		next.ServeHTTP(w, r)
+	})
+}
+
+func corsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		middlewares.CorsMiddleware(w, r)
+		next.ServeHTTP(w, r)
+	})
 }
 
 func main() {
-	server := gin.New()
 
-	// Define middlewares
-	server.Use(middlewares.Logger())
-	server.Use(middlewares.CorsMiddleware())
+	mux := http.NewServeMux()
 
-	// Define routes
-	server.POST("/register", controller.Register)
-	server.POST("/login", controller.Login)
-	server.POST("/updateUser", controller.UpdateUser)
-	server.POST("/uploadFile", controller.UploadFileHandler)
+	mux.HandleFunc("/register", controller.Register)
+	mux.HandleFunc("/login", controller.Login)
 
-	// Serve static files from the upload directory
-	server.Static("/uploads", uploadPath)
+	mux.HandleFunc("/product/add", controller.HandleAddProduct)
 
+	handler := loggingMiddleware(corsMiddleware(mux))
+	port := os.Getenv("PORT")
 	fmt.Println("Server is running on port 5050")
 
-	// Run the server on port 5050
-	server.Run(":5050")
+	log.Fatal(http.ListenAndServe(":"+port, handler))
 }
