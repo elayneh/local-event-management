@@ -1,0 +1,10 @@
+query GetUsers {
+  users(order_by: { username: asc }) {
+    created_at
+    email
+    id
+    username
+    updated_at
+    role
+  }
+}

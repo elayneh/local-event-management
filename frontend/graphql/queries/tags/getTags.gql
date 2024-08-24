@@ -1,0 +1,7 @@
+query GetTags {
+  tags(order_by: { name: asc }) {
+    description
+    id
+    name
+  }
+}

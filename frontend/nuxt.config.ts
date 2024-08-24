@@ -1,6 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  devtools: { enabled: true },
+  devtools: { enabled: false },
   ssr: false,
 
   runtimeConfig: {
@@ -66,12 +66,12 @@ export default defineNuxtConfig({
       ],
     },
   },
+  plugins: ["~/plugins/fontawesome.js", "~/plugins/click-outside.js"],
 
   image: {
     // Options
     inject: true,
     quality: 80,
   },
-
   compatibilityDate: "2024-08-01",
 });

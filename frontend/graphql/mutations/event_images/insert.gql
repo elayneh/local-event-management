@@ -1,0 +1,20 @@
+mutation AddEventImages(
+  $event_id: uuid!
+  $image_url: String!
+  $is_featured: Boolean!
+) {
+  insert_event_images(
+    objects: {
+      event_id: $event_id
+      image_url: $image_url
+      is_featured: $is_featured
+    }
+  ) {
+    returning {
+      id
+      event_id
+      is_featured
+      image_url
+    }
+  }
+}

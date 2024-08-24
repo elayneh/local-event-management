@@ -1,8 +1,8 @@
 import { defineStore } from "pinia";
 import Cookies from "js-cookie";
 import jwt_decode from "jwt-decode";
-import get_single_user from "@/graphql/queries/user/getSingleUser.gql";
-import authQuery from "@/composables/auth";
+import getUser from "@/graphql/queries/users/getSingleUser.gql";
+import authQuery from "@/composables/getUser";
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
@@ -14,6 +14,7 @@ export const useAuthStore = defineStore("auth", {
 
   getters: {
     isAuthenticated: (state) => !!state.token,
+    getUserRole: (state) => state.role,
   },
 
   actions: {
@@ -37,16 +38,16 @@ export const useAuthStore = defineStore("auth", {
     },
 
     async setUser(id) {
-      const { onResult, onError } = authQuery(get_single_user, {
-        id,
-      });
+      const { onResult, onError } = await authQuery(id, getUser);
 
       onResult((result) => {
-        this.user = { ...result.data.users_by_pk };
+        if (result.data && result.data.users_by_pk) {
+          this.user = { ...result.data.users_by_pk };
+        }
       });
 
       onError((error) => {
-        console.log(error);
+        console.error("GraphQL Error: ", error);
       });
     },
 
@@ -56,8 +57,10 @@ export const useAuthStore = defineStore("auth", {
         if (decoded.exp * 1000 > Date.now()) {
           const id =
             decoded["https://hasura.io/jwt/claims"]["x-hasura-user-id"];
+          const role = decoded["https://hasura.io/jwt/claims"]["x-hasura-role"];
           this.setId(id);
           this.setUser(id);
+          this.setRole(role);
         } else {
           this.logout();
         }

@@ -28,7 +28,7 @@
                 Don't have an account?
                 <NuxtLink
                   class="text-blue-500 hover:text-blue-700 font-semibold ml-1"
-                  to="/authentication/register"
+                  to="/users/register"
                   ><span>Register</span></NuxtLink
                 >
               </p>
@@ -45,7 +45,7 @@ import * as yup from "yup";
 import CustomCard from "~/components/CustomCard.vue";
 import DynamicForm from "~/components/DynamicForm.vue";
 import { useAuthStore } from "~/stores";
-import login from "~/graphql/mutations/user/login.gql";
+import login from "~/graphql/mutations/users/login.gql";
 import { toast } from "vue3-toastify";
 import * as JsCookie from "js-cookie";
 
@@ -86,6 +86,7 @@ function submitHandler(values) {
   console.log("Login form data: ", loginCredentials);
   mutate(loginCredentials);
   onDone((result) => {
+    const role = result.data.login.role;
     toast.success("User logged in successfully", {
       transition: toast.TRANSITIONS.FLIP,
       position: toast.POSITION.TOP_RIGHT,
@@ -94,8 +95,12 @@ function submitHandler(values) {
     authenticationStore.setToken(result.data.login.token);
     authenticationStore.setId(result.data.login.id);
     authenticationStore.setUser(result.data.login.id);
-    authenticationStore.setRole(result.data.login.role);
-    navigateTo("/products");
+    authenticationStore.setRole(role);
+    role == "user"
+      ? navigateTo("/user")
+      : role == "admin"
+      ? navigateTo("/admin")
+      : "/";
   });
   onError((error) => {
     console.log("Error: ", error.message);

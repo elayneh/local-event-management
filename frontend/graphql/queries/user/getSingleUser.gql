@@ -1,8 +1,0 @@
-query get_single_user($id: uuid!) {
-	users_by_pk(id: $id) {
-		id
-		last_name
-		first_name
-		email
-	}
-}

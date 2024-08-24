@@ -1,0 +1,31 @@
+mutation InsertEvent(
+  $address: String!
+  $category_id: uuid!
+  $title: String!
+  $description: String!
+  $is_free: Boolean!
+  $location: String!
+  $price: numeric!
+  $start_date: timestamp!
+  $end_date: timestamp!
+  $venue: String!
+) {
+  insert_events(
+    objects: {
+      address: $address
+      category_id: $category_id
+      title: $title
+      description: $description
+      is_free: $is_free
+      location: $location
+      price: $price
+      start_date: $start_date
+      end_date: $end_date
+      venue: $venue
+    }
+  ) {
+    returning {
+      id
+    }
+  }
+}

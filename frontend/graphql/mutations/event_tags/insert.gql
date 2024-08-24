@@ -1,0 +1,13 @@
+mutation AddEventTags($objects: [event_tags_insert_input!]!) {
+  insert_event_tags(objects: $objects) {
+    returning {
+      event_id
+      tag_id
+    }
+  }
+}
+
+input event_tags_insert_input {
+  event_id: uuid!
+  tag_id: uuid!
+}

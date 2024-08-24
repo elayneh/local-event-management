@@ -10,7 +10,7 @@
             <NuxtLink to="/about">About</NuxtLink>
           </li>
           <li>
-            <NuxtLink to="/authentication/register">Register</NuxtLink>
+            <NuxtLink to="/users/register">Register</NuxtLink>
           </li>
         </ul>
       </nav>
@@ -18,5 +18,3 @@
     <slot />
   </div>
 </template>
-
-<script setup></script>

@@ -1,0 +1,7 @@
+mutation DeleteCategory($id: uuid!) {
+  delete_categories_by_pk(id: $id) {
+    description
+    id
+    name
+  }
+}

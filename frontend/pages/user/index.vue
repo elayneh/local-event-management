@@ -8,8 +8,7 @@
         <img src="/assets/images/home.png" />
       </div>
     </div>
-    <h2 class="text-2xl font-bold mb-4 text-center text-">Latest Events</h2>
-
+    <h2 class="text-2xl font-bold mb-4 text-center">Latest Events</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <div v-for="event in visibleEvents" :key="event.id">
         <CustomEventCard :event="event" />
@@ -203,7 +202,6 @@
     <CustomFooter />
   </div>
 </template>
-
 <script setup>
 import CustomEventCard from "@/components/CustomEventCard.vue";
 import { ref, watch, computed } from "vue";
@@ -485,4 +483,6 @@ const loadMoreEvents = () => {
 const hasMoreEvents = computed(
   () => events.value.length > visibleEvents.value.length
 );
+
+definePageMeta({ layout: "authenticated" });
 </script>

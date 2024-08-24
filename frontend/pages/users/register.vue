@@ -7,7 +7,7 @@
           :schema="formSchema"
           :submitHandler="submitHandler"
         >
-          <div>
+          <div class="mt-24">
             <div class="flex items-center justify-center gap-4 mt-4">
               <button
                 type="submit"
@@ -24,11 +24,11 @@
               </button>
             </div>
             <div>
-              <p class="mt-10 text-gray-700 text-center">
+              <p class="mt-5 text-gray-700 text-center">
                 Already have an account?
                 <NuxtLink
                   class="text-blue-500 hover:text-blue-700 font-semibold ml-1"
-                  to="/user/login"
+                  to="/users/login"
                   ><span>Login</span></NuxtLink
                 >
               </p>
@@ -45,7 +45,7 @@ import * as yup from "yup";
 import CustomCard from "~/components/CustomCard.vue";
 import DynamicForm from "~/components/DynamicForm.vue";
 import { useAuthStore } from "~/stores";
-import register from "~/graphql/mutations/user/register.gql";
+import register from "~/graphql/mutations/users/register.gql";
 import { toast } from "vue3-toastify";
 import * as JsCookie from "js-cookie";
 import { reactive } from "vue";
@@ -53,27 +53,22 @@ import { reactive } from "vue";
 const Cookies = JsCookie.default;
 
 const authenticationStore = useAuthStore();
-const { mutate, onDone, result, loading, onError } = authentication(register);
+const {
+  mutate: userRegistration,
+  onDone,
+  result,
+  loading,
+  onError,
+} = authentication(register);
 
 const formSchema = reactive({
   fields: [
     {
-      name: "first_name",
+      name: "username",
       as: "input",
-      placeholder: "First Name",
-      rules: yup.string().required("First name is required"),
-    },
-    {
-      name: "last_name",
-      as: "input",
-      placeholder: "Last Name",
-      rules: yup.string().required("Last name is required"),
-    },
-    {
-      name: "role",
-      as: "input",
-      placeholder: "Role",
-      rules: yup.string(),
+      placeholder: "Username",
+      label: "Username",
+      rules: yup.string().required("Username is required"),
     },
     {
       name: "email",
@@ -101,22 +96,34 @@ const formSchema = reactive({
       type: "password",
       rules: yup
         .string()
-        .min(6, "Passwords must match")
+        .oneOf([yup.ref("password")], "Passwords must match")
         .required("Confirm Password is required"),
+    },
+    {
+      name: "role",
+      as: "select",
+      placeholder: "Role",
+      options: [
+        { label: "Select a role", value: "" },
+        { label: "User", value: "user" },
+      ],
+      rules: yup
+        .string()
+        .oneOf(["user"], "Please select a valid role")
+        .required("Role is required"),
     },
   ],
 });
 
 function submitHandler(values) {
-  console.log("Add product form data: ", values);
+  console.log("User form data: ", values);
   const formData = {
-    first_name: values.first_name,
-    last_name: values.last_name,
+    username: values.username,
     email: values.email,
     password: values.password,
     role: values.role,
   };
-  mutate(formData);
+  userRegistration(formData);
 }
 
 onDone((result) => {
@@ -130,7 +137,11 @@ onDone((result) => {
   authenticationStore.setId(token);
   authenticationStore.setUser(id);
   authenticationStore.setRole(role);
-  navigateTo("/products");
+  role == "user"
+    ? navigateTo("/user")
+    : role == "admin"
+    ? navigateTo("/admin")
+    : "/";
 });
 onError((error) => {
   console.log("Error: ", error.message);

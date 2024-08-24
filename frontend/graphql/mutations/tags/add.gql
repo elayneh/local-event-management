@@ -1,0 +1,9 @@
+mutation AddTags($name: String!, $description: String!) {
+  insert_tags(objects: { name: $name, description: $description }) {
+    returning {
+      id
+      name
+      description
+    }
+  }
+}

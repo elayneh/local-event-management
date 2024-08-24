@@ -13,7 +13,7 @@
                 type="submit"
                 class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
               >
-                Add Product
+                Add Category
               </button>
               <button
                 type="button"
@@ -34,7 +34,7 @@
 import * as yup from "yup";
 import CustomCard from "~/components/CustomCard.vue";
 import DynamicForm from "~/components/DynamicForm.vue";
-import addproduct from "~/graphql/mutations/products/add.gql";
+import addcategory from "~/graphql/mutations/categories/add.gql";
 import { toast } from "vue3-toastify";
 import { reactive } from "vue";
 
@@ -43,53 +43,27 @@ const formSchema = reactive({
     {
       name: "name",
       as: "input",
-      placeholder: "Product Name",
-      rules: yup.string().required("Product name is required"),
+      placeholder: "Category Name",
+      rules: yup.string().required("Category name is required"),
     },
     {
       name: "description",
       as: "textarea",
-      placeholder: "Product Description",
-      rules: yup.string().required("Product description is required"),
-    },
-    {
-      name: "price",
-      as: "input",
-      type: "number",
-      placeholder: "Price",
-      rules: yup.number().required("Price is required"),
-    },
-    {
-      name: "category",
-      as: "input",
-      placeholder: "Category",
-      rules: yup.string().required("Category is required"),
-    },
-    {
-      name: "image",
-      as: "input",
-      type: "file",
-      placeholder: "Product Image",
-      rules: yup.mixed().required("Product image is required"),
+      placeholder: "Category Description",
+      rules: yup.string().required("Category description is required"),
     },
   ],
 });
 
 async function submitHandler(values) {
   try {
-    const imageFile = values.image;
-    const base64Image = await fileToBase64(imageFile);
 
-    const productData = {
+    const categoryData = {
       name: values.name,
       description: values.description,
-      price: String(values.price),
-      category: values.category,
-      image: base64Image,
     };
 
-    // Execute the mutation with the product data
-    mutate(productData);
+    mutate(categoryData);
   } catch (error) {
     console.error("Error:", error);
     toast.error("Something went wrong, try again", {
@@ -100,14 +74,14 @@ async function submitHandler(values) {
 }
 
 const { mutate, onDone, loading, onError } =
-  useAuthenticatedMutation(addproduct);
+  useAuthenticatedMutation(addcategory);
 
 onDone((result) => {
-  toast.success("Product added successfully", {
+  toast.success("Category added successfully", {
     transition: toast.TRANSITIONS.FLIP,
     position: toast.POSITION.TOP_RIGHT,
   });
-  navigateTo("/products");
+  navigateTo("/categories");
 });
 
 onError((error) => {
@@ -119,6 +93,6 @@ onError((error) => {
 });
 
 definePageMeta({
-  layout: "authenticated",
+  layout: "admin-dashboard",
 });
 </script>

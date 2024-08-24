@@ -28,7 +28,7 @@
                 Don't have an account?
                 <NuxtLink
                   class="text-blue-500 hover:text-blue-700 font-semibold ml-1"
-                  to="/authentication/register"
+                  to="/users/register"
                   ><span>Register</span></NuxtLink
                 >
               </p>
