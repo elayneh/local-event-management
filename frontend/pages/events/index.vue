@@ -1,6 +1,36 @@
 <template>
   <div class="bg-gradient-to-r from-blue-100 via-green-100 to-yellow-1">
-    <div class="w-full flex justify-center items-center pt-24">
+    <div class="fixed w-full flex justify-center items-center pt-2">
+      <div class="flex justify-center items-center space-x-4">
+        <ul class="m-2">
+          <li class="relative flex items-center">
+            <input
+              @click="search"
+              class="w-96 h-10 rounded-full pl-4 pr-10 bg-gray-300 flex items-center focus:outline-none focus:ring-1 focus:ring-gray-400"
+              placeholder="Search..."
+            />
+            <font-awesome-icon
+              :icon="['fas', 'search']"
+              class="text-gray-600 absolute right-4"
+            />
+          </li>
+        </ul>
+
+        <ul class="m-2">
+          <li class="relative">
+            <button @click="openFilterModal" class="flex items-center">
+              <font-awesome-icon
+                :icon="['fas', 'filter']"
+                class="text-gray-600"
+              />
+              <span class="ml-2 text-gray-500">Filter</span>
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="w-full flex justify-center items-center py-10">
       <div class="items-center">
         <img src="/assets/images/home.png" />
       </div>
@@ -8,10 +38,13 @@
         <img src="/assets/images/home.png" />
       </div>
     </div>
+
     <h2 class="text-2xl font-bold mb-4 text-center">Latest Events</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <div v-for="event in events" :key="event.id">
-        <CustomEventCard :event="event" />
+        <NuxtLink :to="`/events/${event.id}`">
+          <CustomEventCard :event="event" />
+        </NuxtLink>
       </div>
     </div>
 
@@ -24,43 +57,12 @@
       </button>
     </div>
 
-    <!-- Categories and Tags Section -->
-    <div class="bg-violet-200 mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <!-- Categories -->
-      <div>
-        <h2 class="text-xl font-bold mb-2">Categories</h2>
-        <div class="flex flex-wrap gap-2">
-          <span
-            v-for="(category, index) in categories"
-            :key="index"
-            class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-semibold"
-          >
-            {{ category.name }}
-          </span>
-        </div>
-      </div>
+    <TagsCategoriesComponent :categories="categories" :tags="tags" />
 
-      <!-- Tags -->
-      <div>
-        <h2 class="text-xl font-bold mb-2">Tags</h2>
-        <div class="flex flex-wrap gap-2">
-          <span
-            v-for="(tag, index) in tags"
-            :key="index"
-            class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-semibold"
-          >
-            {{ tag.name }}
-          </span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Interactive Features and Create Event Section -->
-    <div class="mt-12">
+    <div class="m-12">
       <div
         class="flex flex-col lg:flex-row items-center lg:items-start justify-between bg-gradient-to-r from-purple-300 via-blue-300 to-pink-300 p-6 rounded-lg shadow-lg"
       >
-        <!-- Features Info Card -->
         <div class="mb-6 lg:mb-0 lg:w-2/3 bg-white p-6 rounded-lg shadow-md">
           <h2 class="text-2xl font-bold mb-6 text-gray-800">
             Explore Amazing Features
@@ -71,7 +73,6 @@
               <div
                 class="flex-shrink-0 bg-blue-500 text-white rounded-full p-3"
               >
-                <!-- Icon for customization -->
                 <svg
                   class="w-6 h-6"
                   fill="none"
@@ -128,12 +129,10 @@
               </div>
             </div>
 
-            <!-- Feature 3 -->
             <div class="flex items-center">
               <div
                 class="flex-shrink-0 bg-yellow-500 text-white rounded-full p-3"
               >
-                <!-- Icon for management -->
                 <svg
                   class="w-6 h-6"
                   fill="none"
@@ -204,22 +203,22 @@
     <CustomFooter />
   </div>
 </template>
-
 <script setup>
 import CustomEventCard from "@/components/CustomEventCard.vue";
 import { ref, watch, computed } from "vue";
+
+import useFetchData from "~/composables/useFetchData";
 import { useAuthStore } from "~/stores";
 const isAuthnticated = useAuthStore();
 
 const userId = isAuthnticated.id;
-import useFetchData from "~/composables/useFetchData";
 const { events, categories, tags } = useFetchData(userId);
 
 const visibleEvents = ref([]);
-
-const itemsPerPage = 9;
+const itemsPerPage = 3;
 const currentPage = ref(1);
 
+console.log("Events: ", events);
 const updateVisibleEvents = () => {
   const startIndex = (currentPage.value - 1) * itemsPerPage;
   visibleEvents.value = events.value.slice(
@@ -238,6 +237,4 @@ const loadMoreEvents = () => {
 const hasMoreEvents = computed(
   () => events.value.length > visibleEvents.value.length
 );
-
-definePageMeta({ layout: "authenticated" });
 </script>

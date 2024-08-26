@@ -7,10 +7,11 @@ import {
   faCaretDown,
   faFilter,
   faSearch,
+  faBookmark,
 } from "@fortawesome/free-solid-svg-icons";
 
 export default defineNuxtPlugin((nuxtApp) => {
-  library.add(faSearch, faFilter, faCaretDown);
+  library.add(faSearch, faFilter, faCaretDown, faBookmark);
 
   nuxtApp.vueApp.component("font-awesome-icon", FontAwesomeIcon);
 });

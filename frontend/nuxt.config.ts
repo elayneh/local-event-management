@@ -39,7 +39,7 @@ export default defineNuxtConfig({
       },
       authClient: {
         httpEndpoint: "http://localhost:8080/v1/graphql",
-        tokenName: "auth_token",
+        tokenName: "token",
       },
     },
   },

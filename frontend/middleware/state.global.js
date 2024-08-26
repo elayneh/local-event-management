@@ -7,19 +7,33 @@ import {
 
 export default defineNuxtRouteMiddleware(async (to, from) => {
   const authStore = useAuthStore();
-  authStore.autoLogin();
-  if (!authStore.isAuthenticated && !unAuthenticatedRoutes.includes(to.path)) {
-    return navigateTo("/users/login");
+  await authStore.autoLogin();
+
+  const isUnAuthenticatedRoute = unAuthenticatedRoutes.some((route) =>
+    to.path.startsWith(route)
+  );
+
+  if (!authStore.isAuthenticated) {
+    if (isUnAuthenticatedRoute) {
+      return; // Allow unauthenticated routes to proceed
+    } else {
+      return navigateTo("/users/unauthorized");
+    }
   }
 
   const userRole = authStore.role?.toLowerCase();
-  console.log("USER: ", userRole);
-  if (userRole) {
-    if (!adminRoutes.includes(to.path) && userRole == "admin") {
-      return navigateTo("/admin");
+
+  if (userRole === "admin") {
+    const isAdminRoute = adminRoutes.some((route) => to.path.startsWith(route));
+    if (!isAdminRoute && to.path !== "/admin") {
+      return navigateTo("/admin"); // Redirect to the admin dashboard if not on an admin route
     }
-    if (!userRoutes.includes(to.path) && userRole == "user") {
-      return navigateTo("/user");
+  }
+
+  if (userRole === "user") {
+    const isUserRoute = userRoutes.some((route) => to.path.startsWith(route));
+    if (!isUserRoute && to.path !== "/user") {
+      return navigateTo("/user"); // Redirect to the user dashboard if not on a user route
     }
   }
 });

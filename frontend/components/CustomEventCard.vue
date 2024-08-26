@@ -24,45 +24,45 @@
       <p class="text-gray-700 mb-2">
         <strong>Address:</strong> {{ event.address || "N/A" }}
       </p>
-      <p class="text-gray-700 mb-2">
-        <strong>Category ID:</strong> {{ event.category_id || "N/A" }}
-      </p>
-      <p class="text-gray-700 mb-2">
-        <strong>Created At:</strong> {{ formatDate(event.created_at) || "N/A" }}
-      </p>
-      <p class="text-gray-700 mb-2">
+      <p class="text-gray-700 mb-2 my-4">
         <strong>End Date:</strong> {{ formatDate(event.end_date) || "N/A" }}
       </p>
-      <p class="text-gray-700 mb-2">
+      <p class="text-gray-700 mt-12">
         <span :class="freeClass">{{ isFreeText }}</span>
       </p>
     </div>
-
-    <div class="p-4 rounded-lg border-gray-200 flex justify-between bg-gray-50">
+    <div
+      class="p-4 rounded-lg border border-gray-200 flex justify-between items-center"
+    >
       <!-- Follow Button -->
-      <button
-        class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-200"
-        @click="followEvent"
+      <div
+        @click="toggleFollow"
+        :class="{ 'bg-gray-500': isFollowing, 'bg-gray-300': !isFollowing }"
+        class="px-4 py-2 rounded text-white cursor-pointer"
       >
-        Follow
-      </button>
+        <span>{{ isFollowing ? "Following" : "Follow" }}</span>
+      </div>
 
-      <!-- Centered Bookmark Button -->
-      <button
-        class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 transition-colors duration-200 mx-4 flex-grow text-center"
-        @click="bookmarkEvent"
-      >
-        +Bookmark
-      </button>
+      <div class="flex items-center justify-center h-full">
+        <font-awesome-icon
+          :icon="['fas', 'bookmark']"
+          :class="[
+            'cursor-pointer',
+            { 'text-gray-400': isBookmarked, 'text-gray-700': !isBookmarked },
+          ]"
+          @click="toggleBookmark"
+        />
+      </div>
 
-      <!-- Purchase Button (Only shown if not free) -->
-      <button
+      <!-- Buy Button -->
+      <div
+        @click="toggleBuy"
         v-if="!isFree"
-        class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors duration-200"
-        @click="purchaseEvent"
+        :class="{ 'bg-gray-200': isBought, 'bg-green-500': !isBought }"
+        class="px-4 py-2 rounded text-white cursor-pointer"
       >
-        Purchase
-      </button>
+        <span>{{ isBought ? "Bought" : "Buy" }}</span>
+      </div>
     </div>
   </div>
 </template>
@@ -82,48 +82,42 @@ const props = defineProps({
   },
 });
 
+const isBookmarked = ref(false);
+const isFollowing = ref(false);
+const isBought = ref(false);
+
 const computedImage = computed(() => props.event?.image || defaultImage);
 
-const followEvent = () => {
-  console.log("Follow event:", props.event?.id);
+const toggleFollow = () => {
+  isFollowing.value = !isFollowing.value;
+};
+const toggleBookmark = () => {
+  isBookmarked.value = !isBookmarked.value;
+};
+const toggleBuy = () => {
+  isBought.value = !isBought.value;
 };
 
-const purchaseEvent = () => {
-  console.log("Purchase event:", props.event?.id);
-};
-
-const bookmarkEvent = () => {
-  console.log("Bookmark event:", props.event?.id);
-};
-
-// Truncate description to a fixed length
 const truncatedDescription = computed(() => {
-  const maxLength = 100; // Set a fixed length for description
+  const maxLength = 100;
   return props.event?.description?.length > maxLength
     ? props.event.description.slice(0, maxLength) + "..."
     : props.event?.description || "N/A";
 });
 
-// Check if the event is free
 const isFree = computed(() => props.event?.is_free);
 
-// Define text for "Is Free"
 const isFreeText = computed(() => (isFree.value ? "Free" : "Paid"));
 
-// Define class for "Is Free" text
 const freeClass = computed(() =>
   isFree.value
-    ? "bg-gray-300 text-white px-2 py-1 rounded"
-    : "bg-gray-800 text-white px-2 py-1 rounded"
+    ? "bg-green-300 text-white px-2 py-1 rounded"
+    : "bg-red-800 text-white px-2 py-1 rounded"
 );
 
 const formatDate = (dateString) => {
   if (!dateString) return "N/A";
   const date = new Date(dateString);
-  return date.toLocaleDateString(); // Customize date format as needed
+  return date.toLocaleDateString();
 };
 </script>
-
-<style scoped>
-/* Add any additional scoped styles here */
-</style>

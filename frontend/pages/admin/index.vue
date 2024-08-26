@@ -11,18 +11,21 @@
           <p class="text-2xl font-bold">{{ users.length }}</p>
         </div>
       </NuxtLink>
-      <NuxtLink to="/events">
+
+      <NuxtLink to="/admin/events">
         <div class="bg-white shadow rounded-lg p-4">
           <h3 class="text-lg font-medium">Total Events</h3>
           <p class="text-2xl font-bold">{{ events.length }}</p>
         </div>
       </NuxtLink>
+
       <NuxtLink to="/admin/tags">
         <div class="bg-white shadow rounded-lg p-4">
           <h3 class="text-lg font-medium">Tags</h3>
           <p class="text-2xl font-bold">{{ tags.length }}</p>
         </div>
       </NuxtLink>
+
       <NuxtLink to="/admin/categories">
         <div class="bg-white shadow rounded-lg p-4">
           <h3 class="text-lg font-medium">Categories</h3>
@@ -30,13 +33,14 @@
         </div>
       </NuxtLink>
     </div>
+
     <div v-if="loading" class="mt-4">Loading...</div>
     <div v-if="error" class="mt-4 text-red-500">Error: {{ error.message }}</div>
   </div>
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
+import { ref, onMounted } from "vue";
 import { useQuery } from "@vue/apollo-composable";
 import getUsers from "~/graphql/queries/users/getUsers.gql";
 import getCategories from "~/graphql/queries/categories/getCategories.gql";
@@ -48,62 +52,60 @@ const events = ref([]);
 const categories = ref([]);
 const tags = ref([]);
 
+const loading = ref(true);
+const error = ref(null);
+
 const {
   result: usersResult,
   loading: usersLoading,
   error: usersError,
+  onResult: onUsersResult,
 } = useQuery(getUsers);
 const {
   result: eventsResult,
   loading: eventsLoading,
   error: eventsError,
+  onResult: onEventsResult,
 } = useQuery(getEvents);
 const {
   result: categoriesResult,
   loading: categoriesLoading,
   error: categoriesError,
+  onResult: onCategoriesResult,
 } = useQuery(getCategories);
 const {
   result: tagsResult,
   loading: tagsLoading,
   error: tagsError,
+  onResult: onTagsResult,
 } = useQuery(getTags);
 
-// Set up watchers to update reactive data
-watch(usersResult, (newResult) => {
-  if (newResult?.users) {
-    users.value = newResult.users;
-  }
+onUsersResult(({ data }) => {
+  if (data) users.value = data.users;
 });
 
-watch(eventsResult, (newResult) => {
-  if (newResult?.events) {
-    events.value = newResult.events;
-  }
+onEventsResult(({ data }) => {
+  if (data) events.value = data.events;
 });
 
-watch(categoriesResult, (newResult) => {
-  if (newResult?.categories) {
-    categories.value = newResult.categories;
-  }
+onCategoriesResult(({ data }) => {
+  if (data) categories.value = data.categories;
 });
 
-watch(tagsResult, (newResult) => {
-  if (newResult?.tags) {
-    tags.value = newResult.tags;
-  }
+onTagsResult(({ data }) => {
+  if (data) tags.value = data.tags;
 });
 
-watch(
-  [usersLoading, eventsLoading, categoriesLoading, tagsLoading],
-  (newLoading) => {
-    console.log("Loading:", newLoading);
-  }
-);
-
-watch([usersError, eventsError, categoriesError, tagsError], (newError) => {
-  console.error("Error:", newError);
-});
+loading.value =
+  usersLoading.value ||
+  eventsLoading.value ||
+  categoriesLoading.value ||
+  tagsLoading.value;
+error.value =
+  usersError.value ||
+  eventsError.value ||
+  categoriesError.value ||
+  tagsError.value;
 
 definePageMeta({ layout: "admin-dashboard" });
 </script>

@@ -9,36 +9,6 @@
             </NuxtLink>
           </li>
         </ul>
-        <div class="flex">
-          <ul class="m-2">
-            <li class="relative flex items-center">
-              <input
-                @click="search"
-                class="w-96 h-10 rounded-full pl-4 pr-10 bg-gray-300 flex items-center focus:outline-none focus:ring-1 focus:ring-gray-400"
-                placeholder="Search..."
-              />
-              <font-awesome-icon
-                :icon="['fas', 'search']"
-                class="text-gray-600 absolute right-4"
-              />
-            </li>
-          </ul>
-
-          <ul class="m-2 gap-">
-            <li class="relative">
-              <button
-                @click="search"
-                class="w-64 h-10 rounded bg-gray-300 flex items-center focus:outline-none focus:ring-1 focus:ring-gray-400"
-              >
-                <font-awesome-icon
-                  :icon="['fas', 'filter']"
-                  class="text-gray-600 pl-4"
-                />
-                <span class="ml-2 text-gray-500">filter</span>
-              </button>
-            </li>
-          </ul>
-        </div>
         <div class="flex space-x-4 gap-4 justify-center items-center mr-24">
           <ul class="flex justify-center items-center text-gray-700">
             <NuxtLink to="/user/events/create-event">
@@ -48,7 +18,7 @@
           <ul
             class="flex justify-center items-center bg-blue-500 rounded-lg px-4 justify-center items-center py-1"
           >
-            <li>
+            <li class="text-white">
               <NuxtLink to="users/register"><Button>Register</Button></NuxtLink>
             </li>
           </ul>
@@ -61,7 +31,11 @@
         <slot />
       </div>
     </main>
-
+\    <FilterModal
+      :isOpen="isFilterModalOpen"
+      @close-modal="closeFilterModal"
+      @apply-filter="applyFilter"
+    />
     <div
       v-if="isLogoutModalOpen"
       class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
@@ -92,7 +66,23 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
+import FilterModal from "~/components/FilterModal.vue";
 
+const isFilterModalOpen = ref(false);
+
+const openFilterModal = () => {
+  isFilterModalOpen.value = true;
+};
+
+const closeFilterModal = () => {
+  isFilterModalOpen.value = false;
+};
+
+const applyFilter = (selectedFields) => {
+  console.log("Apply filter with:", selectedFields);
+  // Implement your filter logic here
+  closeFilterModal();
+};
 const dropdownOpen = ref(false);
 const eventDropDown = ref(false);
 const isLogoutModalOpen = ref(false);
@@ -107,14 +97,12 @@ const confirmLogout = () => {
   closeLogoutModal();
 };
 
-// Handle clicks outside of the dropdown menu
 const handleClickOutside = (event) => {
   if (!event.target.closest(".relative")) {
     eventDropDown.value = false;
   }
 };
 
-// Add and remove click event listeners
 onMounted(() => {
   document.addEventListener("click", handleClickOutside);
 });

@@ -1,22 +1,35 @@
+// constants/routes.js
 export const unAuthenticatedRoutes = [
+  "/",
+  "/users",
+  "/about",
+  "/events",
   "/users/login",
   "/users/register",
-  "/about",
-  "/",
-  "/events",
+  "/users/profile/:id",
+  "/users/",
+  "/users/unauthorized",
 ];
 
 export const adminRoutes = [
-  "/products/delete",
-  "/products/add",
-  "/products/update",
+  "/admin",
   "/events/admin-event",
-  "/admin/*",
+  "/admin/users",
+  "/admin/events",
+  "/categories/update/:id",
+  "/categories/delete/:id",
+  "/categories",
 ];
 
 export const userRoutes = [
-  "/user/events/create-event",
-  "/user",
+  "/events",
+  "/user/events/:id",
+  "/user/events",
+  "/user/events/bookmarked",
+  "/user/events/following",
+  "/user/events/tickets",
+  "/events/:id",
+  "/events/update",
   "/events/user-event",
-  "/events/create",
+  "/user/events/create-event",
 ];

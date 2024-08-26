@@ -7,6 +7,7 @@
       >
         {{ field.label }}
       </label>
+      
       <Field
         :as="field.as === 'select' ? 'select' : 'input'"
         :id="field.name"
@@ -14,9 +15,12 @@
         :placeholder="field.placeholder"
         :type="field.type"
         :disabled="field.disabled"
+        :multiple="field.multiple"
         class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
         v-bind="field.attrs"
+        @change="handleFileChange($event, field)"
       >
+        <!-- Handle options for select fields -->
         <template v-if="field.as === 'select'">
           <option
             v-for="option in field.options"
@@ -26,6 +30,8 @@
             {{ option.label }}
           </option>
         </template>
+
+        <!-- Handle children for non-select fields -->
         <template
           v-if="
             field.as !== 'select' && field.children && field.children.length
@@ -41,13 +47,61 @@
           </component>
         </template>
       </Field>
+
+      <!-- Display selected items for select fields -->
+      <template v-if="field.as === 'select' && selectedItems.length">
+        <div class="mt-2">
+          <span
+            v-for="item in selectedItems"
+            :key="item.value"
+            class="bg-blue-500 text-white rounded-full px-3 py-1 text-sm flex items-center"
+          >
+            {{ item.label }}
+            <button
+              @click.stop="removeItem(item)"
+              class="ml-2 text-white hover:text-gray-200"
+            >
+              ×
+            </button>
+          </span>
+        </div>
+      </template>
+
       <ErrorMessage :name="field.name" class="text-red-500 text-xs mt-1" />
     </div>
     <slot />
   </Form>
 </template>
+
 <script setup>
 import { Form, Field, ErrorMessage } from "vee-validate";
+import { ref } from "vue";
+
+const selectedItemValues = ref([]);
+const selectedItems = ref([]);
+
+const toggleItem = (item) => {
+  const index = selectedItems.value.findIndex((c) => c.value === item.value);
+  if (index === -1) {
+    selectedItems.value.push(item);
+    selectedItemValues.value.push(item.value);
+  } else {
+    selectedItems.value.splice(index, 1);
+    selectedItemValues.value.splice(
+      selectedItemValues.value.indexOf(item.value),
+      1
+    );
+  }
+};
+
+const removeItem = (option) => {
+  selectedItems.value = selectedItems.value.filter(
+    (c) => c.value !== option.value
+  );
+  selectedItemValues.value = selectedItemValues.value.filter(
+    (v) => v !== option.value
+  );
+};
 
 const props = defineProps({
   schema: {
@@ -60,4 +114,13 @@ const props = defineProps({
     required: true,
   },
 });
+
+const selectedFiles = ref({});
+
+// Handle file changes, including multiple file selections
+const handleFileChange = (event, field) => {
+  if (field.type === 'file' && field.multiple) {
+    selectedFiles.value[field.name] = Array.from(event.target.files);
+  }
+};
 </script>

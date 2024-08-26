@@ -9,6 +9,7 @@ mutation InsertEvent(
   $start_date: timestamp!
   $end_date: timestamp!
   $venue: String!
+  $event_images: String!
 ) {
   insert_events(
     objects: {
@@ -22,6 +23,7 @@ mutation InsertEvent(
       start_date: $start_date
       end_date: $end_date
       venue: $venue
+      event_images: $event_images
     }
   ) {
     returning {

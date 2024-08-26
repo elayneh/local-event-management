@@ -51,7 +51,7 @@ export const useAuthStore = defineStore("auth", {
       });
     },
 
-    autoLogin() {
+    async autoLogin() {
       if (this.token) {
         const decoded = jwt_decode(this.token);
         if (decoded.exp * 1000 > Date.now()) {

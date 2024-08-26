@@ -1,5 +1,7 @@
 <template>
-  <div class="flex h-screen items-center justify-center">
+  <div
+    class="min-h-screen flex flex-col items-center justify-center bg-gradient-to-r from-blue-100 via-green-100 to-yellow-100"
+  >
     <CustomCard title="Sign Up">
       <template #body>
         <DynamicForm

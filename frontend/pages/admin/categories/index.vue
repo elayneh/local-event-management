@@ -15,7 +15,7 @@
         </template>
         <template #footer-left>
           <div class="bg-blue-500 px-8 py-2 rounded-full">
-            <NuxtLink :to="`/categories/edit/${category.id}`">
+            <NuxtLink :to="`/categories/update/${category.id}`">
               <button class="text-white">Edit</button>
             </NuxtLink>
           </div>
@@ -46,21 +46,13 @@ import { useQuery } from "@vue/apollo-composable";
 import getCategories from "~/graphql/queries/categories/getCategories.gql";
 
 const categories = ref([]);
-const { result, loading, error } = useQuery(getCategories);
 
-definePageMeta({ layout: "admin-dashboard" });
-
-watch(result, (newResult) => {
-  if (newResult?.categories) {
-    categories.value = newResult.categories;
+const { result, loading, error, onResult } = useQuery(getCategories);
+onResult(({ data }) => {
+  if (data) {
+    categories.value = data.categories;
   }
 });
 
-watch(loading, (newLoading) => {
-  console.log("Loading:", newLoading);
-});
-
-watch(error, (newError) => {
-  console.error("Error:", newError);
-});
+definePageMeta({ layout: "admin-dashboard" });
 </script>

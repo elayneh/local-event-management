@@ -9,37 +9,7 @@
             </NuxtLink>
           </li>
         </ul>
-        <div class="flex">
-          <ul class="m-2">
-            <li class="relative flex items-center">
-              <input
-                @click="search"
-                class="w-96 h-10 rounded-full pl-4 pr-10 bg-gray-200 flex items-center focus:outline-none focus:ring-1 focus:ring-gray-400"
-                placeholder="Search..."
-              />
-              <font-awesome-icon
-                :icon="['fas', 'search']"
-                class="text-gray-600 absolute right-4"
-              />
-            </li>
-          </ul>
-
-          <ul class="m-2 gap-">
-            <li class="relative">
-              <button
-                @click="search"
-                class="w-64 h-10 rounded bg-gray-200 flex items-center focus:outline-none focus:ring-1 focus:ring-gray-400"
-              >
-                <font-awesome-icon
-                  :icon="['fas', 'filter']"
-                  class="text-gray-600 pl-4"
-                />
-                <span class="ml-2 text-gray-500">filter</span>
-              </button>
-            </li>
-          </ul>
-        </div>
-        <div class="flex space-x-4 gap-4 justify-center items-center">
+        <div class="flex space-x-4 gap-4 justify-center items-center pr-24">
           <ul class="flex justify-center items-center">
             <NuxtLink to="/user/events/create-event">
               <button>Create event</button>
@@ -67,23 +37,23 @@
                 </li>
                 <li>
                   <NuxtLink
-                    to="#"
+                    to="/user/events/bookmarked"
                     class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
                     >Bookmarks</NuxtLink
                   >
                 </li>
                 <li>
                   <NuxtLink
-                    to="#"
+                    to="/user/events/following"
                     class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                    >Tickets</NuxtLink
+                    >Following</NuxtLink
                   >
                 </li>
                 <li>
                   <NuxtLink
-                    to="#"
+                    to="/user/events/tickets"
                     class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                    >Option 4</NuxtLink
+                    >Purchased Events</NuxtLink
                   >
                 </li>
                 <li>
@@ -103,56 +73,56 @@
               </ul>
             </li>
           </ul>
-        </div>
-        <ul class="flex gap-4 items-center mr-20">
-          <li class="relativep">
-            <button
-              @click="toggleProfileDropdown"
-              class="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-gray-400"
-            >
-              <img src="" alt="Profile" class="w-full h-full rounded-full" />
-            </button>
-            <div
-              v-if="dropdownOpen"
-              class="absolute mt-2 w-64 bg-white shadow-lg bg-neutral-300"
-            >
-              <ul class="py-1">
-                <li>
-                  <NuxtLink
-                    to="/profile"
-                    class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                    >Profile</NuxtLink
-                  >
-                </li>
-                <li>
-                  <button
-                    @click="openLogoutModal"
-                    class="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
-                  >
-                    Analysis
-                  </button>
-                </li>
-                <li>
-                  <button
-                    @click="openLogoutModal"
-                    class="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
-                  >
-                    Settings
-                  </button>
-                </li>
+          <ul class="flex gap-4 items-center mr-20">
+            <li class="relativep">
+              <button
+                @click="toggleProfileDropdown"
+                class="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-gray-400"
+              >
+                <img src="" alt="Profile" class="w-full h-full rounded-full" />
+              </button>
+              <div
+                v-if="dropdownOpen"
+                class="absolute mt-2 w-64 bg-white shadow-lg bg-neutral-300"
+              >
+                <ul class="py-1">
+                  <li>
+                    <NuxtLink
+                      to="/profile"
+                      class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                      >Profile</NuxtLink
+                    >
+                  </li>
+                  <li>
+                    <button
+                      @click="openLogoutModal"
+                      class="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                    >
+                      Analysis
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      @click="openLogoutModal"
+                      class="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                    >
+                      Settings
+                    </button>
+                  </li>
 
-                <li>
-                  <button
-                    @click="openLogoutModal"
-                    class="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
-                  >
-                    Logout
-                  </button>
-                </li>
-              </ul>
-            </div>
-          </li>
-        </ul>
+                  <li>
+                    <button
+                      @click="openLogoutModal"
+                      class="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                    >
+                      Logout
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            </li>
+          </ul>
+        </div>
       </nav>
     </header>
 
@@ -215,7 +185,7 @@ const openLogoutModal = () => {
 };
 
 const closeLogoutModal = () => {
-    window.location.reload(); // This reloads the current page
+  window.location.reload(); // This reloads the current page
 
   isLogoutModalOpen.value = false;
 };
@@ -228,7 +198,6 @@ const confirmLogout = () => {
   authenticationStore.setRole(null);
 
   closeLogoutModal();
-
 };
 const handleClickOutside = (event) => {
   if (!event.target.closest(".relative")) {

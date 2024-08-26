@@ -1,0 +1,5 @@
+mutation DeleteEvent($id: uuid!) {
+  delete_events_by_pk(id: $id) {
+    id
+  }
+}

@@ -1,13 +1,7 @@
-mutation AddEventTags($objects: [event_tags_insert_input!]!) {
-  insert_event_tags(objects: $objects) {
+mutation AddEventTags($eventId: uuid!, $tag_id: uuid) {
+  insert_event_tags(objects: { event_id: $eventId, tag_id: $tag_id }) {
     returning {
       event_id
-      tag_id
     }
   }
-}
-
-input event_tags_insert_input {
-  event_id: uuid!
-  tag_id: uuid!
 }

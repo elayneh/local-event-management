@@ -1,0 +1,32 @@
+query GetFollowingEvents($id: uuid!) {
+  events(where: { events_followers: { user_id: { _eq: $id } } }) {
+    address
+    category_id
+    created_at
+    description
+    end_date
+    events_category {
+      description
+      id
+      name
+    }
+    events_event_images {
+      event_id
+      id
+      image_url
+      is_featured
+    }
+    events_event_tags {
+      tag_id
+      event_id
+    }
+    id
+    is_free
+    location
+    price
+    start_date
+    title
+    updated_at
+    venue
+  }
+}

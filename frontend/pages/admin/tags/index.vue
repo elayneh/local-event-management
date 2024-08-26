@@ -46,21 +46,25 @@ import { useQuery } from "@vue/apollo-composable";
 import getTags from "~/graphql/queries/tags/getTags.gql";
 
 const tags = ref([]);
-const { result, loading, error } = useQuery(getTags);
 
+const allTags = async () => {
+  const {
+    result: tagsResult,
+    loading: tagsLoading,
+    error: tagsError,
+    onResult,
+  } = useQuery(getTags);
+
+  onResult(({ data }) => {
+    if (data) {
+      tags.value = data.tags;
+    }
+  });
+  tags.value = result.value.tags;
+};
+
+onMounted(async () => {
+  await allTags();
+});
 definePageMeta({ layout: "admin-dashboard" });
-
-watch(result, (newResult) => {
-  if (newResult?.tags) {
-    tags.value = newResult.tags;
-  }
-});
-
-watch(loading, (newLoading) => {
-  console.log("Loading:", newLoading);
-});
-
-watch(error, (newError) => {
-  console.error("Error:", newError);
-});
 </script>

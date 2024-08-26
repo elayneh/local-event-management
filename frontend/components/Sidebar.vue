@@ -46,7 +46,11 @@ const links = ref([
     iconComponent: ["fas", "tachometer-alt"],
   },
   { name: "Users", path: "/admin/users", iconComponent: ["fas", "user"] },
-  { name: "Events", path: "/events", iconComponent: ["fas", "calendar-alt"] },
+  {
+    name: "Events",
+    path: "/admin/events",
+    iconComponent: ["fas", "calendar-alt"],
+  },
   {
     name: "Categories",
     path: "/admin/categories",
