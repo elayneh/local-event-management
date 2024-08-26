@@ -38,10 +38,10 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	var loginRequest struct {
 		Input struct {
-			UserCredentials struct {
+			LoginCredentials struct {
 				Email    string `json:"email"`
 				Password string `json:"password"`
-			} `json:"userCredentials"`
+			} `json:"LoginCredentials"`
 		} `json:"input"`
 	}
 	if err := json.Unmarshal(body, &loginRequest); err != nil {
@@ -49,7 +49,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	loginCredentials := loginRequest.Input.UserCredentials
+	loginCredentials := loginRequest.Input.LoginCredentials
 	fmt.Println("Login Credentials: ", loginCredentials)
 
 	req := graphql.NewRequest(`
@@ -109,7 +109,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	newUser := reqBody.Input.UserInput
-
+	fmt.Println("\n\nNew User: ", newUser, "\n\n")
 	password, err := utils.HashPassword(newUser.Password)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -128,11 +128,10 @@ func Register(w http.ResponseWriter, r *http.Request) {
 
 	req.Var("objects", []map[string]interface{}{
 		{
-			"first_name": newUser.FirstName,
-			"last_name":  newUser.LastName,
-			"role":       newUser.Role,
-			"email":      newUser.Email,
-			"password":   password,
+			"username": newUser.Username,
+			"role":     newUser.Role,
+			"email":    newUser.Email,
+			"password": password,
 		},
 	})
 
@@ -161,6 +160,6 @@ func Register(w http.ResponseWriter, r *http.Request) {
 
 	var response AuthResponse
 	response.ID = respData.InsertUsers.Returning[0].ID
-
+	fmt.Println("\n\nResponse: ", respData, "\n\n", response, "\n\n")
 	sendToken(w, newUser.Role, response)
 }

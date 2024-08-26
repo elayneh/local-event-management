@@ -40,7 +40,7 @@ func main() {
 	mux.HandleFunc("/register", controller.Register)
 	mux.HandleFunc("/login", controller.Login)
 
-	mux.HandleFunc("/product/add", controller.HandleAddProduct)
+	mux.HandleFunc("/uploadImage", controller.UploadImagesHandler)
 
 	handler := loggingMiddleware(corsMiddleware(mux))
 	port := os.Getenv("PORT")

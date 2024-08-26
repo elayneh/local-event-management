@@ -7,21 +7,36 @@ type AuthResponse struct {
 }
 
 type InputUser struct {
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Email     string `json:"email"`
-	Password  string `json:"password"`
-	Role      string `json:"role"`
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	Role     string `json:"role"`
 }
 
 type RequestBody struct {
 	Input struct {
 		UserInput struct {
-			FirstName string `json:"first_name"`
-			LastName  string `json:"last_name"`
-			Email     string `json:"email"`
-			Password  string `json:"password"`
-			Role      string `json:"role"`
+			Username string `json:"username"`
+			Email    string `json:"email"`
+			Password string `json:"password"`
+			Role     string `json:"role"`
 		} `json:"userInput"`
 	} `json:"input"`
+}
+
+type UploadImagesInput struct {
+	Files []string `json:"files"`
+}
+
+type UploadImagesResponse struct {
+	ImageURLs []string `json:"imageUrls"`
+}
+
+type UploadImagesRequest struct {
+	Action map[string]interface{} `json:"action"`
+	Input  struct {
+		UserInput UploadImagesInput `json:"input"`
+	} `json:"input"`
+	RequestQuery     string                 `json:"request_query"`
+	SessionVariables map[string]interface{} `json:"session_variables"`
 }
