@@ -51,7 +51,7 @@ func UploadImagesHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		fmt.Println("RESPfff: ", fileData)
 
-		resp, err := cld.Upload.Upload(r.Context(), bytes.NewReader(decodedFile), uploader.UploadParams{Folder: "tasks"})
+		resp, err := cld.Upload.Upload(r.Context(), bytes.NewReader(decodedFile), uploader.UploadParams{Folder: "EventImages"})
 		if err != nil {
 			http.Error(w, `{"error": "Failed to upload to Cloudinary"}`, http.StatusInternalServerError)
 			return

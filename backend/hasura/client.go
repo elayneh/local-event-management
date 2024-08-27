@@ -39,16 +39,10 @@ func SendGraphQLRequest(query string, variables map[string]interface{}) (*GraphQ
 
 	var response GraphQLResponse
 
-	fmt.Println("Raw response body:", string(body))
-
 	if err := json.Unmarshal(body, &response); err != nil {
 		return nil, fmt.Errorf("error decoding response: %w", err)
 	}
 
-	// if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
-	// 	return nil, fmt.Errorf("error decoding response: %w", err)
-	// }w
-	fmt.Print("RESPONSEeeeeeeee: ", response.Data)
 	if len(response.Errors) > 0 {
 		return &response, fmt.Errorf("graphql errors: %v", response.Errors)
 	}

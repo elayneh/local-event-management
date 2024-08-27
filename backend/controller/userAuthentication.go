@@ -50,7 +50,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	loginCredentials := loginRequest.Input.LoginCredentials
-	fmt.Println("Login Credentials: ", loginCredentials)
+	fmt.Println("Login input: ", loginRequest.Input)
 
 	req := graphql.NewRequest(`
         query($email: String!) {
