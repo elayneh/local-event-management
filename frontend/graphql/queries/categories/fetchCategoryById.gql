@@ -1,0 +1,7 @@
+query GetSingleCategory($id: uuid!) {
+  categories_by_pk(id: $id) {
+    description
+    id
+    name
+  }
+}

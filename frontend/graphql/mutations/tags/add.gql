@@ -7,3 +7,4 @@ mutation AddTags($name: String!, $description: String!) {
     }
   }
 }
+  

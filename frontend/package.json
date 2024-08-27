@@ -21,7 +21,7 @@
     "@rollup/plugin-graphql": "^2.0.4",
     "@vee-validate/nuxt": "^4.11.8",
     "@vee-validate/yup": "^4.13.2",
-    "@vueuse/core": "^10.5.0",
+    "@vueuse/core": "^11.0.3",
     "@vueuse/nuxt": "^10.5.0",
     "axios": "^1.7.5",
     "date-fns": "^3.6.0",

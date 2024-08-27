@@ -1,7 +1,16 @@
 <template>
   <div class="bg-gray-100 min-h-screen p-6">
+    <div v-if="createEventLoading">
+      <button type="button" class="bg-indigo-500 ..." disabled>
+        <svg class="animate-spin h-5 w-5 mr-3 ..." viewBox="0 0 24 24">
+          <!-- ... -->
+        </svg>
+        Processing...
+      </button>
+    </div>
     <div
-      class="w-full max-w-4xl mx-auto p-6 bg-gray-300 rounded-lg shadow-lg mt-24"
+      v-else
+      class="w-full max-w-4xl mx-auto p-6 bg-gray-300 rounded-lg shadow-lg mt-8"
     >
       <p v-if="error" class="text-red-600 text-center mb-4">
         Error loading categories. Please try again later.
@@ -82,7 +91,7 @@
                   </label>
                 </div>
               </div>
-              <div class="flex justify-end mt-4">
+              <div class="flex justify-end gap-4 mt-4">
                 <button
                   @click="showTagSelector = false"
                   class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg mr-2"
@@ -93,14 +102,14 @@
                   @click="clearSelectedTags"
                   class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg"
                 >
-                  Clear
+                  Cancel
                 </button>
               </div>
             </div>
           </div>
 
-          <div class="mb-5">
-            <div class="relative">
+          <div class="mb-5 py-4">
+            <div class="">
               <input
                 @click="openLocationModal"
                 type="text"
@@ -191,24 +200,23 @@ import getTags from "~/graphql/queries/tags/getTags.gql";
 import insertEvent from "~/graphql/mutations/events/insert.gql";
 import insertEventTags from "~/graphql/mutations/event_tags/insert.gql";
 import ImageUploadMutation from "~/graphql/mutations/image_upload.gql";
-
 import * as yup from "yup";
 import { toast } from "vue3-toastify";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import LeafletMap from "~/components/LeafletMap.vue";
-const now = new Date().toISOString().slice(0, 16);
 
+import { useAuthStore } from "~/stores";
+const isAuthnticated = useAuthStore();
+
+const user_id = isAuthnticated.id;
+
+const now = new Date().toISOString().slice(0, 16);
 const showModal = ref(false);
-const selectedLocation = ref(null);
-const selectedLocationName = ref(null);
 const locationText = ref("");
 const searchQuery = ref("");
 const selectedTags = ref([]);
 const selectedTagValues = ref([]);
-const selectedCategoryValues = ref([]);
 const categorySearchQuery = ref("");
-const tagsError = ref("");
-const categoryError = ref("");
 const locationError = ref("");
 const zoom = 13;
 const center = ref([9.0306, 38.7506]); // Center set to Addis Ababa, Piassa
@@ -375,17 +383,14 @@ const submitFirstLevelEvent = async (values) => {
         reader.readAsDataURL(file);
       });
     };
-    console.log("Files: ", files);
 
     const base64Files = await Promise.all(
       files.map((file) => readFilesAsBase64(file))
     );
 
-    console.log("base 64: ", base64Files);
 
     const uploadImagesInput = { input: { files: base64Files } };
 
-    console.log("Fininnnnnnnnnnn");
     const { data } = await uploadImages(uploadImagesInput);
 
     if (!data || !data.uploadImages || !data.uploadImages.imageUrls) {
@@ -394,11 +399,8 @@ const submitFirstLevelEvent = async (values) => {
 
     const uploadedImages = data.uploadImages.imageUrls;
 
-    console.log(
-      "locationnnnnnnnnnn: ",
-      uploadedImages,data
-    );
     const eventData = {
+      uid: user_id,
       address: locationData.value.address,
       location: locationData.value
         ? `${locationData.value.latitude},${locationData.value.longitude}`
@@ -407,6 +409,7 @@ const submitFirstLevelEvent = async (values) => {
       description: values.description,
       end_date: values.end_date,
       is_free: values.isFree,
+      capacity: values.capacity,
       price: values.isFree === "false" ? values.price : 0,
       title: values.title,
       start_date: values.start_date,
@@ -415,19 +418,20 @@ const submitFirstLevelEvent = async (values) => {
       quantity: parseInt(values.quantity) || 1,
     };
 
-    console.log("Form submitted with::;;;;;;:", eventData);
     const result = await insertEventMutation(eventData);
 
     eventId.value = result.data.insert_events.returning[0].id;
     isEventCreated.value = true;
 
     await submitSecondLevelEvent(selectedTags.value);
+    navigateTo("/user");
   } catch (error) {
     console.error("Error:", error);
-    toast.error("Something went wrong, try again", {
+    toast.error("Creating events wrong, try agai", {
       transition: toast.TRANSITIONS.FLIP,
       position: toast.POSITION.TOP_RIGHT,
     });
+    navigateTo("/user");
   }
 };
 
@@ -442,12 +446,7 @@ const submitSecondLevelEvent = async (tags) => {
           eventId: eventId.value,
         })
     );
-    toast.success("Tags added successfully", {
-      transition: toast.TRANSITIONS.FLIP,
-      position: toast.POSITION.TOP_RIGHT,
-    });
   } catch (error) {
-    console.error("Error:", error);
     toast.error("Failed to add tags", {
       transition: toast.TRANSITIONS.FLIP,
       position: toast.POSITION.TOP_RIGHT,
@@ -456,6 +455,7 @@ const submitSecondLevelEvent = async (tags) => {
 };
 
 const clearSelectedTags = () => {
+  showTagSelector.value = false;
   selectedTags.value = [];
 };
 const firstLevelEventFormSchema = computed(() => ({
@@ -481,9 +481,9 @@ const firstLevelEventFormSchema = computed(() => ({
     },
     {
       as: "input",
-      name: "quantity",
-      label: "Total Capacity",
-      placeholder: "Enter Total Holding capacity",
+      name: "capacity",
+      label: "Total Capacity of the event",
+      placeholder: "Enter Total Holding capacity of an the event",
       type: "number",
       rules: yup
         .number()

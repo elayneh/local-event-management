@@ -19,7 +19,9 @@
             class="flex justify-center items-center bg-blue-500 rounded-lg px-4 justify-center items-center py-1"
           >
             <li class="text-white">
-              <NuxtLink to="users/register"><Button>Register</Button></NuxtLink>
+              <NuxtLink to="/users/register"
+                ><Button>Register</Button></NuxtLink
+              >
             </li>
           </ul>
         </div>
@@ -31,7 +33,8 @@
         <slot />
       </div>
     </main>
-\    <FilterModal
+    \
+    <FilterModal
       :isOpen="isFilterModalOpen"
       @close-modal="closeFilterModal"
       @apply-filter="applyFilter"

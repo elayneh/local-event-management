@@ -1,13 +1,19 @@
 <template>
-  <div class="bg-gradient-to-r from-blue-100 via-green-100 to-yellow-1">
-    <div class="w-full flex justify-center items-center pt-24">
-      <div class="items-center">
-        <img src="/assets/images/home.png" />
-      </div>
-      <div class="items-center">
-        <img src="/assets/images/home.png" />
+  <div
+    class="bg-gradient-to-r from-gray-100 via-red-300 to-gray-500 h-64 w-full"
+  >
+    <div class="w-full flex justify-center pt-24 pb-12 space-x-6">
+      <div
+        class="flex items-center bg-white shadow-lg rounded-lg p-6 transform hover:scale-105 transition-transform duration-300"
+      >
+        <img
+          :src="event_images[0]"
+          alt="Image 2"
+          class="w-full object-cover rounded-lg"
+        />
       </div>
     </div>
+
     <h2 class="text-2xl font-bold mb-4 text-center text-">Latest Events</h2>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -37,13 +43,9 @@
 import CustomEventCard from "@/components/CustomEventCard.vue";
 import { ref, computed } from "vue";
 import useFetchData from "~/composables/useFetchData";
+import defaultImage from "~/assets/images/home.png";
 
-import { useAuthStore } from "~/stores";
-const isAuthnticated = useAuthStore();
-
-const userId = isAuthnticated.id;
-const { events, categories, tags } = useFetchData(userId);
-
+const { events, categories, tags } = useFetchData();
 const visibleEvents = ref([]);
 
 const itemsPerPage = 3;
@@ -56,6 +58,16 @@ const updateVisibleEvents = () => {
     startIndex + itemsPerPage
   );
 };
+
+const event_images = computed(() => {
+  if (events?.value?.event_images) {
+    const imagesArray = events.value.event_images
+      .replace(/{|}/g, "")
+      .split(",");
+    return imagesArray.length > 0 ? imagesArray : [defaultImage];
+  }
+  return [defaultImage];
+});
 
 const loadMoreEvents = () => {
   if (hasMoreEvents) {

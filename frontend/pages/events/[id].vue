@@ -1,24 +1,24 @@
 <template>
-  <div class="pt-4 md:pt-24">
-    <div class="flex flex-col gap-8">
+<div class="bg-gradient-to-r from-gray-100 via-red-300 to-gray-500 h-64 w-full">
+    <div class="w-full flex-col gap-8 flex justify-center pt-24 pb-12 space-x-6">
       <div class="flex flex-col lg:flex-row gap-8 mx-12">
         <div class="lg:w-1/2 bg-gray-100 p-6 rounded-lg shadow-lg">
           <img
-            :src="event?.image?.length > 0 ? event.image[0] : defaultImage"
+            :src="event_images[0]"
             alt="Event Image"
-            class="w-full h-64 object-cover rounded-lg shadow-lg"
+            class="w-full h-64 object-cover animate-bounce rounded-lg shadow-lg transition-transform duration-500 ease-in-out transform hover:scale-105"
           />
 
           <div class="grid grid-cols-2 gap-2 mt-4">
             <div
-              v-for="(image, index) in event?.image?.slice(1) || []"
+              v-for="(image, index) in event_images.slice(1)"
               :key="index"
               class="h-32"
             >
               <img
                 :src="image"
                 alt="Additional Event Image"
-                class="w-full h-full object-cover rounded-lg shadow-md"
+                class="w-full animate-pulse h-full object-cover rounded shadow-lg transition-transform duration-500 ease-in-out transform hover:scale-105"
               />
             </div>
           </div>
@@ -28,22 +28,34 @@
           class="lg:w-1/2 bg-gray-100 p-6 rounded-lg shadow-lg flex flex-col"
         >
           <div class="flex-grow">
-            <h1 class="text-3xl font-bold mb-4">{{ event?.title || "" }}</h1>
+            <h1 class="text-3xl font-bold mb-4 text-center mb-12">
+              {{ event?.title || "" }}
+            </h1>
+            <p class="text-lg mb-12">
+              {{ event?.description || "" }}
+            </p>
             <p class="text-lg mb-2">
-              <strong>Description:</strong> {{ event?.description || "" }}
+              <strong>Posted at </strong> {{ event?.start_date || "" }}
+            </p>
+            <p class="text-lg mb-2">
+              <strong>The event will be closed at </strong>
+              {{ event?.end_date || "" }}
             </p>
             <p class="text-lg mb-2">
               <strong>Address:</strong> {{ event?.address || "" }}
             </p>
             <p class="text-lg mb-2">
-              <strong>Start Date:</strong> {{ event?.start_date || "" }}
+              <strong>Venue:</strong> {{ event?.venue || "" }}
             </p>
             <p class="text-lg mb-2">
-              <strong>End Date:</strong> {{ event?.end_date || "" }}
+              There are {{ event?.capacity }} available spaces
+            </p>
+            <p class="text-lg mb-2" v-if="event?.isFree === false">
+              ${{ event?.price }}
             </p>
             <p :class="[freeClass, 'inline-block']">{{ isFreeText }}</p>
           </div>
-          <div class="p-4 flex justify-between items-center">
+          <div class="pt-24 flex justify-between items-center">
             <div
               @click="toggleFollow"
               :class="{
@@ -72,7 +84,7 @@
             <div
               v-if="!event?.isFree"
               @click="toggleBuy"
-              :class="{ 'bg-green-500': isBought, 'bg-red-300': !isBought }"
+              :class="{ 'bg-gray-500': isBought, 'bg-green-700': !isBought }"
               class="px-4 py-2 rounded text-white cursor-pointer"
             >
               <span>{{ isBought ? "Bought" : "Buy" }}</span>
@@ -82,10 +94,15 @@
       </div>
 
       <div class="bg-gray-100 mx-12">
-        <p class="text-lg text-center pb-4"><strong>Event Location</strong></p>
+        <p class="text-lg text-center pb-4">
+          <strong>Event Location</strong>
+          <button @click="redirectToGoogleMap" class="ml-2 text-blue-500">
+            Show on Google Map
+          </button>
+        </p>
         <DisplayLeafletMap
-          :latitude="event?.location?.latitude"
-          :longitude="event?.location?.longitude"
+          :latitude="location[0]"
+          :longitude="location[1]"
           :address="event?.address"
         />
       </div>
@@ -93,6 +110,7 @@
     <CustomFooter />
   </div>
 </template>
+
 <script setup>
 import { ref, computed, watch } from "vue";
 import { useRoute } from "vue-router";
@@ -100,6 +118,7 @@ import { useQuery } from "@vue/apollo-composable";
 import defaultImage from "@/assets/images/home.png";
 import DisplayLeafletMap from "~/components/DisplayLeafletMap.vue";
 import getEvent from "~/graphql/queries/events/getSingleEvent.gql";
+import { faL } from "@fortawesome/free-solid-svg-icons";
 
 const event = ref(null);
 const isBookmarked = ref(false);
@@ -109,10 +128,8 @@ const isBought = ref(false);
 const route = useRoute();
 const { id } = route.params;
 
-// Use Apollo's useQuery to fetch the event data
 const { result, loading, error } = useQuery(getEvent, { id });
 
-// Watch for changes in the result to assign the event
 watch(
   () => result.value,
   (newValue) => {
@@ -121,6 +138,21 @@ watch(
     }
   }
 );
+
+const event_images = computed(() => {
+  if (event?.value?.event_images) {
+    const imagesArray = event.value.event_images.replace(/{|}/g, "").split(",");
+    return imagesArray.length > 0 ? imagesArray : [defaultImage];
+  }
+  return [defaultImage];
+});
+
+const location = computed(() => {
+  if (event.value?.location) {
+    return event.value.location.replace(/{|}/g, "").split(",");
+  }
+  return [0, 0]; // Default to [0, 0] or another valid default location
+});
 
 const toggleFollow = () => {
   isFollowing.value = !isFollowing.value;
@@ -134,7 +166,6 @@ const toggleBuy = () => {
   isBought.value = !isBought.value;
 };
 
-// Computed properties for display logic
 const isFreeText = computed(() => (event.value?.isFree ? "Free" : "Paid"));
 
 const freeClass = computed(() =>
@@ -142,4 +173,10 @@ const freeClass = computed(() =>
     ? "bg-green-300 text-white px-2 py-1 rounded"
     : "bg-red-800 text-white px-2 py-1 rounded"
 );
+
+const redirectToGoogleMap = () => {
+  const [latitude, longitude] = location.value;
+  const url = `https://www.google.com/maps?q=${latitude},${longitude}`;
+  window.open(url, "_blank");
+};
 </script>

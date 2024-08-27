@@ -7,7 +7,6 @@ export const unAuthenticatedRoutes = [
   "/users/login",
   "/users/register",
   "/users/profile/:id",
-  "/users/",
   "/users/unauthorized",
 ];
 
@@ -16,9 +15,9 @@ export const adminRoutes = [
   "/events/admin-event",
   "/admin/users",
   "/admin/events",
-  "/categories/update/:id",
-  "/categories/delete/:id",
-  "/categories",
+  "/admin/categories/update/:id",
+  "/admin/categories/delete/:id",
+  "/admin/categories",
 ];
 
 export const userRoutes = [
@@ -32,4 +31,5 @@ export const userRoutes = [
   "/events/update",
   "/events/user-event",
   "/user/events/create-event",
+  "/user",
 ];

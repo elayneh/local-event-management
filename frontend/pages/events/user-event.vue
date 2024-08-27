@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-gradient-to-r from-blue-100 via-green-100 to-yellow-1">
+<div class="bg-gradient-to-r from-gray-100 via-red-300 to-gray-500 h-64 w-full">
     <div class="w-full flex justify-center items-center pt-24">
       <div class="items-center">
         <img src="/assets/images/home.png" />

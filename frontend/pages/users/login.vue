@@ -1,55 +1,59 @@
 <template>
   <div
-    class="min-h-screen flex flex-col items-center justify-center bg-gradient-to-r from-blue-100 via-green-100 to-yellow-100"
+    class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50"
   >
-    <CustomCard title="Login">
-      <template #body>
-        <DynamicForm
-          ref="DynamicForm"
-          :schema="formSchema"
-          :submitHandler="submitHandler"
-        >
-          <div>
-            <div class="flex items-center justify-center gap-4 mt-4">
-              <button
-                type="submit"
-                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-              >
-                Login
-              </button>
-              <button
-                type="button"
-                @click="clearForm"
-                class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-              >
-                Clear
-              </button>
-            </div>
-            <div>
-              <p class="mt-10 text-gray-700 text-center">
-                Don't have an account?
-                <NuxtLink
-                  class="text-blue-500 hover:text-blue-700 font-semibold ml-1"
-                  to="/users/register"
-                  ><span>Register</span></NuxtLink
+    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+      <CustomCard title="Login">
+        <template #body>
+          <DynamicForm
+            ref="DynamicForm"
+            :schema="formSchema"
+            :submitHandler="submitHandler"
+          >
+            <div class="mt-24">
+              <div class="flex items-center justify-center gap-4 mt-4">
+                <button
+                  type="submit"
+                  class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                 >
-              </p>
+                  Login
+                </button>
+                <button
+                  type="button"
+                  @click="clearForm"
+                  class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                >
+                  Clear
+                </button>
+              </div>
+              <div class="mt-10 text-gray-700 text-center">
+                <p>
+                  Don't have an account?
+                  <NuxtLink
+                    class="text-blue-500 hover:text-blue-700 font-semibold ml-1"
+                    to="/users/register"
+                  >
+                    Register
+                  </NuxtLink>
+                </p>
+              </div>
             </div>
-          </div>
-        </DynamicForm>
-      </template>
-    </CustomCard>
+          </DynamicForm>
+        </template>
+      </CustomCard>
+    </div>
   </div>
 </template>
 
 <script setup>
-import * as yup from "yup";
+import { ref } from "vue";
 import CustomCard from "~/components/CustomCard.vue";
 import DynamicForm from "~/components/DynamicForm.vue";
 import { useAuthStore } from "~/stores";
 import login from "~/graphql/mutations/users/login.gql";
 import { toast } from "vue3-toastify";
 import * as JsCookie from "js-cookie";
+import * as yup from "yup";
 
 const Cookies = JsCookie.default;
 
@@ -98,15 +102,15 @@ function submitHandler(values) {
     authenticationStore.setId(result.data.login.id);
     authenticationStore.setUser(result.data.login.id);
     authenticationStore.setRole(role);
-    role == "user"
+    role === "user"
       ? navigateTo("/user")
-      : role == "admin"
+      : role === "admin"
       ? navigateTo("/admin")
       : "/";
   });
   onError((error) => {
     console.log("Error: ", error.message);
-    toast.error("Something want wrong try again", {
+    toast.error("Invalid Email or Password", {
       transition: toast.TRANSITIONS.FLIP,
       position: toast.POSITION.TOP_RIGHT,
     });

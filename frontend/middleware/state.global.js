@@ -15,7 +15,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 
   if (!authStore.isAuthenticated) {
     if (isUnAuthenticatedRoute) {
-      return; // Allow unauthenticated routes to proceed
+      return;
     } else {
       return navigateTo("/users/unauthorized");
     }

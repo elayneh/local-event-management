@@ -14,7 +14,7 @@
           Yes
         </button>
         <button
-          @click="navigateTo('/categories')"
+          @click="navigateTo('/admin/categories')"
           class="bg-gray-700 text-white px-4 py-2 rounded-full"
         >
           No
@@ -41,7 +41,7 @@ const deleteHandler = () => {
   deleteCategoryMutation({ id: categoryId })
     .then(({ data }) => {
       console.log("Category deleted", data);
-      router.push("/categories"); // Navigate back after deletion
+      router.push("/admin/categories");
     })
     .catch((err) => {
       console.error("Error deleting category:", err);

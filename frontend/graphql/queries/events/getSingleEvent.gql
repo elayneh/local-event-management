@@ -1,22 +1,50 @@
 query GetSingleEvent($id: uuid!) {
   events_by_pk(id: $id) {
-    title
     address
-    created_at
+    capacity
+    category_id
     description
     end_date
+    event_images
     events_category {
       description
       id
       name
     }
+    events_bookmarks {
+      user_id
+      id
+      event_id
+      created_at
+    }
     events_event_tags {
+      event_id
       tag_id
     }
-    events_event_images {
+    events_followers {
+      event_id
       id
-      image_url
-      is_featured
+      user_id
     }
+    events_tickets {
+      id
+      event_id
+      price
+      purchase_date
+      quantity
+      status
+      user_id
+    }
+    events_user {
+      username
+    }
+    id
+    is_free
+    location
+    price
+    start_date
+    title
+    uid
+    venue
   }
 }

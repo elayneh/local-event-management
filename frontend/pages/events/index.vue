@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-gradient-to-r from-blue-100 via-green-100 to-yellow-1">
+<div class="bg-gradient-to-r from-gray-100 via-red-300 to-gray-500 h-64 w-full">
     <div class="fixed w-full flex justify-center items-center pt-2">
       <div class="flex justify-center items-center space-x-4">
         <ul class="m-2">
@@ -218,7 +218,6 @@ const visibleEvents = ref([]);
 const itemsPerPage = 3;
 const currentPage = ref(1);
 
-console.log("Events: ", events);
 const updateVisibleEvents = () => {
   const startIndex = (currentPage.value - 1) * itemsPerPage;
   visibleEvents.value = events.value.slice(

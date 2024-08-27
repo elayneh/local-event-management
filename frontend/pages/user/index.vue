@@ -1,8 +1,15 @@
 <template>
-  <div class="bg-gradient-to-r from-blue-100 via-green-100 to-yellow-100">
-    <div class="w-full flex justify-center items-center pt-24 space-x-4">
-      <img src="/assets/images/home.png" alt="Home Image 1" />
-      <img src="/assets/images/home.png" alt="Home Image 2" />
+<div class="bg-gradient-to-r from-gray-100 via-red-300 to-gray-500 h-64 w-full">
+    <div class="w-full flex justify-center pt-24 pb-12 space-x-6">
+      <div
+        class="flex items-center bg-white shadow-lg rounded-lg p-6 transform hover:scale-105 transition-transform duration-300"
+      >
+        <img
+          src="/assets/images/home.png"
+          alt="Image 2"
+          class="w-full object-cover rounded-lg"
+        />
+      </div>
     </div>
 
     <h2 class="text-2xl font-bold mb-4 text-center">Latest Events</h2>
@@ -44,11 +51,8 @@ import FeaturesComponent from "@/components/FeaturesComponent.vue";
 import CustomFooter from "@/components/CustomFooter.vue";
 import { ref, computed, watchEffect } from "vue";
 import useFetchData from "~/composables/useFetchData";
-import { useAuthStore } from "~/stores";
-const isAuthnticated = useAuthStore();
 
-const userId = isAuthnticated.id;
-const { events, categories, tags } = useFetchData(userId);
+const { events, categories, tags } = useFetchData();
 
 const visibleEvents = ref([]);
 const itemsPerPage = 3;

@@ -1,17 +1,18 @@
 query GetEvents {
-  events(order_by: { created_at: asc }, where: { end_date: {} }) {
+  events(order_by: { end_date: asc }) {
     address
+    capacity
     category_id
-    created_at
-    end_date
     description
+    end_date
+    event_images
     id
     is_free
     location
     price
     start_date
     title
-    updated_at
+    uid
     venue
   }
 }

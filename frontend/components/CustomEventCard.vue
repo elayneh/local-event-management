@@ -8,7 +8,7 @@
     class="w-full max-w-md mx-auto p-4 hover:bg-indigo-300"
   >
     <img
-      :src="computedImage"
+      :src="event_images[0]"
       alt="Event Image"
       class="w-full h-48 object-cover rounded-lg"
     />
@@ -34,7 +34,6 @@
     <div
       class="p-4 rounded-lg border border-gray-200 flex justify-between items-center"
     >
-      <!-- Follow Button -->
       <div
         @click="toggleFollow"
         :class="{ 'bg-gray-500': isFollowing, 'bg-gray-300': !isFollowing }"
@@ -54,7 +53,6 @@
         />
       </div>
 
-      <!-- Buy Button -->
       <div
         @click="toggleBuy"
         v-if="!isFree"
@@ -86,9 +84,9 @@ const isBookmarked = ref(false);
 const isFollowing = ref(false);
 const isBought = ref(false);
 
-const computedImage = computed(() => props.event?.image || defaultImage);
 
 const toggleFollow = () => {
+  i()
   isFollowing.value = !isFollowing.value;
 };
 const toggleBookmark = () => {
@@ -103,6 +101,16 @@ const truncatedDescription = computed(() => {
   return props.event?.description?.length > maxLength
     ? props.event.description.slice(0, maxLength) + "..."
     : props.event?.description || "N/A";
+});
+
+const event_images = computed(() => {
+  if (props.event?.event_images) {
+    const imagesArray = props.event.event_images
+      .replace(/{|}/g, "")
+      .split(",");
+    return imagesArray || defaultImage;
+  }
+  return defaultImage;
 });
 
 const isFree = computed(() => props.event?.is_free);

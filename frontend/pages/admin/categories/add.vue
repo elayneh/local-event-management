@@ -81,7 +81,7 @@ onDone((result) => {
     transition: toast.TRANSITIONS.FLIP,
     position: toast.POSITION.TOP_RIGHT,
   });
-  navigateTo("/categories");
+  navigateTo("/admin/categories");
 });
 
 onError((error) => {

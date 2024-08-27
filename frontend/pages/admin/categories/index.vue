@@ -15,14 +15,14 @@
         </template>
         <template #footer-left>
           <div class="bg-blue-500 px-8 py-2 rounded-full">
-            <NuxtLink :to="`/categories/update/${category.id}`">
-              <button class="text-white">Edit</button>
+            <NuxtLink :to="`/admin/categories/update/${category.id}`">
+              <button class="text-white">update</button>
             </NuxtLink>
           </div>
         </template>
         <template #footer-right>
           <div class="bg-red-500 px-4 py-2 rounded-full">
-            <NuxtLink :to="`/categories/delete/${category.id}`">
+            <NuxtLink :to="`/admin/categories/delete/${category.id}`">
               <button class="text-white">Delete</button>
             </NuxtLink>
           </div>
@@ -31,8 +31,8 @@
       <div
         class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-6 w-50 w-100"
       >
-        <NuxtLink to="/categories/add">
-          <img src="./../../assets/images/add.png" width="50px" />
+        <NuxtLink to="/admin/categories/add">
+          <img src="~/assets/images/add.png" width="50px" />
         </NuxtLink>
       </div>
     </div>

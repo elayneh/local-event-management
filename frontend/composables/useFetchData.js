@@ -3,25 +3,17 @@ import { useQuery } from "@vue/apollo-composable";
 import getEvents from "~/graphql/queries/events/getEvents.gql";
 import getCategories from "~/graphql/queries/categories/getCategories.gql";
 import getTags from "~/graphql/queries/tags/getTags.gql";
-import getBookmarkedEvents from "~/graphql/queries/bookmarks/getBookmarkedEvents.gql";
-import getFollowingEvents from "~/graphql/queries/following/getFollowingEvents.gql";
-import getTickets from "~/graphql/queries/tickets/getTickets.gql";
 
-export default function useFetchData(userId) {
+export default function useFetchData() {
   const events = ref([]);
   const categories = ref([]);
-  const bookmarkedEvents = ref([]);
-  const followingEvents = ref([]);
-  const tickets = ref([]);
   const tags = ref([]);
-
-  const pollingInterval = 10000;
 
   const {
     result: eventResult,
     loading: eventLoading,
     error: eventError,
-  } = useQuery(getEvents, null, { pollInterval: pollingInterval });
+  } = useQuery(getEvents);
   watch(eventResult, (newResult) => {
     if (newResult?.events) {
       events.value = newResult.events;
@@ -32,7 +24,7 @@ export default function useFetchData(userId) {
     result: categoryResult,
     loading: loadingCategories,
     error: categoryError,
-  } = useQuery(getCategories, null, { pollInterval: pollingInterval });
+  } = useQuery(getCategories);
   watch(categoryResult, (newResult) => {
     if (newResult?.categories) {
       categories.value = newResult.categories;
@@ -43,51 +35,10 @@ export default function useFetchData(userId) {
     result: tagResult,
     loading: loadingTags,
     error: tagError,
-  } = useQuery(getTags, null, { pollInterval: pollingInterval });
+  } = useQuery(getTags);
   watch(tagResult, (newResult) => {
     if (newResult?.tags) {
       tags.value = newResult.tags;
-    }
-  });
-
-  const {
-    result: bookmarkedEventsResult,
-    loading: loadingBookmarkedEvents,
-    error: bookmarkedEventsError,
-  } = useQuery(
-    getBookmarkedEvents,
-    { id: userId },
-    { pollInterval: pollingInterval }
-  );
-  watch(bookmarkedEventsResult, (newResult) => {
-    if (newResult?.bookmarkedEvents) {
-      bookmarkedEvents.value = newResult.bookmarkedEvents;
-    }
-  });
-
-  const {
-    result: followingEventsResult,
-    loading: loadingFollowingEvents,
-    error: followingEventsError,
-  } = useQuery(
-    getFollowingEvents,
-    { id: userId },
-    { pollInterval: pollingInterval }
-  );
-  watch(followingEventsResult, (newResult) => {
-    if (newResult?.followingEvents) {
-      followingEvents.value = newResult.followingEvents;
-    }
-  });
-
-  const {
-    result: ticketsResult,
-    loading: loadingTickets,
-    error: ticketsError,
-  } = useQuery(getTickets, { id: userId }, { pollInterval: pollingInterval });
-  watch(ticketsResult, (newResult) => {
-    if (newResult?.tickets) {
-      tickets.value = newResult.tickets;
     }
   });
 
@@ -95,16 +46,11 @@ export default function useFetchData(userId) {
     events,
     categories,
     tags,
-    followingEvents,
-    tickets,
-    bookmarkedEvents,
     eventLoading,
     loadingCategories,
     loadingTags,
-    loadingBookmarkedEvents,
     eventError,
     categoryError,
     tagError,
-    bookmarkedEventsError,
   };
 }
