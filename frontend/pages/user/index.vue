@@ -8,9 +8,7 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <div v-for="event in events" :key="event.id">
-        <!-- <NuxtLink :to="`/events/${event.id}`"> -->
-          <CustomEventCard :event="event" />
-        <!-- </NuxtLink> -->
+        <CustomEventCard :event="event" />
       </div>
     </div>
 
@@ -47,11 +45,10 @@ import HomepageImage from "~/components/HomepageImage.vue";
 
 const { events, categories, tags } = useFetchData();
 
-console.log("Events: ", events)
-
 const visibleEvents = ref([]);
 const itemsPerPage = 3;
 const currentPage = ref(1);
+
 
 watchEffect(() => {
   const startIndex = (currentPage.value - 1) * itemsPerPage;

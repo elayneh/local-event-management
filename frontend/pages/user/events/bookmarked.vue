@@ -49,13 +49,14 @@ import TagsCategoriesComponent from "~/components/TagsCategoriesComponent.vue";
 import FeaturesComponent from "~/components/FeaturesComponent.vue";
 import CustomFooter from "~/components/CustomFooter.vue";
 import { ref, computed, onMounted } from "vue";
-import useFetchData from "~/composables/useFetchData";
+import useUserFetchData from "~/composables/useUserFetchData";
 import { useAuthStore } from "~/stores";
 const isAuthnticated = useAuthStore();
 
 const userId = isAuthnticated.id;
-const { bookmarkedEvents, tags, categories } = useFetchData(userId);
-
+const { bookmarkedEvents, tags, categories } = useUserFetchData(userId);
+console.log("Book: ", bookmarkedEvents)
+console.log(userId)
 const visibleEvents = ref([]);
 const itemsPerPage = 3;
 const currentPage = ref(1);

@@ -21,7 +21,7 @@
               <button @click.stop="toggleDropdown">
                 <font-awesome-icon
                   :icon="['fas', 'caret-down']"
-                  class="text-gray-600 pl-4"
+                  class="text-zinc-950 pl-4"
                 />
               </button>
               <ul
@@ -54,20 +54,6 @@
                     to="/user/events/tickets"
                     class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
                     >Purchased Events</NuxtLink
-                  >
-                </li>
-                <li>
-                  <NuxtLink
-                    to="#"
-                    class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                    >Option 5</NuxtLink
-                  >
-                </li>
-                <li>
-                  <NuxtLink
-                    to="#"
-                    class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                    >Option 6</NuxtLink
                   >
                 </li>
               </ul>
@@ -191,7 +177,7 @@ const openLogoutModal = () => {
 };
 
 const closeLogoutModal = () => {
-  window.location.reload(); // This reloads the current page
+  window.location.reload();
 
   isLogoutModalOpen.value = false;
 };

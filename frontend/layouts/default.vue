@@ -82,7 +82,6 @@ const closeFilterModal = () => {
 };
 
 const applyFilter = (selectedFields) => {
-  console.log("Apply filter with:", selectedFields);
   // Implement your filter logic here
   closeFilterModal();
 };

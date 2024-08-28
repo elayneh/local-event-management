@@ -1,7 +1,7 @@
 import { ref, watch } from "vue";
 import { useQuery } from "@vue/apollo-composable";
 import getBookmarkedEvents from "~/graphql/queries/bookmarks/getBookmarkedEvents.gql";
-import getFollowingEvents from "~/graphql/queries/following/getFollowingEvents.gql";
+import GetFollowingEvents from "~/graphql/queries/following/getFollowingEvents.gql";
 import getTickets from "~/graphql/queries/tickets/getTickets.gql";
 import getUserEvents from "~/graphql/queries/events/getUserEvents.gql";
 
@@ -25,17 +25,13 @@ export default function useUserFetchData(user_id) {
     result: bookmarkedEventsResult,
     loading: loadingBookmarkedEvents,
     error: bookmarkedEventsError,
-  } = useQuery(
-    getBookmarkedEvents,
-    { id: user_id },
-    { pollInterval: pollingInterval }
-  );
+  } = useQuery(getBookmarkedEvents, { id: user_id });
   const {
     result: followingEventsResult,
     loading: loadingFollowingEvents,
     error: followingEventsError,
   } = useQuery(
-    getFollowingEvents,
+    GetFollowingEvents,
     { id: user_id },
     { pollInterval: pollingInterval }
   );
@@ -46,20 +42,20 @@ export default function useUserFetchData(user_id) {
   } = useQuery(getTickets, { id: user_id }, { pollInterval: pollingInterval });
 
   watch(userEventsResult, (newResult) => {
-    if (newResult?.events) {
-      userEvents.value = newResult.events;
+    if (newResult?.userEvents) {
+      userEvents.value = newResult.userEvents;
     }
   });
 
   watch(bookmarkedEventsResult, (newResult) => {
-    if (newResult?.events) {
-      bookmarkedEvents.value = newResult.events;
+    if (newResult?.bookmarkedEvents) {
+      bookmarkedEvents.value = newResult.bookmarkedEvents;
     }
   });
 
   watch(followingEventsResult, (newResult) => {
-    if (newResult?.events) {
-      followingEvents.value = newResult.events;
+    if (newResult?.followingEvents) {
+      followingEvents.value = newResult.followingEvents;
     }
   });
 

@@ -1,0 +1,20 @@
+mutation DeleteFollowers($user_id: uuid!, $event_id: uuid!) {
+  delete_followers(
+    where: { event_id: { _eq: $event_id }, user_id: { _eq: $user_id } }
+  ) {
+    returning {
+      id
+    }
+  }
+}
+
+
+mutation InsertFollowers($user_id: uuid!, $event_id: uuid!) {
+  insert_followers(objects: { event_id: $event_id, user_id: $user_id }) {
+    returning {
+      event_id
+      id
+      user_id
+    }
+  }
+}

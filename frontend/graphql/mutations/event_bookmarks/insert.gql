@@ -1,0 +1,9 @@
+mutation InsertBookmarks($user_id: uuid!, $event_id: uuid!) {
+  insert_bookmarks(objects: { event_id: $event_id, user_id: $user_id }) {
+    returning {
+      event_id
+      user_id
+      id
+    }
+  }
+}

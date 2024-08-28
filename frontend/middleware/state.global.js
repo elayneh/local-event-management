@@ -23,11 +23,10 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     }
   } else {
     if (userRole === "admin" && !isAdminRoute) {
-      return navigateTo("/admin"); // Redirect to the admin dashboard if not on an admin route
+      return navigateTo("/admin");
     } else if (userRole === "user" && !isUserRoute) {
-      return navigateTo("/user"); // Redirect to the user dashboard if not on a user route
+      // return navigateTo("/user");
     } else if (!isAdminRoute && !isUserRoute) {
-      // Prevent redirect loops by ensuring the current path is not an unauthorized page
       if (to.path !== "/users/unauthorized") {
         return navigateTo("/users/unauthorized");
       }

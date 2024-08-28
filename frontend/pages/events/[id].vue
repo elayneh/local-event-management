@@ -2,17 +2,9 @@
   <div
     class="bg-gradient-to-r from-gray-100 via-red-300 to-gray-500 h-64 w-full"
   >
-    <div class="w-full flex justify-center items-center py-24 gap-24">
+    <div class="w-full flex justify-center items-center py-24">
       <div>
         <img :src="event_images[0]" class="rounded-lg shadow-lg" />
-      </div>
-      <div>
-        <h2 class="text-xl font-bold mt-4 text-gray-800">
-          Discover Events Near You
-        </h2>
-        <p class="text-gray-600">
-          Find and attend local events that match your interests.
-        </p>
       </div>
     </div>
     <div
@@ -75,13 +67,10 @@
           <div class="pt-24 flex justify-between items-center">
             <div
               @click="toggleFollow"
-              :class="{
-                'bg-gray-300': isFollowing,
-                'bg-gray-500': !isFollowing,
-              }"
+              :class="{ 'bg-gray-500': following, 'bg-gray-300': !following }"
               class="px-4 py-2 rounded text-white cursor-pointer"
             >
-              <span>{{ isFollowing ? "Following" : "Follow" }}</span>
+              <span>{{ following ? "Following" : "Follow" }}</span>
             </div>
 
             <div class="flex items-center justify-center h-full">
@@ -90,8 +79,8 @@
                 :class="[
                   'cursor-pointer',
                   {
-                    'text-gray-400': isBookmarked,
-                    'text-gray-700': !isBookmarked,
+                    'text-yellow-500': bookmark,
+                    'text-gray-400': !bookmark,
                   },
                 ]"
                 @click="toggleBookmark"
@@ -134,12 +123,15 @@ import { useQuery } from "@vue/apollo-composable";
 import defaultImage from "@/assets/images/home.png";
 import getEvent from "~/graphql/queries/events/getSingleEvent.gql";
 import { useAuthStore } from "~/stores";
+import { InsertFollowers } from "~/graphql/mutations/event_followers/insert.gql";
+import { DeleteFollowers } from "~/graphql/mutations/event_followers/delete.gql";
+import { InsertBookmarks } from "~/graphql/mutations/event_bookmarks/insert.gql";
+import { DeleteBookmarks } from "~/graphql/mutations/event_bookmarks/delete.gql";
 
 const isAuthenticated = useAuthStore().isAuthenticated;
-
+const user_id = useAuthStore().id;
+const router = useRoute();
 const event = ref(null);
-const isBookmarked = ref(false);
-const isFollowing = ref(false);
 const isBought = ref(false);
 
 const route = useRoute();
@@ -147,19 +139,35 @@ const { id } = route.params;
 
 const { result, loading, error } = useQuery(getEvent, { id });
 
+const following = ref(false);
+const bookmark = ref(false);
+
 watch(
   result,
   (newValue) => {
     if (newValue && newValue.events_by_pk) {
       event.value = newValue.events_by_pk;
+
+      // Update the following state based on the loaded event data
+      following.value = event.value.events_followers?.some(
+        (follow) => follow.user_id === user_id
+      );
+
+      // Update the bookmark state based on the loaded event data
+      bookmark.value = event.value.events_bookmarks?.some(
+        (bookmark) => bookmark.user_id === user_id
+      );
     }
   },
   { immediate: true }
 );
+console.log("EVENTS: ", event);
 
 const event_images = computed(() => {
   if (event.value?.event_images) {
-    const imagesArray = event.value.event_images.replace(/{|}/g, "").split(",");
+    const imagesArray = event?.value.event_images
+      .replace(/{|}/g, "")
+      .split(",");
     return imagesArray.length > 0 ? imagesArray : [defaultImage];
   }
   return [defaultImage];
@@ -175,14 +183,101 @@ const location = computed(() => {
   return [0, 0]; // Default to [0, 0] or another valid default location
 });
 
-const toggleFollow = () => {
-  isFollowing.value = !isFollowing.value;
+const {
+  mutate: InsertFollowersMutation,
+  onDone: onInsertFollowersDone,
+  loading: loadingFollowers,
+  onError: onInsertFollowersError,
+} = useAuthenticatedMutation(InsertFollowers);
+
+const {
+  mutate: DeleteFollowersMutation,
+  onDone: onDeleteFollowersDone,
+  loading: loadingDeleteFollowers,
+  onError: onDeleteFollowersError,
+} = useAuthenticatedMutation(DeleteFollowers);
+
+// bookmark
+const {
+  mutate: InsertBookmarkMutation,
+  onDone: onInsertBookmarkDone,
+  loading: loadingBookmark,
+  onError: onInsertBookmarkError,
+} = useAuthenticatedMutation(InsertBookmarks);
+
+const {
+  mutate: DeleteBookmarkMutation,
+  onDone: onDeleteBookmarkDone,
+  loading: loadingDeleteBookmark,
+  onError: onDeleteBookmarkError,
+} = useAuthenticatedMutation(DeleteBookmarks);
+
+// Toggle following
+const toggleFollow = async () => {
+  if (!user_id) {
+    return router.push("/users/login");
+  }
+
+  const isCurrentlyFollowing = following.value;
+  try {
+    if (!isCurrentlyFollowing) {
+      const followingPayload = {
+        user_id: user_id,
+        event_id: event?.value.id,
+      };
+      await InsertFollowersMutation(followingPayload);
+      following.value = true;
+    } else {
+      const unFollowingPayload = {
+        user_id: user_id,
+        event_id: event?.value.id,
+      };
+      await DeleteFollowersMutation(unFollowingPayload);
+      following.value = false;
+    }
+  } catch (error) {
+    console.log(
+      `Error occurred while ${
+        isCurrentlyFollowing ? "unfollowing" : "following"
+      } the event:`,
+      error
+    );
+  }
 };
 
-const toggleBookmark = () => {
-  isBookmarked.value = !isBookmarked.value;
+// toggle bookmark
+const toggleBookmark = async () => {
+  if (!user_id) {
+    return router.push("/users/login");
+  }
+  const isCurrentlyBookmarked = bookmark.value;
+  try {
+    if (!isCurrentlyBookmarked) {
+      const bookmarkPayload = {
+        user_id: user_id,
+        event_id: event?.value.id,
+      };
+      await InsertBookmarkMutation(bookmarkPayload);
+      bookmark.value = true;
+    } else {
+      const unBookmarkPayload = {
+        user_id: user_id,
+        event_id: event?.value.id,
+      };
+      await DeleteBookmarkMutation(unBookmarkPayload);
+      bookmark.value = false;
+    }
+  } catch (error) {
+    console.log(
+      `Error occurred while ${
+        isCurrentlyBookmarked ? "unbookmarked" : "bookmark"
+      } the event:`,
+      error
+    );
+  }
 };
 
+///////////////////
 const toggleBuy = () => {
   isBought.value = !isBought.value;
 };

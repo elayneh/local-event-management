@@ -5,7 +5,7 @@
       'transition-transform duration-300 ease-in-out transform hover:scale-105',
       customClass,
     ]"
-    class="w-full max-w-md mx-auto p-4 hover:bg-indigo-300"
+    class="w-full max-w-md mx-auto p-4 hover:bg-indigo-50"
   >
     <NuxtLink :to="`/events/${event.id}`">
       <img
@@ -48,10 +48,10 @@
         <font-awesome-icon
           :icon="['fas', 'bookmark']"
           :class="[
-            'cursor-pointer',
+            'cursor-pointer transition-colors duration-200',
             {
-              'text-gray-400': isBookmarked.value,
-              'text-gray-700': !isBookmarked.value,
+              'text-yellow-500': bookmark,
+              'text-gray-400': !bookmark,
             },
           ]"
           @click="toggleBookmark"
@@ -60,14 +60,14 @@
 
       <div
         @click="toggleBuy"
-        v-if="!isFree.value"
+        v-if="!isFree"
         :class="{
-          'bg-gray-200': isBought.value,
-          'bg-green-500': !isBought.value,
+          'bg-gray-200': isBought,
+          'bg-green-500': !isBought,
         }"
         class="px-4 py-2 rounded text-white cursor-pointer"
       >
-        <span>{{ isBought.value ? "Bought" : "Buy" }}</span>
+        <span>{{ isBought ? "Bought" : "Buy" }}</span>
       </div>
     </div>
   </div>
@@ -80,8 +80,11 @@ import { useAuthStore } from "~/stores";
 import { useRouter } from "vue-router";
 import { InsertFollowers } from "~/graphql/mutations/event_followers/insert.gql";
 import { DeleteFollowers } from "~/graphql/mutations/event_followers/delete.gql";
+import { InsertBookmarks } from "~/graphql/mutations/event_bookmarks/insert.gql";
+import { DeleteBookmarks } from "~/graphql/mutations/event_bookmarks/delete.gql";
 
 const authStore = useAuthStore();
+const isAuthenticated = authStore.isAuthenticated;
 const user_id = authStore.id;
 const router = useRouter();
 
@@ -96,16 +99,18 @@ const props = defineProps({
   },
 });
 
-const isBookmarked = ref(false);
 const isBought = ref(false);
 
+const isFree = ref(props.event?.is_free);
 const following = ref(
   props.event?.events_followers?.some((follow) => follow?.user_id === user_id)
 );
+const bookmark = ref(
+  props.event?.events_bookmarks?.some(
+    (bookmark) => bookmark?.user_id === user_id
+  )
+);
 
-console.log("Event Object: ", props.event);
-
-console.log("EVents: ", props.event?.event_followers?.user_id, "\n", user_id);
 const {
   mutate: InsertFollowersMutation,
   onDone: onInsertFollowersDone,
@@ -120,6 +125,22 @@ const {
   onError: onDeleteFollowersError,
 } = useAuthenticatedMutation(DeleteFollowers);
 
+// bookmark
+const {
+  mutate: InsertBookmarkMutation,
+  onDone: onInsertBookmarkDone,
+  loading: loadingBookmark,
+  onError: onInsertBookmarkError,
+} = useAuthenticatedMutation(InsertBookmarks);
+
+const {
+  mutate: DeleteBookmarkMutation,
+  onDone: onDeleteBookmarkDone,
+  loading: loadingDeleteBookmark,
+  onError: onDeleteBookmarkError,
+} = useAuthenticatedMutation(DeleteBookmarks);
+
+// Toggle following
 const toggleFollow = async () => {
   if (!user_id) {
     return router.push("/users/login");
@@ -152,8 +173,36 @@ const toggleFollow = async () => {
   }
 };
 
-const toggleBookmark = () => {
-  isBookmarked.value = !isBookmarked.value;
+// toggle bookmark
+const toggleBookmark = async () => {
+  if (!user_id) {
+    return router.push("/users/login");
+  }
+  const isCurrentlyBookmarked = bookmark.value;
+  try {
+    if (!isCurrentlyBookmarked) {
+      const bookmarkPayload = {
+        user_id: user_id,
+        event_id: props.event?.id,
+      };
+      await InsertBookmarkMutation(bookmarkPayload);
+      bookmark.value = true;
+    } else {
+      const unBookmarkPayload = {
+        user_id: user_id,
+        event_id: props.event?.id,
+      };
+      await DeleteBookmarkMutation(unBookmarkPayload);
+      bookmark.value = false;
+    }
+  } catch (error) {
+    console.log(
+      `Error occurred while ${
+        isCurrentlyBookmarked ? "unbookmarked" : "bookmark"
+      } the event:`,
+      error
+    );
+  }
 };
 
 const toggleBuy = () => {
@@ -178,8 +227,6 @@ const event_images = computed(() => {
   return [defaultImage];
 });
 
-const isFree = computed(() => props.event?.is_free);
-
 const isFreeText = computed(() => (isFree.value ? "Free" : "Paid"));
 
 const freeClass = computed(() =>
@@ -193,4 +240,6 @@ const formatDate = (dateString) => {
   const date = new Date(dateString);
   return date.toLocaleDateString();
 };
+
+definePageMeta({ layout: isAuthenticated ? "authenticated" : "" });
 </script>

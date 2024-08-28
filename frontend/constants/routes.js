@@ -21,7 +21,6 @@ export const adminRoutes = [
 ];
 
 export const userRoutes = [
-  "/events",
   "/user/events/:id",
   "/user/events",
   "/user/events/bookmarked",

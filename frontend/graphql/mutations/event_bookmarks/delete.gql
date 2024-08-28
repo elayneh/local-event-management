@@ -1,0 +1,9 @@
+mutation DeleteBookmarks($user_id: uuid!, $event_id: uuid!) {
+  delete_bookmarks(
+    where: { event_id: { _eq: $event_id }, user_id: { _eq: $user_id } }
+  ) {
+    returning {
+      id
+    }
+  }
+}
