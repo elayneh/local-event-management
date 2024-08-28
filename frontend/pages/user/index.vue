@@ -1,16 +1,8 @@
 <template>
-<div class="bg-gradient-to-r from-gray-100 via-red-300 to-gray-500 h-64 w-full">
-    <div class="w-full flex justify-center pt-24 pb-12 space-x-6">
-      <div
-        class="flex items-center bg-white shadow-lg rounded-lg p-6 transform hover:scale-105 transition-transform duration-300"
-      >
-        <img
-          src="/assets/images/home.png"
-          alt="Image 2"
-          class="w-full object-cover rounded-lg"
-        />
-      </div>
-    </div>
+  <div
+    class="bg-gradient-to-r from-gray-100 via-red-300 to-gray-500 h-64 w-full"
+  >
+    <HomepageImage />
 
     <h2 class="text-2xl font-bold mb-4 text-center">Latest Events</h2>
 
@@ -51,6 +43,7 @@ import FeaturesComponent from "@/components/FeaturesComponent.vue";
 import CustomFooter from "@/components/CustomFooter.vue";
 import { ref, computed, watchEffect } from "vue";
 import useFetchData from "~/composables/useFetchData";
+import HomepageImage from "~/components/HomepageImage.vue";
 
 const { events, categories, tags } = useFetchData();
 

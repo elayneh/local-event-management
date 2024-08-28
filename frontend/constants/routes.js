@@ -29,7 +29,6 @@ export const userRoutes = [
   "/user/events/tickets",
   "/events/:id",
   "/events/update",
-  "/events/user-event",
   "/user/events/create-event",
   "/user",
 ];

@@ -20,10 +20,10 @@
                 </button>
                 <button
                   type="button"
-                  @click="clearForm"
+                  @click="navigateTo('/')"
                   class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                 >
-                  Clear
+                  Cancel
                 </button>
               </div>
               <div class="mt-10 text-gray-700 text-center">
@@ -89,7 +89,6 @@ function submitHandler(values) {
     email: values.email,
     password: values.password,
   };
-  console.log("Login form data: ", loginCredentials);
   mutate(loginCredentials);
   onDone((result) => {
     const role = result.data.login.role;

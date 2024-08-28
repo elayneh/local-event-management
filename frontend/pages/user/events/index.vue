@@ -3,52 +3,19 @@
     class="bg-gradient-to-r from-gray-100 via-red-300 to-gray-500 h-64 w-full"
   >
     <HomepageImage />
-    <div class="fixed w-full flex justify-center items-center pt-2">
-      <div class="flex justify-center items-center space-x-4">
-        <ul class="m-2">
-          <li class="relative flex items-center">
-            <input
-              @click="search"
-              class="w-96 h-10 rounded-full pl-4 pr-10 bg-gray-300 flex items-center focus:outline-none focus:ring-1 focus:ring-gray-400"
-              placeholder="Search..."
-            />
-            <font-awesome-icon
-              :icon="['fas', 'search']"
-              class="text-gray-600 absolute right-4"
-            />
-          </li>
-        </ul>
-
-        <ul class="m-2">
-          <li class="relative">
-            <button @click="openFilterModal" class="flex items-center">
-              <font-awesome-icon
-                :icon="['fas', 'filter']"
-                class="text-gray-600"
-              />
-              <span class="ml-2 text-gray-500">Filter</span>
-            </button>
-          </li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="w-full flex justify-center items-center py-10">
-      <div class="items-center">
-        <img src="/assets/images/home.png" />
-      </div>
-      <div class="items-center">
-        <img src="/assets/images/home.png" />
-      </div>
-    </div>
-
-    <h2 class="text-2xl font-bold mb-4 text-center">Latest Events</h2>
+    <h2 class="text-2xl font-bold mb-4 text-center">Your Events</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <div v-for="event in events" :key="event.id">
+      <div v-for="event in visibleEvents" :key="event.id">
         <NuxtLink :to="`/events/${event.id}`">
           <CustomEventCard :event="event" />
         </NuxtLink>
       </div>
+    </div>
+    <div v-if="userEventsLoading" class="text-center">
+      <p>Loading...</p>
+    </div>
+    <div v-if="userEventsError" class="text-red-500">
+      <p>Error loading events: {{ userEventsError.message }}</p>
     </div>
 
     <div v-if="hasMoreEvents" class="text-center mt-6">
@@ -60,9 +27,35 @@
       </button>
     </div>
 
-    <TagsCategoriesComponent :categories="categories" :tags="tags" />
+    <div class="bg-violet-200 mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div>
+        <h2 class="text-xl font-bold mb-2">Categories</h2>
+        <div class="flex flex-wrap gap-2">
+          <span
+            v-for="(category, index) in categories"
+            :key="index"
+            class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-semibold"
+          >
+            {{ category.name }}
+          </span>
+        </div>
+      </div>
 
-    <div class="m-12">
+      <div>
+        <h2 class="text-xl font-bold mb-2">Tags</h2>
+        <div class="flex flex-wrap gap-2">
+          <span
+            v-for="(tag, index) in tags"
+            :key="index"
+            class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-semibold"
+          >
+            {{ tag.name }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-12">
       <div
         class="flex flex-col lg:flex-row items-center lg:items-start justify-between bg-gradient-to-r from-purple-300 via-blue-300 to-pink-300 p-6 rounded-lg shadow-lg"
       >
@@ -71,7 +64,6 @@
             Explore Amazing Features
           </h2>
           <div class="space-y-4">
-            <!-- Feature 1 -->
             <div class="flex items-center">
               <div
                 class="flex-shrink-0 bg-blue-500 text-white rounded-full p-3"
@@ -101,12 +93,10 @@
               </div>
             </div>
 
-            <!-- Feature 2 -->
             <div class="flex items-center">
               <div
                 class="flex-shrink-0 bg-green-500 text-white rounded-full p-3"
               >
-                <!-- Icon for community -->
                 <svg
                   class="w-6 h-6"
                   fill="none"
@@ -161,10 +151,8 @@
               </div>
             </div>
 
-            <!-- Feature 4 -->
             <div class="flex items-center">
               <div class="flex-shrink-0 bg-red-500 text-white rounded-full p-3">
-                <!-- Icon for analytics -->
                 <svg
                   class="w-6 h-6"
                   fill="none"
@@ -176,76 +164,55 @@
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="2"
-                    d="M11 19V6a1 1 0 011-1h1a1 1 0 011 1v13a1 1 0 01-1 1h-1a1 1 0 01-1-1zm-4 0v-7a1 1 0 011-1h1a1 1 0 011 1v7a1 1 0 01-1 1H8a1 1 0 01-1-1zm8 0v-9a1 1 0 011-1h1a1 1 0 011 1v9a1 1 0 01-1 1h-1a1 1 0 01-1-1z"
+                    d="M12 4v16m8-8H4"
                   ></path>
                 </svg>
               </div>
               <div class="ml-4">
                 <h3 class="font-semibold text-lg text-gray-700">
-                  Track Event Analytics
+                  Quick and Easy Event Creation
                 </h3>
                 <p class="text-gray-500">
-                  Gain insights with real-time data and reports.
+                  Set up new events in just a few clicks.
                 </p>
               </div>
             </div>
           </div>
         </div>
-
-        <div class="lg:w-1/3 flex justify-center lg:justify-end">
-          <NuxtLink to="/user/events/create-event"
-            ><button
-              class="bg-blue-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-blue-700 transition-colors duration-200 mt-6 lg:mt-0"
-            >
-              Create Your Event Here
-            </button></NuxtLink
-          >
-        </div>
       </div>
     </div>
-    <CustomFooter />
   </div>
 </template>
+
 <script setup>
-import CustomEventCard from "@/components/CustomEventCard.vue";
-import { ref, watch, computed } from "vue";
+import { ref, computed } from "vue";
+import CustomEventCard from "~/components/CustomEventCard.vue";
 import HomepageImage from "~/components/HomepageImage.vue";
-
-import useFetchData from "~/composables/useFetchData";
+import useUserFetchData from "~/composables/useUserFetchData.js";
 import { useAuthStore } from "~/stores";
 
+const user_id = useAuthStore().id;
 
-import { useAuthStore } from "~/stores";
+const { userEvents, userEventsLoading, userEventsError, categories, tags } =
+  useUserFetchData(user_id);
 
-const isAuthenticated = useAuthStore().isAuthenticated;
-
-const { events, categories, tags } = useFetchData(userId);
-
-const visibleEvents = ref([]);
-const itemsPerPage = 3;
+const pageSize = 10;
 const currentPage = ref(1);
 
-const updateVisibleEvents = () => {
-  const startIndex = (currentPage.value - 1) * itemsPerPage;
-  visibleEvents.value = events.value.slice(
-    startIndex,
-    startIndex + itemsPerPage
-  );
-};
+const visibleEvents = computed(() => {
+  const start = (currentPage.value - 1) * pageSize;
+  const end = start + pageSize;
+  return userEvents.value.slice(start, end);
+});
+
+const hasMoreEvents = computed(() => {
+  return userEvents.value.length > currentPage.value * pageSize;
+});
 
 const loadMoreEvents = () => {
-  if (hasMoreEvents) {
+  if (hasMoreEvents.value) {
     currentPage.value += 1;
-    updateVisibleEvents();
   }
 };
-
-const hasMoreEvents = computed(
-  () => events.value.length > visibleEvents.value.length
-);
-
-
-definePageMeta((isAuthenticated) => {
-  layout: isAuthenticated ? "authenticated" : "";
-});
+definePageMeta({ layout: "authenticated" });
 </script>

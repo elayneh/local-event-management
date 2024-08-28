@@ -1,0 +1,81 @@
+query GetUserEvents($id: uuid!) {
+  events(order_by: { end_date: desc }, where: { uid: { _eq: $id } }) {
+    address
+    capacity
+    category_id
+    description
+    end_date
+    event_images
+    events_category {
+      description
+      id
+      name
+    }
+    events_bookmarks {
+      user_id
+      id
+      event_id
+      created_at
+    }
+    events_event_tags {
+      event_id
+      tag_id
+    }
+    events_followers {
+      event_id
+      id
+      user_id
+    }
+    events_tickets {
+      id
+      event_id
+      price
+      purchase_date
+      quantity
+      status
+      user_id
+    }
+    events_user {
+      username
+    }
+    id
+    is_free
+    location
+    price
+    start_date
+    title
+    venue
+  }
+}
+
+
+
+# events(where: {uid: {_eq: $user_id}}) {
+#     address
+#     capacity
+#     category_id
+#     description
+#     end_date
+#     event_images
+#     events_bookmarks(where: {_and: {event_id: {_eq: $event_id}, user_id: {_eq: $user_id}}}) {
+#       created_at
+#       event_id
+#       id
+#       user_id
+#     }
+#     events_followers(where: {_and: {event_id: {_eq: $event_id}, user_id: {_eq: $user_id}}}) {
+#       id
+#     }
+#     events_tickets(where: {_and: {user_id: {_eq: $user_id}, event_id: {_eq: $event_id}}}) {
+#       id
+#     }
+#     id
+#     is_free
+#     location
+#     price
+#     start_date
+#     title
+#     uid
+#     venue
+#   }
+# }

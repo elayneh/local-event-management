@@ -2,15 +2,17 @@
   <div
     class="bg-gradient-to-r from-gray-100 via-red-300 to-gray-500 h-64 w-full"
   >
-    <div class="w-full flex justify-center pt-24 pb-12 space-x-6">
-      <div
-        class="flex items-center bg-white shadow-lg rounded-lg p-6 transform hover:scale-105 transition-transform duration-300"
-      >
-        <img
-          :src="event_images[0]"
-          alt="Image 2"
-          class="w-full object-cover rounded-lg"
-        />
+    <div class="w-full flex justify-center items-center py-24 gap-24">
+      <div>
+        <img :src="event_images[0]" class="rounded-lg shadow-lg" />
+      </div>
+      <div>
+        <h2 class="text-xl font-bold mt-4 text-gray-800">
+          Discover Events Near You
+        </h2>
+        <p class="text-gray-600">
+          Find and attend local events that match your interests.
+        </p>
       </div>
     </div>
 

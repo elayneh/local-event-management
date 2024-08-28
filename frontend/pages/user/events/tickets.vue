@@ -1,5 +1,8 @@
 <template>
-  <div class="bg-gradient-to-r from-blue-100 via-green-100 to-yellow-100 pt-24">
+  <div
+    class="bg-gradient-to-r from-gray-100 via-red-300 to-gray-500 h-64 w-full"
+  >
+    <HomepageImage />
     <div
       v-if="!tickets.length"
       class="text-center m-12 p-24 bg-red-300 text-red-800 rounded-lg shadow-lg"
@@ -18,7 +21,7 @@
       <h2 class="text-2xl font-bold mb-4 text-center">Tickets</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <div v-for="ticket in visibleTickets" :key="ticket.id">
-            <CustomTicketCard :ticket="ticket" />
+          <CustomTicketCard :ticket="ticket" />
         </div>
       </div>
 
@@ -46,6 +49,7 @@ import { ref, computed, onMounted } from "vue";
 import useFetchData from "~/composables/useFetchData";
 import { useAuthStore } from "~/stores";
 import CustomTicketCard from "~/components/CustomTicketCard.vue";
+import HomepageImage from "~/components/HomepageImage.vue";
 
 const isAuthenticated = useAuthStore();
 

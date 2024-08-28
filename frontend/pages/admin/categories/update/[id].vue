@@ -49,21 +49,20 @@ const formSchema = reactive({
     {
       name: "name",
       as: "input",
-      value: "", // The value will be updated with the fetched category data
+      value: "",
       placeholder: "Category Name",
       rules: yup.string().required("Category name is required"),
     },
     {
       name: "description",
       as: "textarea",
-      value: "", // The value will be updated with the fetched category data
+      value: "", 
       placeholder: "Category Description",
       rules: yup.string().required("Category description is required"),
     },
   ],
 });
 
-// Fetch category data on mount
 async function fetchCategory() {
   try {
     const { result, error } = await useQuery(getSingleCategory, {
@@ -77,7 +76,6 @@ async function fetchCategory() {
     if (result.value && result.value.category) {
       categoryData.value = result.value.category;
 
-      // Update the form schema with the fetched data
       formSchema.fields[0].value = categoryData.value.name || "";
       formSchema.fields[1].value = categoryData.value.description || "";
     }

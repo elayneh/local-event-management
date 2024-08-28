@@ -1,5 +1,8 @@
 <template>
-  <div class="bg-gradient-to-r from-blue-100 via-green-100 to-yellow-100 pt-24">
+  <div
+    class="bg-gradient-to-r from-gray-100 via-red-300 to-gray-500 h-64 w-full"
+  >
+    <HomepageImage />
     <div
       v-if="!followingEvents.length"
       class="text-center m-12 p-24 bg-red-300 text-red-800 rounded-lg shadow-lg"
@@ -48,6 +51,7 @@ import CustomFooter from "~/components/CustomFooter.vue";
 import { ref, computed, onMounted } from "vue";
 import useFetchData from "~/composables/useFetchData";
 import { useAuthStore } from "~/stores";
+import HomepageImage from "~/components/HomepageImage.vue";
 const isAuthnticated = useAuthStore();
 
 const userId = isAuthnticated.id;

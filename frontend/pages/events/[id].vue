@@ -1,6 +1,23 @@
 <template>
-<div class="bg-gradient-to-r from-gray-100 via-red-300 to-gray-500 h-64 w-full">
-    <div class="w-full flex-col gap-8 flex justify-center pt-24 pb-12 space-x-6">
+  <div
+    class="bg-gradient-to-r from-gray-100 via-red-300 to-gray-500 h-64 w-full"
+  >
+    <div class="w-full flex justify-center items-center py-24 gap-24">
+      <div>
+        <img :src="event_images[0]" class="rounded-lg shadow-lg" />
+      </div>
+      <div>
+        <h2 class="text-xl font-bold mt-4 text-gray-800">
+          Discover Events Near You
+        </h2>
+        <p class="text-gray-600">
+          Find and attend local events that match your interests.
+        </p>
+      </div>
+    </div>
+    <div
+      class="w-full flex-col gap-8 flex justify-center pt-24 pb-12 space-x-6"
+    >
       <div class="flex flex-col lg:flex-row gap-8 mx-12">
         <div class="lg:w-1/2 bg-gray-100 p-6 rounded-lg shadow-lg">
           <img
@@ -110,15 +127,15 @@
     <CustomFooter />
   </div>
 </template>
-
 <script setup>
 import { ref, computed, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useQuery } from "@vue/apollo-composable";
 import defaultImage from "@/assets/images/home.png";
-import DisplayLeafletMap from "~/components/DisplayLeafletMap.vue";
 import getEvent from "~/graphql/queries/events/getSingleEvent.gql";
-import { faL } from "@fortawesome/free-solid-svg-icons";
+import { useAuthStore } from "~/stores";
+
+const isAuthenticated = useAuthStore().isAuthenticated;
 
 const event = ref(null);
 const isBookmarked = ref(false);
@@ -131,16 +148,17 @@ const { id } = route.params;
 const { result, loading, error } = useQuery(getEvent, { id });
 
 watch(
-  () => result.value,
+  result,
   (newValue) => {
     if (newValue && newValue.events_by_pk) {
       event.value = newValue.events_by_pk;
     }
-  }
+  },
+  { immediate: true }
 );
 
 const event_images = computed(() => {
-  if (event?.value?.event_images) {
+  if (event.value?.event_images) {
     const imagesArray = event.value.event_images.replace(/{|}/g, "").split(",");
     return imagesArray.length > 0 ? imagesArray : [defaultImage];
   }
@@ -149,7 +167,10 @@ const event_images = computed(() => {
 
 const location = computed(() => {
   if (event.value?.location) {
-    return event.value.location.replace(/{|}/g, "").split(",");
+    return event.value.location
+      .replace(/{|}/g, "")
+      .split(",")
+      .map((coord) => parseFloat(coord));
   }
   return [0, 0]; // Default to [0, 0] or another valid default location
 });
@@ -179,4 +200,8 @@ const redirectToGoogleMap = () => {
   const url = `https://www.google.com/maps?q=${latitude},${longitude}`;
   window.open(url, "_blank");
 };
+
+definePageMeta((isAuthenticated) => {
+  layout: isAuthenticated ? "authenticated" : "";
+});
 </script>

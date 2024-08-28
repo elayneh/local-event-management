@@ -21,10 +21,10 @@
                 </button>
                 <button
                   type="button"
-                  @click="clearForm"
+                  @click="navigateTo('/')"
                   class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                 >
-                  Clear
+                  Cancel
                 </button>
               </div>
               <div>
@@ -57,7 +57,6 @@ import * as JsCookie from "js-cookie";
 import * as yup from "yup";
 
 const Cookies = JsCookie.default;
-
 
 const authenticationStore = useAuthStore();
 const {
