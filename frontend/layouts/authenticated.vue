@@ -77,10 +77,14 @@
             <li class="relativep">
               <button
                 @click="toggleProfileDropdown"
-                class="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-gray-400"
+                class="w-10 h-10 bg-zinc-950 rounded-full flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-gray-500"
               >
-                <img src="" alt="Profile" class="w-full h-full rounded-full" />
+                <font-awesome-icon
+                  icon="user-circle"
+                  class="text-gray-500 w-full h-full"
+                />
               </button>
+
               <div
                 v-if="dropdownOpen"
                 class="absolute mt-2 w-64 bg-white shadow-lg bg-neutral-300"
@@ -164,6 +168,8 @@
 import { ref, onMounted, onUnmounted } from "vue";
 import * as JsCookie from "js-cookie";
 import { useAuthStore } from "~/stores";
+import { useRouter } from "vue-router";
+const router = useRouter();
 
 const Cookies = JsCookie.default;
 
@@ -196,6 +202,7 @@ const confirmLogout = () => {
   authenticationStore.setId(null);
   authenticationStore.setUser(null);
   authenticationStore.setRole(null);
+  return router.push("/");
 
   closeLogoutModal();
 };

@@ -45,9 +45,9 @@
     <h2 class="text-2xl font-bold mb-4 text-center">Latest Events</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <div v-for="event in events" :key="event.id">
-        <NuxtLink :to="`/events/${event.id}`">
+        <!-- <NuxtLink :to="`/events/${event.id}`"> -->
           <CustomEventCard :event="event" />
-        </NuxtLink>
+        <!-- </NuxtLink> -->
       </div>
     </div>
 
@@ -214,9 +214,6 @@ import HomepageImage from "~/components/HomepageImage.vue";
 import useFetchData from "~/composables/useFetchData";
 import { useAuthStore } from "~/stores";
 
-
-import { useAuthStore } from "~/stores";
-
 const isAuthenticated = useAuthStore().isAuthenticated;
 
 const { events, categories, tags } = useFetchData(userId);
@@ -225,6 +222,7 @@ const visibleEvents = ref([]);
 const itemsPerPage = 3;
 const currentPage = ref(1);
 
+
 const updateVisibleEvents = () => {
   const startIndex = (currentPage.value - 1) * itemsPerPage;
   visibleEvents.value = events.value.slice(
@@ -232,6 +230,7 @@ const updateVisibleEvents = () => {
     startIndex + itemsPerPage
   );
 };
+
 
 const loadMoreEvents = () => {
   if (hasMoreEvents) {
@@ -244,8 +243,9 @@ const hasMoreEvents = computed(
   () => events.value.length > visibleEvents.value.length
 );
 
-
-definePageMeta((isAuthenticated) => {
-  layout: isAuthenticated ? "authenticated" : "";
-});
+// definePageMeta(() => {
+//   return {
+//     layout: isAuthenticated ? "authenticated" : "",
+//   };
+// });
 </script>

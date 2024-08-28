@@ -11,7 +11,11 @@ query GetUserEvents($id: uuid!) {
       id
       name
     }
-    events_bookmarks {
+    events_bookmarks(
+      where: {
+        _and: { event_id: { _eq: $event_id }, user_id: { _eq: $user_id } }
+      }
+    ) {
       user_id
       id
       event_id
@@ -21,12 +25,20 @@ query GetUserEvents($id: uuid!) {
       event_id
       tag_id
     }
-    events_followers {
+    events_followers(
+      where: {
+        _and: { event_id: { _eq: $event_id }, user_id: { _eq: $user_id } }
+      }
+    ) {
       event_id
       id
       user_id
     }
-    events_tickets {
+    events_tickets(
+      where: {
+        _and: { user_id: { _eq: $user_id }, event_id: { _eq: $event_id } }
+      }
+    ) {
       id
       event_id
       price
@@ -47,35 +59,3 @@ query GetUserEvents($id: uuid!) {
     venue
   }
 }
-
-
-
-# events(where: {uid: {_eq: $user_id}}) {
-#     address
-#     capacity
-#     category_id
-#     description
-#     end_date
-#     event_images
-#     events_bookmarks(where: {_and: {event_id: {_eq: $event_id}, user_id: {_eq: $user_id}}}) {
-#       created_at
-#       event_id
-#       id
-#       user_id
-#     }
-#     events_followers(where: {_and: {event_id: {_eq: $event_id}, user_id: {_eq: $user_id}}}) {
-#       id
-#     }
-#     events_tickets(where: {_and: {user_id: {_eq: $user_id}, event_id: {_eq: $event_id}}}) {
-#       id
-#     }
-#     id
-#     is_free
-#     location
-#     price
-#     start_date
-#     title
-#     uid
-#     venue
-#   }
-# }

@@ -14,5 +14,39 @@ query GetEvents {
     title
     uid
     venue
+    address
+    capacity
+    category_id
+    description
+    end_date
+    event_images
+    events_bookmarks {
+      created_at
+      event_id
+      id
+      user_id
+    }
+    events_followers {
+      event_id
+      user_id
+      id
+    }
+    events_tickets {
+      event_id
+      id
+      price
+      quantity
+      purchase_date
+      status
+      user_id
+    }
+    id
+    is_free
+    location
+    price
+    start_date
+    title
+    venue
+    uid
   }
 }

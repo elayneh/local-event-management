@@ -201,7 +201,7 @@ const redirectToGoogleMap = () => {
   window.open(url, "_blank");
 };
 
-definePageMeta((isAuthenticated) => {
-  layout: isAuthenticated ? "authenticated" : "";
-});
+// definePageMeta(() => ({
+//   layout: isAuthenticated ? "authenticated" : "",
+// }));
 </script>

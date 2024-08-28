@@ -7,7 +7,7 @@
       >
         {{ field.label }}
       </label>
-      
+
       <Field
         :as="field.as === 'select' ? 'select' : 'input'"
         :id="field.name"
@@ -80,19 +80,19 @@ import { ref } from "vue";
 const selectedItemValues = ref([]);
 const selectedItems = ref([]);
 
-const toggleItem = (item) => {
-  const index = selectedItems.value.findIndex((c) => c.value === item.value);
-  if (index === -1) {
-    selectedItems.value.push(item);
-    selectedItemValues.value.push(item.value);
-  } else {
-    selectedItems.value.splice(index, 1);
-    selectedItemValues.value.splice(
-      selectedItemValues.value.indexOf(item.value),
-      1
-    );
-  }
-};
+// const toggleItem = (item) => {
+//   const index = selectedItems.value.findIndex((c) => c.value === item.value);
+//   if (index === -1) {
+//     selectedItems.value.push(item);
+//     selectedItemValues.value.push(item.value);
+//   } else {
+//     selectedItems.value.splice(index, 1);
+//     selectedItemValues.value.splice(
+//       selectedItemValues.value.indexOf(item.value),
+//       1
+//     );
+//   }
+// };
 
 const removeItem = (option) => {
   selectedItems.value = selectedItems.value.filter(
@@ -119,7 +119,7 @@ const selectedFiles = ref({});
 
 // Handle file changes, including multiple file selections
 const handleFileChange = (event, field) => {
-  if (field.type === 'file' && field.multiple) {
+  if (field.type === "file" && field.multiple) {
     selectedFiles.value[field.name] = Array.from(event.target.files);
   }
 };
