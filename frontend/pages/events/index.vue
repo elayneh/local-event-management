@@ -2,13 +2,14 @@
   <div
     class="bg-gradient-to-r from-gray-100 via-red-300 to-gray-500 h-64 w-full"
   >
-    <HomepageImage />
-    <div class="fixed w-full flex justify-center items-center pt-2">
+    <div class="fixed w-full flex justify-center items-center pt-2 z-50">
+      <div v-if="openFilterModal"></div>
       <div class="flex justify-center items-center space-x-4">
         <ul class="m-2">
           <li class="relative flex items-center">
             <input
-              @click="search"
+              v-model="searchQuery"
+              @change="searchHandler"
               class="w-96 h-10 rounded-full pl-4 pr-10 bg-gray-300 flex items-center focus:outline-none focus:ring-1 focus:ring-gray-400"
               placeholder="Search..."
             />
@@ -21,7 +22,7 @@
 
         <ul class="m-2">
           <li class="relative">
-            <button @click="openFilterModal" class="flex items-center">
+            <button @click="openFilterModalHandler" class="flex items-center">
               <font-awesome-icon
                 :icon="['fas', 'filter']"
                 class="text-gray-600"
@@ -32,19 +33,11 @@
         </ul>
       </div>
     </div>
-
-    <div class="w-full flex justify-center items-center py-10">
-      <div class="items-center">
-        <img src="/assets/images/home.png" />
-      </div>
-      <div class="items-center">
-        <img src="/assets/images/home.png" />
-      </div>
-    </div>
+    <HomepageImage />
 
     <h2 class="text-2xl font-bold mb-4 text-center">Latest Events</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <div v-for="event in events" :key="event.id">
+      <div v-for="event in visibleEvents" :key="event.id">
         <CustomEventCard :event="event" />
       </div>
     </div>
@@ -206,38 +199,47 @@
 </template>
 <script setup>
 import CustomEventCard from "@/components/CustomEventCard.vue";
-import { ref, watch, computed } from "vue";
+import { ref, watch } from "vue";
+import { useQuery } from "@vue/apollo-composable";
+import getEvents from "~/graphql/queries/events/getEvents.gql";
+import getCategories from "~/graphql/queries/categories/getCategories.gql";
+import getTags from "~/graphql/queries/tags/getTags.gql";
 import HomepageImage from "~/components/HomepageImage.vue";
 
-import useFetchData from "~/composables/useFetchData";
-import { useAuthStore } from "~/stores";
+const openFilterModal = ref(false);
+const { onEventResult, categories, tags } = useQuery();
+const openFilterModalHandler = () => {
+  openFilterModal.value = !openFilterModal.value;
+  console.log("openFilterModal: ", openFilterModal);
+};
+const searchQuery = ref("");
+const visibleEvents = ref(null);
+const hasMoreEvents = ref(null);
 
-const isAuthenticated = useAuthStore().isAuthenticated;
-
-const { events, categories, tags } = useFetchData();
-
-const visibleEvents = ref([]);
-const itemsPerPage = 3;
-const currentPage = ref(1);
-
-const updateVisibleEvents = () => {
-  const startIndex = (currentPage.value - 1) * itemsPerPage;
-  visibleEvents.value = events.value.slice(
-    startIndex,
-    startIndex + itemsPerPage
-  );
+const searchHandler = () => {
+  onEventResult((data) => {
+    if (!searchQuery.value) {
+      visibleEvents.value = data.events;
+    } else {
+      visibleEvents.value = data.events.filter((event) => {
+        const query = searchQuery.value.toLowerCase();
+        return (
+          event.title.toLowerCase().includes(query) ||
+          event.description.toLowerCase().includes(query)
+        );
+      });
+    }
+    hasMoreEvents = computed(
+      () => events.value.length > visibleEvents?.value.length
+    );
+  });
 };
 
 const loadMoreEvents = () => {
   if (hasMoreEvents) {
     currentPage.value += 1;
-    updateVisibleEvents();
   }
 };
-
-const hasMoreEvents = computed(
-  () => events.value.length > visibleEvents.value.length
-);
 
 // definePageMeta(() => {
 //   return {

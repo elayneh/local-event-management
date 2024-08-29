@@ -19,7 +19,7 @@
 
     <div v-else>
       <h2 class="text-2xl font-bold mb-4 text-center">Bookmarked Events</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 justify-center">
         <div v-for="event in bookmarkedEvents" :key="event.id">
           <NuxtLink :to="`/events/${event.id}`">
             <CustomEventCard :event="event" />
@@ -50,13 +50,16 @@ import FeaturesComponent from "~/components/FeaturesComponent.vue";
 import CustomFooter from "~/components/CustomFooter.vue";
 import { ref, computed, onMounted } from "vue";
 import useUserFetchData from "~/composables/useUserFetchData";
+import useFetchData from "~/composables/useFetchData";
 import { useAuthStore } from "~/stores";
-const isAuthnticated = useAuthStore();
 
-const userId = isAuthnticated.id;
-const { bookmarkedEvents, tags, categories } = useUserFetchData(userId);
-console.log("Book: ", bookmarkedEvents)
-console.log(userId)
+
+const isAuthnticated = useAuthStore();
+const user_id = isAuthnticated.id;
+
+const { bookmarkedEvents } = useUserFetchData(user_id);
+const { tags, categories } = useFetchData();
+console.log(user_id);
 const visibleEvents = ref([]);
 const itemsPerPage = 3;
 const currentPage = ref(1);

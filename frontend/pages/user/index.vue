@@ -2,6 +2,37 @@
   <div
     class="bg-gradient-to-r from-gray-100 via-red-300 to-gray-500 h-64 w-full"
   >
+    <div class="fixed w-full flex justify-center items-center pt-2 z-20">
+      <div v-if="openFilterModal"></div>
+      <div class="flex justify-center items-center space-x-4">
+        <ul class="m-2">
+          <li class="relative flex items-center">
+            <input
+              v-model="searchQuery"
+              @change="searchHandler"
+              class="w-96 h-10 rounded-full pl-4 pr-10 bg-gray-300 flex items-center focus:outline-none focus:ring-1 focus:ring-gray-400"
+              placeholder="Search..."
+            />
+            <font-awesome-icon
+              :icon="['fas', 'search']"
+              class="text-gray-600 absolute right-4"
+            />
+          </li>
+        </ul>
+
+        <ul class="m-2">
+          <li class="relative">
+            <button @click="openFilterModalHandler" class="flex items-center">
+              <font-awesome-icon
+                :icon="['fas', 'filter']"
+                class="text-gray-600"
+              />
+              <span class="ml-2 text-gray-500">Filter</span>
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
     <HomepageImage />
 
     <h2 class="text-2xl font-bold mb-4 text-center">Latest Events</h2>
@@ -44,11 +75,16 @@ import useFetchData from "~/composables/useFetchData";
 import HomepageImage from "~/components/HomepageImage.vue";
 
 const { events, categories, tags } = useFetchData();
+console.log(events);
+const openFilterModal = ref(false);
+const openFilterModalHandler = () => {
+  openFilterModal.value = !openFilterModal.value;
+  console.log("openFilterModal: ", openFilterModal);
+};
 
 const visibleEvents = ref([]);
 const itemsPerPage = 3;
 const currentPage = ref(1);
-
 
 watchEffect(() => {
   const startIndex = (currentPage.value - 1) * itemsPerPage;

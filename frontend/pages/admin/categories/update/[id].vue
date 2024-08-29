@@ -34,7 +34,7 @@
 import * as yup from "yup";
 import { ref, reactive, onMounted } from "vue";
 import { toast } from "vue3-toastify";
-
+import { useRoute } from "vue-router";
 import CustomCard from "~/components/CustomCard.vue";
 import DynamicForm from "~/components/DynamicForm.vue";
 import updateCategory from "~/graphql/mutations/categories/update.gql";
@@ -56,7 +56,7 @@ const formSchema = reactive({
     {
       name: "description",
       as: "textarea",
-      value: "", 
+      value: "",
       placeholder: "Category Description",
       rules: yup.string().required("Category description is required"),
     },

@@ -1,11 +1,7 @@
 query GetBookmarkedEvents($id: uuid!) {
-  events(
-    where: { events_bookmarks: { user_id: { _eq: $id } } }
-    order_by: { created_at: asc }
-  ) {
+  events(where: { events_bookmarks: { user_id: { _eq: $id } } }) {
     address
     category_id
-    created_at
     description
     end_date
   }

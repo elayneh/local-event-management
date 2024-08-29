@@ -10,8 +10,12 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
   await authStore.autoLogin();
 
   const isUnAuthenticatedRoute = unAuthenticatedRoutes.includes(to.path);
-  const isAdminRoute = adminRoutes.includes(to.path);
-  const isUserRoute = userRoutes.includes(to.path);
+  const isAdminRoute = adminRoutes.some((route) =>
+    route instanceof RegExp ? route.test(to.path) : route === to.path
+  );
+  const isUserRoute = userRoutes.some((route) =>
+    route instanceof RegExp ? route.test(to.path) : route === to.path
+  );
   const userRole = authStore.role?.toLowerCase();
 
   if (!authStore.isAuthenticated) {
@@ -25,7 +29,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     if (userRole === "admin" && !isAdminRoute) {
       return navigateTo("/admin");
     } else if (userRole === "user" && !isUserRoute) {
-      // return navigateTo("/user");
+      return navigateTo("/user");
     } else if (!isAdminRoute && !isUserRoute) {
       if (to.path !== "/users/unauthorized") {
         return navigateTo("/users/unauthorized");

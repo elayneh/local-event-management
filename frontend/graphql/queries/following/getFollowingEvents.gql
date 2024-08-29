@@ -1,6 +1,6 @@
-query GetFollowingEvents($user_id: uuid!) {
+query GetFollowingEvents($id: uuid!) {
   events(
-    where: { events_followers: { user_id: { _eq: $user_id } } }
+    where: { events_followers: { user_id: { _eq: $id } } }
     order_by: { end_date: desc }
   ) {
     address

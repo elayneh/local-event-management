@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col h-screen">
-    <header class="fixed top-0 left-0 w-full z-20 bg-transparent">
+    <header class="fixed top-0 left-0 w-full z-50 bg-transparent">
       <nav class="flex pt-4 justify-between items-center bg-gray-1">
         <ul class="flex gap-4 items-center ml-20">
           <li class="flex items-center gap-2">
@@ -33,12 +33,6 @@
         <slot />
       </div>
     </main>
-    \
-    <FilterModal
-      :isOpen="isFilterModalOpen"
-      @close-modal="closeFilterModal"
-      @apply-filter="applyFilter"
-    />
     <div
       v-if="isLogoutModalOpen"
       class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"

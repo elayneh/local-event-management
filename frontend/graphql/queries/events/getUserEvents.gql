@@ -11,11 +11,7 @@ query GetUserEvents($id: uuid!) {
       id
       name
     }
-    events_bookmarks(
-      where: {
-        _and: { event_id: { _eq: $event_id }, user_id: { _eq: $user_id } }
-      }
-    ) {
+    events_bookmarks(where: { user_id: { _eq: $id } }) {
       user_id
       id
       event_id
@@ -25,26 +21,16 @@ query GetUserEvents($id: uuid!) {
       event_id
       tag_id
     }
-    events_followers(
-      where: {
-        _and: { event_id: { _eq: $event_id }, user_id: { _eq: $user_id } }
-      }
-    ) {
+    events_followers(where: { user_id: { _eq: $id } }) {
       event_id
       id
       user_id
     }
-    events_tickets(
-      where: {
-        _and: { user_id: { _eq: $user_id }, event_id: { _eq: $event_id } }
-      }
-    ) {
+    events_tickets(where: { user_id: { _eq: $id } }) {
       id
       event_id
-      price
       purchase_date
       quantity
-      status
       user_id
     }
     events_user {

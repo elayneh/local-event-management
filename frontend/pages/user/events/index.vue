@@ -2,6 +2,39 @@
   <div
     class="bg-gradient-to-r from-gray-100 via-red-300 to-gray-500 h-64 w-full"
   >
+    <div class="fixed w-full flex justify-center items-center pt-2 z-5">
+      <div v-if="openFilterModal">
+        <Filter />
+      </div>
+      <div class="flex justify-center items-center space-x-4">
+        <ul class="m-2">
+          <li class="relative flex items-center">
+            <input
+              v-model="searchQuery"
+              @change="searchHandler"
+              class="w-96 h-10 rounded-full pl-4 pr-10 bg-gray-300 flex items-center focus:outline-none focus:ring-1 focus:ring-gray-400"
+              placeholder="Search..."
+            />
+            <font-awesome-icon
+              :icon="['fas', 'search']"
+              class="text-gray-600 absolute right-4"
+            />
+          </li>
+        </ul>
+
+        <ul class="m-2">
+          <li class="relative">
+            <button @click="openFilterModalHandler" class="flex items-center">
+              <font-awesome-icon
+                :icon="['fas', 'filter']"
+                class="text-gray-600"
+              />
+              <span class="ml-2 text-gray-500">Filter</span>
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
     <HomepageImage />
     <h2 class="text-2xl font-bold mb-4 text-center">Your Events</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -27,8 +60,8 @@
 
     <div class="bg-violet-200 mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
       <div>
-        <h2 class="text-xl font-bold mb-2">Categories</h2>
-        <div class="flex flex-wrap gap-2">
+        <h2 class="text-xl font-bold mb-2 text-center">Categories</h2>
+        <div class="flex flex-wrap gap-2 justify-center">
           <span
             v-for="(category, index) in categories"
             :key="index"
@@ -40,8 +73,8 @@
       </div>
 
       <div>
-        <h2 class="text-xl font-bold mb-2">Tags</h2>
-        <div class="flex flex-wrap gap-2">
+        <h2 class="text-xl font-bold mb-2 text-center">Tags</h2>
+        <div class="flex flex-wrap gap-2 justify-center">
           <span
             v-for="(tag, index) in tags"
             :key="index"
@@ -179,6 +212,7 @@
         </div>
       </div>
     </div>
+    <CustomFooter />
   </div>
 </template>
 
@@ -186,13 +220,15 @@
 import { ref, computed } from "vue";
 import CustomEventCard from "~/components/CustomEventCard.vue";
 import HomepageImage from "~/components/HomepageImage.vue";
-import useUserFetchData from "~/composables/useUserFetchData.js";
+import useUserFetchData from "~/composables/useUserFetchData";
+import useFetchData from "~/composables/useFetchData";
 import { useAuthStore } from "~/stores";
 
 const user_id = useAuthStore().id;
-
-const { userEvents, userEventsLoading, userEventsError, categories, tags } =
+const { userEvents, userEventsLoading, userEventsError } =
   useUserFetchData(user_id);
+
+const { categories, tags } = useFetchData();
 
 const pageSize = 10;
 const currentPage = ref(1);

@@ -568,7 +568,7 @@ const firstLevelEventFormSchema = computed(() => ({
       rules: yup.number().when("isFree", {
         is: "false",
         then: yup.number().required("Price is required for paid events"),
-        otherwise: yup.number().notRequired(),
+        otherwise: yup.number().disabled,
       }),
     },
   ],

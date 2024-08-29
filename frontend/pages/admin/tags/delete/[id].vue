@@ -26,7 +26,7 @@
 
 <script setup>
 import { useMutation } from "@vue/apollo-composable";
-import { useRouter, useRoute } from "#app";
+import { useRouter, useRoute } from "vue-router";
 import deleteTag from "~/graphql/mutations/tags/delete.gql";
 
 const router = useRouter();

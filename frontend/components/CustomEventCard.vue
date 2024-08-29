@@ -7,7 +7,7 @@
     ]"
     class="w-full max-w-md mx-auto p-4 hover:bg-indigo-50"
   >
-    <NuxtLink :to="`/events/${event.id}`">
+    <NuxtLink :to="`/user/events/${event.id}`">
       <img
         :src="event_images[0]"
         alt="Event Image"
@@ -59,15 +59,18 @@
       </div>
 
       <div
-        @click="toggleBuy"
+        @click="toggleBuyTicket"
         v-if="!isFree"
         :class="{
           'bg-gray-200': isBought,
           'bg-green-500': !isBought,
+          'bg-red-300': !isticketavailable,
         }"
         class="px-4 py-2 rounded text-white cursor-pointer"
       >
-        <span>{{ isBought ? "Bought" : "Buy" }}</span>
+        <span>{{
+          isTicketAvailable ? (isBought ? "Bought" : "Buy") : "Not available"
+        }}</span>
       </div>
     </div>
   </div>
@@ -78,10 +81,12 @@ import { computed, ref } from "vue";
 import defaultImage from "~/assets/images/home.png";
 import { useAuthStore } from "~/stores";
 import { useRouter } from "vue-router";
-import { InsertFollowers } from "~/graphql/mutations/event_followers/insert.gql";
-import { DeleteFollowers } from "~/graphql/mutations/event_followers/delete.gql";
-import { InsertBookmarks } from "~/graphql/mutations/event_bookmarks/insert.gql";
-import { DeleteBookmarks } from "~/graphql/mutations/event_bookmarks/delete.gql";
+import { InsertFollowers } from "~/graphql/mutations/event_followers/InsertFollowers.gql";
+import { DeleteFollowers } from "~/graphql/mutations/event_followers/DeleteFollowers.gql";
+import { InsertBookmarks } from "~/graphql/mutations/event_bookmarks/InsertBookmarks.gql";
+import { DeleteBookmarks } from "~/graphql/mutations/event_bookmarks/DeleteBookmarks.gql";
+import { InsertTickets } from "~/graphql/mutations/event_tickets/InsertTickets.gql";
+import { DeleteTickets } from "~/graphql/mutations/event_tickets/DeleteTickets.gql";
 
 const authStore = useAuthStore();
 const isAuthenticated = authStore.isAuthenticated;
@@ -99,9 +104,21 @@ const props = defineProps({
   },
 });
 
-const isBought = ref(false);
-
 const isFree = ref(props.event?.is_free);
+
+const isTicketAvailable = ref(
+  props.event?.events_tickets?.quantity &&
+    props.event?.events_tickets?.quantity < props.event?.capacity
+);
+console.log("props.event: ", props.event?.events_tickets?.quantity);
+
+const isticketavailable = isTicketAvailable.value;
+const isBought = ref(
+  props.event?.events_tickets?.some((ticket) => {
+    ticket?.user_id === user_id;
+  })
+);
+
 const following = ref(
   props.event?.events_followers?.some((follow) => follow?.user_id === user_id)
 );
@@ -139,6 +156,21 @@ const {
   loading: loadingDeleteBookmark,
   onError: onDeleteBookmarkError,
 } = useAuthenticatedMutation(DeleteBookmarks);
+
+// Buy Ticket
+const {
+  mutate: InsertBuyTicketMutation,
+  onDone: onInsertBuyTicketDone,
+  loading: loadingBuyTicket,
+  onError: onInsertBuyTicketError,
+} = useAuthenticatedMutation(InsertTickets);
+
+const {
+  mutate: DeleteBuyTicketMutation,
+  onDone: onDeleteBuyTicketDone,
+  loading: loadingDeleteBuyTicket,
+  onError: onDeleteBuyTicketError,
+} = useAuthenticatedMutation(DeleteTickets);
 
 // Toggle following
 const toggleFollow = async () => {
@@ -205,8 +237,37 @@ const toggleBookmark = async () => {
   }
 };
 
-const toggleBuy = () => {
-  isBought.value = !isBought.value;
+// toggle buy
+
+const toggleBuyTicket = async (quantity) => {
+  if (!user_id) {
+    return router.push("/users/login");
+  }
+  const isbought = isBought.value;
+
+  try {
+    if (!isbought || !isticketavailable) {
+      const ticketPayload = {
+        user_id: user_id,
+        event_id: props.event?.id,
+        quantity: quantity,
+      };
+      await InsertBuyTicketMutation(ticketPayload);
+      isBought.value = true;
+    } else if (isbought) {
+      const cancelTicket = {
+        user_id: user_id,
+        event_id: props.event?.id,
+      };
+      await DeleteBuyTicketMutation(cancelTicket);
+      isBought.value = false;
+    } else return;
+  } catch (error) {
+    console.log(
+      `Error occurred while ${isbought ? "cancelTicket" : "boy"} the event:`,
+      error
+    );
+  }
 };
 
 const truncatedDescription = computed(() => {

@@ -26,7 +26,7 @@
 
 <script setup>
 import { useMutation } from "@vue/apollo-composable";
-import { useRouter, useRoute } from "#app";
+import { useRoute, useRouter } from "vue-router";
 import deleteCategory from "~/graphql/mutations/categories/delete.gql";
 
 const router = useRouter();

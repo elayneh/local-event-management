@@ -19,11 +19,11 @@
 
     <div v-else>
       <h2 class="text-2xl font-bold mb-4 text-center">Following Events</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 justify-center"
+      >
         <div v-for="event in followingEvents" :key="event.id">
-          <!-- <NuxtLink :to="`/events/${event.id}`"> -->
           <CustomEventCard :event="event" />
-          <!-- </NuxtLink> -->
         </div>
       </div>
 
@@ -50,17 +50,18 @@ import FeaturesComponent from "~/components/FeaturesComponent.vue";
 import CustomFooter from "~/components/CustomFooter.vue";
 import { ref, computed, onMounted } from "vue";
 import useUserFetchData from "~/composables/useUserFetchData";
+import useFetchData from "~/composables/useFetchData";
 import { useAuthStore } from "~/stores";
 import HomepageImage from "~/components/HomepageImage.vue";
 const isAuthnticated = useAuthStore();
 
 const userId = isAuthnticated.id;
-const { followingEvents, tags, categories } = useUserFetchData(userId);
+const { followingEvents } = useUserFetchData(userId);
+const { tags, categories } = useFetchData();
 
 const visibleEvents = ref([]);
 const itemsPerPage = 3;
 const currentPage = ref(1);
-console.log("Following: ", followingEvents,"\n",userId);
 
 const updateVisibleEvents = () => {
   const startIndex = (currentPage.value - 1) * itemsPerPage;
