@@ -57,7 +57,6 @@ const formSchema = reactive({
 
 async function submitHandler(values) {
   try {
-
     const categoryData = {
       name: values.name,
       description: values.description,
@@ -66,10 +65,7 @@ async function submitHandler(values) {
     mutate(categoryData);
   } catch (error) {
     console.error("Error:", error);
-    toast.error("Something went wrong, try again", {
-      transition: toast.TRANSITIONS.FLIP,
-      position: toast.POSITION.TOP_RIGHT,
-    });
+    toast.error("Something went wrong, try again", {});
   }
 }
 
@@ -77,19 +73,13 @@ const { mutate, onDone, loading, onError } =
   useAuthenticatedMutation(addcategory);
 
 onDone((result) => {
-  toast.success("Category added successfully", {
-    transition: toast.TRANSITIONS.FLIP,
-    position: toast.POSITION.TOP_RIGHT,
-  });
+  toast.success("Category added successfully", {});
   navigateTo("/admin/categories");
 });
 
 onError((error) => {
   console.log("Error: ", error.message);
-  toast.error("Something went wrong, try again", {
-    transition: toast.TRANSITIONS.FLIP,
-    position: toast.POSITION.TOP_RIGHT,
-  });
+  toast.error("Something went wrong, try again", {});
 });
 
 definePageMeta({

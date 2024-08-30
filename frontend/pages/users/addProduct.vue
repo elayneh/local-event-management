@@ -66,10 +66,7 @@ function submitHandler(values) {
 
 onDone((result) => {
   const { id, role, token } = result.data.fileUpload;
-  toast.success("File uploaded successfully", {
-    transition: toast.TRANSITIONS.FLIP,
-    position: toast.POSITION.TOP_RIGHT,
-  });
+  toast.success("File uploaded successfully", {});
   Cookies.set("token", token, { expires: 3 });
   authenticationStore.setToken(token);
   authenticationStore.setId(token);
@@ -79,10 +76,7 @@ onDone((result) => {
 });
 onError((error) => {
   console.log("Error: ", error.message);
-  toast.error("Something went wrong, try again", {
-    transition: toast.TRANSITIONS.FLIP,
-    position: toast.POSITION.TOP_RIGHT,
-  });
+  toast.error("Something went wrong, try again", {});
 });
 
 definePageMeta({

@@ -44,7 +44,7 @@
             <h2 class="text-3xl font-bold text-gray-800">Event Information</h2>
             <button
               v-if="ownEvent"
-              @click="editEvent"
+              @click="editHandler"
               class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all duration-300"
             >
               Edit
@@ -67,36 +67,35 @@
           <p class="text-lg mb-6" v-if="event?.isFree === false">
             <strong>Price:</strong> ${{ event?.price || "N/A" }}
           </p>
+          <p v-if="isClosed"><strong>Closed</strong></p>
           <p :class="[freeClass, 'inline-block']">{{ isFreeText }}</p>
         </div>
 
-        <!-- Action Buttons -->
-        <div class="mt-8 flex justify-between items-center">
+        <div v-if="!ownEvent" class="mt-8 flex justify-between items-center">
           <button
             @click="toggleFollow"
-            :class="{
-              'bg-blue-500': following,
-              'bg-gray-300': !following,
-            }"
+            :class="{ 'bg-gray-500': following, 'bg-gray-300': !following }"
             class="px-4 py-2 rounded text-white font-semibold transition-all duration-300 hover:bg-blue-600"
           >
             {{ following ? "Following" : "Follow" }}
           </button>
 
-          <font-awesome-icon
-            :icon="['fas', 'bookmark']"
-            :class="[
-              'cursor-pointer text-2xl',
-              {
-                'text-yellow-500': bookmark,
-                'text-gray-400': !bookmark,
-              },
-            ]"
-            @click="toggleBookmark"
-          />
+          <div class="flex items-center justify-center h-full">
+            <font-awesome-icon
+              :icon="['fas', 'bookmark']"
+              :class="[
+                'cursor-pointer transition-colors duration-200',
+                {
+                  'text-yellow-500': bookmark,
+                  'text-gray-400': !bookmark,
+                },
+              ]"
+              @click="toggleBookmark"
+            />
+          </div>
 
           <button
-            v-if="!event?.isFree"
+            v-if="!event?.is_free"
             @click="toggleBuy"
             :class="{
               'bg-green-600': !isBought,
@@ -105,6 +104,17 @@
             class="px-4 py-2 rounded text-white font-semibold transition-all duration-300 hover:bg-green-700"
           >
             {{ isBought ? "Bought" : "Buy" }}
+          </button>
+          <button
+            v-else
+            @click="toggleBuy"
+            :class="{
+              'bg-green-600': !isReserved,
+              'bg-gray-500': isReserved,
+            }"
+            class="px-4 py-2 rounded text-white font-semibold transition-all duration-300 hover:bg-green-700"
+          >
+            {{ isReserved ? "Reserved" : "Reserve" }}
           </button>
         </div>
       </div>
@@ -129,8 +139,6 @@
         class="mt-6"
       />
     </div>
-    <div class="right-20 m-12"><button>Edit</button></div>
-
     <CustomFooter class="mt-12" />
   </div>
 </template>
@@ -155,31 +163,32 @@ const user_id = useAuthStore().id;
 const router = useRoute();
 const event = ref(null);
 const isBought = ref(false);
+const isReserved = ref(false);
 
 const route = useRoute();
 const { id } = route.params;
 
 const { result, loading, error } = useQuery(getEvent, { id });
 
-const following = ref(false);
-const bookmark = ref(false);
-
 watch(
   result,
   (newValue) => {
     if (newValue && newValue.events_by_pk) {
       event.value = newValue.events_by_pk;
-
-      following.value = event.value.events_followers?.some(
-        (follow) => follow.user_id === user_id
-      );
-
-      bookmark.value = event.value.events_bookmarks?.some(
-        (bookmark) => bookmark.user_id === user_id
-      );
     }
   },
   { immediate: true }
+);
+
+const ownEvent = event?.value?.uid == user_id;
+const isClosed = new Date(event?.value?.end_date) < Date.now();
+
+const following = ref(
+  event?.events_followers?.some((follow) => follow?.user_id === user_id)
+);
+
+const bookmark = ref(
+  event?.events_bookmarks?.some((bookmark) => bookmark?.user_id === user_id)
 );
 
 const event_images = computed(() => {
@@ -201,9 +210,6 @@ const location = computed(() => {
   }
   return [0, 0];
 });
-
-const ownEvent = event?.value?.uid == user_id
-
 
 const {
   mutate: InsertFollowersMutation,
@@ -299,19 +305,20 @@ const toggleBookmark = async () => {
   }
 };
 
-const editEvent = () => {
+const editHandler = () => {
   // Handle edit event logic here
   console.log("Edit event clicked");
 };
 
 const toggleBuy = () => {
   isBought.value = !isBought.value;
+  isReserved.value = !isReserved.value;
 };
 
-const isFreeText = computed(() => (event.value?.isFree ? "Free" : "Paid"));
+const isFreeText = computed(() => (event?.value?.is_free ? "Free" : "Paid"));
 
 const freeClass = computed(() =>
-  event.value?.isFree
+  event.value?.is_free
     ? "bg-green-300 text-white px-2 py-1 rounded"
     : "bg-red-800 text-white px-2 py-1 rounded"
 );

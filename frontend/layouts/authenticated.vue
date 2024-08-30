@@ -78,7 +78,7 @@
                 <ul class="py-1">
                   <li>
                     <NuxtLink
-                      to="/profile"
+                      to="/user/profile"
                       class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
                       >Profile</NuxtLink
                     >

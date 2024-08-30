@@ -82,8 +82,6 @@ async function fetchCategory() {
   } catch (error) {
     console.error("Error:", error.message);
     toast.error("Error fetching category data", {
-      transition: toast.TRANSITIONS.FLIP,
-      position: toast.POSITION.TOP_RIGHT,
     });
   }
 }
@@ -105,16 +103,13 @@ async function updateHandler(values) {
   } catch (error) {
     console.error("Error:", error);
     toast.error("Something went wrong, try again", {
-      transition: toast.TRANSITIONS.FLIP,
-      position: toast.POSITION.TOP_RIGHT,
+
     });
   }
 }
 
 onDone(() => {
   toast.success("Category updated successfully", {
-    transition: toast.TRANSITIONS.FLIP,
-    position: toast.POSITION.TOP_RIGHT,
   });
   navigateTo("/admin/categories");
 });
@@ -122,8 +117,7 @@ onDone(() => {
 onError((error) => {
   console.error("Error:", error.message);
   toast.error("Something went wrong, try again", {
-    transition: toast.TRANSITIONS.FLIP,
-    position: toast.POSITION.TOP_RIGHT,
+  
   });
 });
 

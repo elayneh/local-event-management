@@ -86,10 +86,7 @@ function submitHandler(values) {
   console.log("Login form data: ", loginCredentials);
   mutate(loginCredentials);
   onDone((result) => {
-    toast.success("User logged in successfully", {
-      transition: toast.TRANSITIONS.FLIP,
-      position: toast.POSITION.TOP_RIGHT,
-    });
+    toast.success("User logged in successfully", {});
     Cookies.set("token", result.data.register.token, { expires: 3 });
     authenticationStore.setToken(result.data.register.token);
     authenticationStore.setId(result.data.register.id);
@@ -99,10 +96,7 @@ function submitHandler(values) {
   });
   onError((error) => {
     console.log("Error: ", error.message);
-    toast.error("Something want wrong try again", {
-      transition: toast.TRANSITIONS.FLIP,
-      position: toast.POSITION.TOP_RIGHT,
-    });
+    toast.error("Something want wrong try again", {});
   });
 }
 </script>

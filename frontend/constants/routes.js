@@ -20,13 +20,14 @@ export const adminRoutes = [
 ];
 
 export const userRoutes = [
-  /^\/user\/events\/[a-zA-Z0-9-]+$/,
+  "/user",
   "/user/events",
   "/user/events/bookmarked",
   "/user/events/following",
   "/user/events/tickets",
+  "/user/events/create-event",
+  "/user/profile",
+  /^\/user\/events\/[a-zA-Z0-9-]+$/,
   /^\/events\/[a-zA-Z0-9-]+$/,
   "/events/update",
-  "/user/events/create-event",
-  "/user",
 ];

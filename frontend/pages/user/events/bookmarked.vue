@@ -59,7 +59,6 @@ const user_id = isAuthnticated.id;
 
 const { bookmarkedEvents } = useUserFetchData(user_id);
 const { tags, categories } = useFetchData();
-console.log(user_id);
 const visibleEvents = ref([]);
 const itemsPerPage = 3;
 const currentPage = ref(1);

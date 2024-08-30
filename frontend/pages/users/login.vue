@@ -93,8 +93,7 @@ function submitHandler(values) {
   onDone((result) => {
     const role = result.data.login.role;
     toast.success("User logged in successfully", {
-      transition: toast.TRANSITIONS.FLIP,
-      position: toast.POSITION.TOP_RIGHT,
+     
     });
     Cookies.set("token", result.data.login.token, { expires: 3 });
     authenticationStore.setToken(result.data.login.token);
@@ -109,10 +108,7 @@ function submitHandler(values) {
   });
   onError((error) => {
     console.log("Error: ", error.message);
-    toast.error("Invalid Email or Password", {
-      transition: toast.TRANSITIONS.FLIP,
-      position: toast.POSITION.TOP_RIGHT,
-    });
+    toast.error("Invalid Email or Password", {});
   });
 }
 </script>

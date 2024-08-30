@@ -6,7 +6,7 @@
       @submit="submitSecondLevelEvent"
       class="bg-white px-8 pt-6 pb-8 mb-4"
       :validation-schema="secondLevelSchemaValidation"
-      >
+    >
       <div class="mb-4">
         <label class="block text-gray-700 text-sm font-bold mb-2"
           >Add Event Tags</label
@@ -169,10 +169,7 @@ const submitSecondLevelEvent = async (values) => {
     insertEventImageMutation({ objects: imageData });
   } catch (error) {
     console.error("Error:", error);
-    toast.error("Failed to add images and tags", {
-      transition: toast.TRANSITIONS.FLIP,
-      position: toast.POSITION.TOP_RIGHT,
-    });
+    toast.error("Failed to add images and tags", {});
   }
 };
 

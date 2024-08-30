@@ -72,16 +72,14 @@ async function submitHandler(values) {
   } catch (error) {
     console.error("Error:", error);
     toast.error("Something went wrong, try again", {
-      transition: toast.TRANSITIONS.FLIP,
-      position: toast.POSITION.TOP_RIGHT,
+      
     });
   }
 }
 
 onDone((result) => {
   toast.success("Tag added successfully", {
-    transition: toast.TRANSITIONS.FLIP,
-    position: toast.POSITION.TOP_RIGHT,
+ 
   });
   navigateTo("/tags");
 });
@@ -89,8 +87,7 @@ onDone((result) => {
 onError((error) => {
   console.log("Error: ", error.message);
   toast.error("Something went wrong, try again", {
-    transition: toast.TRANSITIONS.FLIP,
-    position: toast.POSITION.TOP_RIGHT,
+   
   });
 });
 

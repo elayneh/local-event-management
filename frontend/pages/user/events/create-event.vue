@@ -382,8 +382,7 @@ const submitFirstStep = async (values) => {
   } catch (error) {
     console.error("First step validation errors:", error.errors);
     toast.error("Please fix the errors in the first step", {
-      transition: toast.TRANSITIONS.FLIP,
-      position: toast.POSITION.TOP_RIGHT,
+    
     });
   }
   console.log("Submit first step: ", firstSchemaData);
@@ -399,8 +398,7 @@ const submitSecondStep = async (values) => {
 
     if (!files || files.length === 0) {
       toast.error("No files selected", {
-        transition: toast.TRANSITIONS.FLIP,
-        position: toast.POSITION.TOP_RIGHT,
+      
       });
       return;
     }
@@ -455,8 +453,7 @@ const submitSecondStep = async (values) => {
   } catch (error) {
     console.error("Error:", error);
     toast.error("Creating event failed, please try again", {
-      transition: toast.TRANSITIONS.FLIP,
-      position: toast.POSITION.TOP_RIGHT,
+    
     });
   }
 };
@@ -476,8 +473,7 @@ const submitSecondLevelEvent = async (tags) => {
     );
   } catch (error) {
     toast.error("Failed to add tags", {
-      transition: toast.TRANSITIONS.FLIP,
-      position: toast.POSITION.TOP_RIGHT,
+     
     });
   }
 };
