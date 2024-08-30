@@ -110,7 +110,6 @@ const isTicketAvailable = ref(
   props.event?.events_tickets?.quantity &&
     props.event?.events_tickets?.quantity < props.event?.capacity
 );
-console.log("props.event: ", props.event?.events_tickets?.quantity);
 
 const isticketavailable = isTicketAvailable.value;
 const isBought = ref(

@@ -1,4 +1,4 @@
-<template>
+<<template>
   <div>
     <footer class="bg-gray-800 text-white py-12 mt-12">
       <div
@@ -63,3 +63,4 @@
 </template>
 
 <script setup></script>
+>

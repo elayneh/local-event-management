@@ -5,6 +5,11 @@
     <div
       class="bg-white shadow-xl rounded-lg p-8 w-full max-w-4xl mt-24 mx-8 transform transition-transform duration-300 ease-in-out hover:scale-105"
     >
+      <div class="flex justify-end">
+        <button @click="navigateTo('/user')" aria-label="Close">
+          <font-awesome-icon :icon="['fas', 'times']" />
+        </button>
+      </div>
       <div class="flex flex-col justify-center items-center">
         <div
           class="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-gray-500"
@@ -128,8 +133,12 @@ const isEditing = ref(false);
 const editableUser = ref({ ...user.value });
 
 const schema = object({
-  username: string().required("Username is required").min(3, "Username must be at least 3 characters"),
-  email: string().required("Email is required").email("Email must be a valid email address"),
+  username: string()
+    .required("Username is required")
+    .min(3, "Username must be at least 3 characters"),
+  email: string()
+    .required("Email is required")
+    .email("Email must be a valid email address"),
 });
 
 const { mutate: updateUserMutation } = useMutation(UpdateUser);
@@ -165,5 +174,4 @@ const cancelEdit = () => {
 definePageMeta({
   layout: "authenticated",
 });
-
 </script>

@@ -1,4 +1,4 @@
-import { ref, watch } from "vue";
+import { ref } from "vue";
 import { useQuery } from "@vue/apollo-composable";
 import getEvents from "~/graphql/queries/events/getEvents.gql";
 import getCategories from "~/graphql/queries/categories/getCategories.gql";
@@ -10,35 +10,38 @@ export default function useFetchData() {
   const tags = ref([]);
 
   const {
-    result: eventResult,
+    onResult: onEventResult,
     loading: eventLoading,
     error: eventError,
   } = useQuery(getEvents);
-  watch(eventResult, (newResult) => {
-    if (newResult?.events) {
-      events.value = newResult.events;
+
+  onEventResult(({ data }) => {
+    if (data?.events) {
+      events.value = data.events;
     }
   });
 
   const {
-    result: categoryResult,
+    onResult: onCategoryResult,
     loading: loadingCategories,
     error: categoryError,
   } = useQuery(getCategories);
-  watch(categoryResult, (newResult) => {
-    if (newResult?.categories) {
-      categories.value = newResult.categories;
+
+  onCategoryResult(({ data }) => {
+    if (data?.categories) {
+      categories.value = data.categories;
     }
   });
 
   const {
-    result: tagResult,
+    onResult: onTagResult,
     loading: loadingTags,
     error: tagError,
   } = useQuery(getTags);
-  watch(tagResult, (newResult) => {
-    if (newResult?.tags) {
-      tags.value = newResult.tags;
+
+  onTagResult(({ data }) => {
+    if (data?.tags) {
+      tags.value = data.tags;
     }
   });
 
