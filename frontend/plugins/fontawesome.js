@@ -8,6 +8,12 @@ import {
   faBookmark,
   faUserCircle,
   faTimes,
+  faTachometerAlt,
+  faUser,
+  faCalendarAlt,
+  faTag,
+  faCog,
+  faSignOutAlt,
 } from "@fortawesome/free-solid-svg-icons";
 
 export default defineNuxtPlugin((nuxtApp) => {
@@ -17,7 +23,13 @@ export default defineNuxtPlugin((nuxtApp) => {
     faCaretDown,
     faBookmark,
     faUserCircle,
-    faTimes
+    faTimes,
+    faTachometerAlt,
+    faUser,
+    faCalendarAlt,
+    faTag,
+    faCog,
+    faSignOutAlt
   );
 
   nuxtApp.vueApp.component("font-awesome-icon", FontAwesomeIcon);

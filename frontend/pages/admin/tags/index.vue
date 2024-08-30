@@ -47,21 +47,19 @@ import getTags from "~/graphql/queries/tags/getTags.gql";
 
 const tags = ref([]);
 
-const allTags = async () => {
-  const {
-    result: tagsResult,
-    loading: tagsLoading,
-    error: tagsError,
-    onResult,
-  } = useQuery(getTags);
+const {
+  result: tagsResult,
+  loading: tagsLoading,
+  error: tagsError,
+  onResult,
+} = useQuery(getTags);
 
-  onResult(({ data }) => {
-    if (data) {
-      tags.value = data.tags;
-    }
-  });
-  tags.value = result.value.tags;
-};
+onResult((response) => {
+  const newResult = response.data.tags;
+  if (newResult) {
+    tags.value = newResult;
+  }
+});
 
 onMounted(async () => {
   await allTags();

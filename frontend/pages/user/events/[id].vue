@@ -153,9 +153,9 @@
 
     <div
       v-if="isEditing"
-      class="flex justify-center w-full mb-64 overflow-x-auto px-4"
+      class="flex justify-center w-full mb-64 overflow-x-auto px-32"
     >
-      <div class="min-w-[800px] bg-white p-6 rounded-lg shadow-lg">
+      <div class="min-w-[600px] bg-white p-6 rounded-lg shadow-lg px-12">
         <Form
           @submit="handleSubmit(submitForm)"
           class="px-8 py-6 bg-white rounded-lg shadow-lg mt-12"
@@ -188,7 +188,7 @@
               >Title</label
             >
             <Field
-              v-model="event.title"
+              v-model="editableEvent.title"
               id="title"
               name="title"
               type="text"
@@ -198,14 +198,13 @@
             <ErrorMessage name="title" class="text-red-500 text-sm mt-1" />
           </div>
 
-          <!-- Description Field -->
           <div class="mb-4">
             <label for="description" class="block text-lg font-medium mb-2"
               >Description</label
             >
             <Field
               id="description"
-              v-model="event.description"
+              v-model="editableEvent.description"
               name="description"
               as="textarea"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg"
@@ -222,10 +221,10 @@
               >Start Date</label
             >
             <Field
-              v-model="event.start_date"
+              v-model="editableEvent.start_date"
               id="start_date"
               name="start_date"
-              type="date"
+              type="datetime-local"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg"
             />
             <ErrorMessage name="start_date" class="text-red-500 text-sm mt-1" />
@@ -236,10 +235,10 @@
               >End Date</label
             >
             <Field
-              v-model="event.end_date"
+              v-model="editableEvent.end_date"
               id="end_date"
               name="end_date"
-              type="date"
+              type="datetime-local"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg"
             />
             <ErrorMessage name="end_date" class="text-red-500 text-sm mt-1" />
@@ -250,7 +249,7 @@
               >Address</label
             >
             <Field
-              v-model="event.address"
+              v-model="editableEvent.address"
               id="address"
               name="address"
               type="text"
@@ -265,7 +264,7 @@
               >Venue</label
             >
             <Field
-              v-model="event.venue"
+              v-model="editableEvent.venue"
               id="venue"
               name="venue"
               type="text"
@@ -280,7 +279,7 @@
               >Capacity</label
             >
             <Field
-              v-model="event.capacity"
+              v-model="editableEvent.capacity"
               id="capacity"
               name="capacity"
               type="number"
@@ -295,7 +294,7 @@
               >Price</label
             >
             <Field
-              v-model="event.price"
+              v-model="editableEvent.price"
               id="price"
               name="price"
               type="number"
@@ -304,7 +303,14 @@
             />
             <ErrorMessage name="price" class="text-red-500 text-sm mt-1" />
           </div>
-          <div class="flex justify-end">
+          <div>
+            <button
+              @click="cancelEdit"
+              class="bg-red-400 hover:bg-red-600 py-2 px-8 rounded mx-32"
+            >
+              Cancel
+            </button>
+
             <button
               type="submit"
               :disabled="isSubmitting"
@@ -334,6 +340,7 @@ import { InsertFollowers } from "~/graphql/mutations/event_followers/InsertFollo
 import { DeleteFollowers } from "~/graphql/mutations/event_followers/DeleteFollowers.gql";
 import { InsertBookmarks } from "~/graphql/mutations/event_bookmarks/InsertBookmarks.gql";
 import { DeleteBookmarks } from "~/graphql/mutations/event_bookmarks/DeleteBookmarks.gql";
+import { UpdateEvent } from "~/graphql/mutations/events/update.gql";
 
 const authStore = useAuthStore();
 const isAuthenticated = computed(() => authStore.isAuthenticated);
@@ -348,8 +355,8 @@ const isClosed = ref(false);
 const following = ref(false);
 const bookmark = ref(false);
 const isEditing = ref(false);
+const editableEvent = ref({});
 
-// Fetch Event Data
 const { result, loading, error, onResult } = useQuery(getEvent, {
   id: router.params.id,
 });
@@ -357,6 +364,7 @@ onResult((response) => {
   const newResult = response.data?.events_by_pk;
   if (newResult) {
     event.value = newResult;
+    editableEvent.value = { ...event.value };
     ownEvent.value = event?.value?.uid == user_id;
     isClosed.value = new Date(event?.value?.end_date) < Date.now();
 
@@ -370,9 +378,20 @@ onResult((response) => {
   } else {
     console.error.call("Error: events_by_pk not found");
   }
+  console.log("Events: ", event);
 });
 
-// Event Images and Location
+const { mutate: updateEventMutation } = useMutation(UpdateEvent);
+
+const editHandler = () => {
+  isEditing.value = true;
+  editableEvent.value = { ...event.value };
+};
+
+const cancelEdit = () => {
+  isEditing.value = false;
+};
+
 const event_images = computed(() => {
   if (event.value?.event_images) {
     const imagesArray = event?.value.event_images
@@ -393,7 +412,6 @@ const location = computed(() => {
   return [0, 0];
 });
 
-// Mutation Hooks
 const {
   mutate: InsertFollowersMutation,
   onDone: onInsertFollowersDone,
@@ -422,7 +440,6 @@ const {
   onError: onDeleteBookmarkError,
 } = useAuthenticatedMutation(DeleteBookmarks);
 
-// Toggle Functions
 const toggleFollow = async () => {
   if (!user_id) {
     return router.push("/users/login");
@@ -486,10 +503,6 @@ const toggleBookmark = async () => {
   }
 };
 
-const editHandler = () => {
-  isEditing.value = true;
-};
-
 const toggleBuy = () => {
   isBought.value = !isBought.value;
   isReserved.value = !isReserved.value;
@@ -549,13 +562,27 @@ const { resetForm, handleSubmit, errors, isSubmitting, setFieldValue, values } =
   });
 
 const submitForm = async (values) => {
+  console.log("Values: ", values);
   try {
-    // Handle form submission for updating the event
-    // This should call your mutation or API method to update the event
-    console.log("Updated values:", values);
-    isEditing.value = false; // Exit edit mode on success
-  } catch (error) {
-    console.error("Error updating event:", error);
+    const { data } = await updateEventMutation({
+      id: event.value.id,
+      price: values.price,
+      description: values.description,
+      title: values.title,
+      address: values.address,
+      venue: values.venue,
+      capacity: values.capacity,
+      end_date: values.end_date,
+      start_date: values.start_date,
+    });
+    console.log("Updatting");
+    event.value = { ...editableEvent.value };
+
+    toast.success("The Event Updated Successfully!");
+    isEditing.value = false;
+  } catch (err) {
+    toast.error("Error Updating the event, try again");
+    console.error("Error updating the event: ", err);
   }
 };
 

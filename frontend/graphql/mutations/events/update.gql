@@ -1,0 +1,12 @@
+mutation UpdateEvent($id: uuid!) {
+  update_events_by_pk(pk_columns: { id: $id }) {
+    address
+    capacity
+    description
+    end_date
+    price
+    start_date
+    title
+    venue
+  }
+}

@@ -3,7 +3,6 @@
     <!-- Sidebar -->
     <Sidebar />
 
-    <!-- Main Content -->
     <div class="flex-1 bg-gray-100 p-6 overflow-auto">
       <NuxtPage />
     </div>

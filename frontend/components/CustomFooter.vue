@@ -1,4 +1,5 @@
-<<template>
+<
+<template>
   <div>
     <footer class="bg-gray-800 text-white py-12 mt-12">
       <div
@@ -42,7 +43,6 @@
           </form>
         </div>
 
-        <!-- Social Media Section -->
         <div class="mx-auto">
           <h3 class="text-lg font-semibold mb-4">Follow Us</h3>
           <div class="flex-col-1">

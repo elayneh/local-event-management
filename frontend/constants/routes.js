@@ -17,6 +17,8 @@ export const adminRoutes = [
   "/admin/categories/update/:id",
   "/admin/categories/delete/:id",
   "/admin/categories",
+  "/admin/tags",
+  "/admin/settings",
 ];
 
 export const userRoutes = [
