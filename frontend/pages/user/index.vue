@@ -2,8 +2,15 @@
   <div
     class="bg-gradient-to-r from-gray-100 via-red-300 to-gray-500 h-64 w-full"
   >
-    <div class="fixed w-full flex justify-center items-center pt-2 z-20">
-      <div v-if="openFilterModal"></div>
+    <div class="fixed left-96 flex-row justify-center items-center pt-2">
+      <div v-if="isModalVisible">
+        <FilterModal
+          v-if="isModalVisible"
+          :isVisible="isModalVisible"
+          @close-modal="isModalVisible = false"
+          @apply-filters="filterHandler"
+        />
+      </div>
       <div class="flex justify-center items-center space-x-4">
         <ul class="m-2">
           <li class="relative flex items-center">
@@ -70,16 +77,83 @@ import CustomEventCard from "@/components/CustomEventCard.vue";
 import TagsCategoriesComponent from "@/components/TagsCategoriesComponent.vue";
 import FeaturesComponent from "@/components/FeaturesComponent.vue";
 import CustomFooter from "@/components/CustomFooter.vue";
-import { ref, computed, watchEffect } from "vue";
+import { ref, computed, watchEffect, watch, onMounted, onUnmounted } from "vue";
 import useFetchData from "~/composables/useFetchData";
 import HomepageImage from "~/components/HomepageImage.vue";
+import { useQuery } from "@vue/apollo-composable";
+import getEvents from "~/graphql/queries/events/getEvents.gql";
 
-const { events, categories, tags } = useFetchData();
-console.log(events);
-const openFilterModal = ref(false);
+const searchQuery = ref(null);
+
+const { categories, tags } = useFetchData();
+
+const events = ref([]);
+
+const filteredEvents = ref({});
+const isModalVisible = ref(false);
 const openFilterModalHandler = () => {
-  openFilterModal.value = !openFilterModal.value;
-  console.log("openFilterModal: ", openFilterModal);
+  isModalVisible.value = !isModalVisible.value;
+};
+
+const filterHandler = async (event) => {
+  console.log("EVEnteee: ", event);
+  filteredEvents.value = event.detail;
+  await fetcher();
+};
+
+onMounted(async () => {
+  await fetcher();
+});
+
+watch(searchQuery, async (newSearchQuery) => {
+  await fetcher();
+});
+const fetcher = async () => {
+  const {
+    onResult: onEventResult,
+    loading: eventLoading,
+    error: eventError,
+  } = useQuery(getEvents, {
+    limit: 10,
+    offset: 0,
+    where: {
+      _and: [
+        {
+          _or: [
+            {
+              title: searchQuery.value
+                ? { _ilike: `%${searchQuery.value}%` }
+                : {},
+            },
+            {
+              description: searchQuery.value
+                ? { _ilike: `%${searchQuery.value}%` }
+                : {},
+            },
+            // {
+            //   tags: searchQuery.value
+            //     ? (where.tags = {
+            //         _in: `{${searchQuery.value
+            //           .split(" ")
+            //           .map((tag) => tag.trim())
+            //           .filter((tag) => tag !== "")}}`,
+            //       })
+            //     : {},
+            // },
+          ],
+        },
+        ...Object.entries(filteredEvents.value).map(([key, value]) => ({
+          [key]: value,
+        })),
+      ],
+    },
+  });
+
+  onEventResult(({ data }) => {
+    if (data?.events) {
+      events.value = data.events;
+    }
+  });
 };
 
 const visibleEvents = ref([]);
@@ -103,6 +177,15 @@ const loadMoreEvents = () => {
 const hasMoreEvents = computed(
   () => events.value.length > visibleEvents.value.length
 );
+
+onMounted(() => {
+  window.addEventListener("apply-filters", filterHandler);
+  fetcher();
+});
+
+onUnmounted(() => {
+  window.removeEventListener("apply-filters", filterHandler);
+});
 
 definePageMeta({ layout: "authenticated" });
 </script>

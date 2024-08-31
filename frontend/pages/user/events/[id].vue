@@ -74,7 +74,7 @@
               <strong>Capacity:</strong>
               {{ event?.capacity || "N/A" }} available spaces
             </p>
-            <p class="text-lg mb-6" v-if="event?.isFree === false">
+            <p class="text-lg mb-6" v-if="event?.is_free === false">
               <strong>Price:</strong> ${{ event?.price || "N/A" }}
             </p>
             <p v-if="isClosed"><strong>Closed</strong></p>
@@ -157,8 +157,11 @@
     >
       <div class="min-w-[600px] bg-white p-6 rounded-lg shadow-lg px-12">
         <Form
-          @submit="handleSubmit(submitForm)"
+          v-if="isEditing"
+          :validation-schema="schema"
+          @submit="saveEventChanges"
           class="px-8 py-6 bg-white rounded-lg shadow-lg mt-12"
+          v-slot="{ errors }"
         >
           <h2
             class="flex text-3xl font-extrabold mb-6 relative text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 justify-center"
@@ -195,7 +198,7 @@
               class="w-full px-3 py-2 border border-gray-300 rounded-lg"
               placeholder="Event Title"
             />
-            <ErrorMessage name="title" class="text-red-500 text-sm mt-1" />
+            <span class="text-red-500 text-sm mt-1">{{ errors.title }}</span>
           </div>
 
           <div class="mb-4">
@@ -210,10 +213,9 @@
               class="w-full px-3 py-2 border border-gray-300 rounded-lg"
               placeholder="Event Description"
             />
-            <ErrorMessage
-              name="description"
-              class="text-red-500 text-sm mt-1"
-            />
+            <span class="text-red-500 text-sm mt-1">{{
+              errors.description
+            }}</span>
           </div>
 
           <div class="mb-4">
@@ -227,7 +229,9 @@
               type="datetime-local"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg"
             />
-            <ErrorMessage name="start_date" class="text-red-500 text-sm mt-1" />
+            <span class="text-red-500 text-sm mt-1">{{
+              errors.start_date
+            }}</span>
           </div>
 
           <div class="mb-4">
@@ -241,10 +245,10 @@
               type="datetime-local"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg"
             />
-            <ErrorMessage name="end_date" class="text-red-500 text-sm mt-1" />
+            <span class="text-red-500 text-sm mt-1">{{ errors.end_date }}</span>
           </div>
 
-          <div class="mb-4">
+          <!-- <div class="mb-4">
             <label for="address" class="block text-lg font-medium mb-2"
               >Address</label
             >
@@ -257,7 +261,7 @@
               placeholder="Event Address"
             />
             <ErrorMessage name="address" class="text-red-500 text-sm mt-1" />
-          </div>
+          </div> -->
 
           <div class="mb-4">
             <label for="venue" class="block text-lg font-medium mb-2"
@@ -271,7 +275,7 @@
               class="w-full px-3 py-2 border border-gray-300 rounded-lg"
               placeholder="Event Venue"
             />
-            <ErrorMessage name="venue" class="text-red-500 text-sm mt-1" />
+            <span class="text-red-500 text-sm mt-1">{{ errors.venue }}</span>
           </div>
 
           <div class="mb-4">
@@ -286,10 +290,56 @@
               class="w-full px-3 py-2 border border-gray-300 rounded-lg"
               placeholder="Event Capacity"
             />
-            <ErrorMessage name="capacity" class="text-red-500 text-sm mt-1" />
+            <span class="text-red-500 text-sm mt-1">{{ errors.capacity }}</span>
           </div>
 
-          <div class="mb-4" v-if="!values.is_free">
+          <div class="mb-4">
+            <label for="is_free" class="block text-lg font-medium mb-2"
+              >Is free</label
+            >
+            <div class="flex items-center space-x-4">
+              <label class="inline-flex items-center">
+                <Field
+                  v-model="editableEvent.is_free"
+                  id="is_freeTrue"
+                  name="is_free"
+                  type="radio"
+                  :value="true"
+                  class="form-radio text-blue-600"
+                />
+                <span class="ml-2">Yes</span>
+              </label>
+              <label class="inline-flex items-center">
+                <Field
+                  v-model="editableEvent.is_free"
+                  id="is_freeFalse"
+                  name="is_free"
+                  type="radio"
+                  :value="false"
+                  class="form-radio text-blue-600"
+                />
+                <span class="ml-2">No</span>
+              </label>
+            </div>
+            <span class="text-red-500 text-sm mt-1">{{ errors.is_free }}</span>
+          </div>
+
+          <div class="mb-4" v-if="!editableEvent.is_free">
+            <label for="price" class="block text-lg font-medium mb-2"
+              >Price</label
+            >
+            <Field
+              v-model="editableEvent.price"
+              id="price"
+              name="price"
+              type="number"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg"
+              placeholder="Event Price"
+            />
+            <span class="text-red-500 text-sm mt-1">{{ errors.price }}</span>
+          </div>
+
+          <!-- <div class="mb-4" v-if="!values.is_free">
             <label for="price" class="block text-lg font-medium mb-2"
               >Price</label
             >
@@ -302,21 +352,20 @@
               placeholder="Event Price"
             />
             <ErrorMessage name="price" class="text-red-500 text-sm mt-1" />
-          </div>
-          <div>
-            <button
-              @click="cancelEdit"
-              class="bg-red-400 hover:bg-red-600 py-2 px-8 rounded mx-32"
-            >
-              Cancel
-            </button>
-
+          </div> -->
+          <div class="mt-12 flex justify-center items-center">
             <button
               type="submit"
-              :disabled="isSubmitting"
-              class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all duration-300"
+              class="bg-green-600 text-white px-6 py-2 rounded-lg shadow hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 mr-32"
             >
-              {{ isSubmitting ? "Saving..." : "Save Changes" }}
+              Save
+            </button>
+            <button
+              type="button"
+              @click="cancelEdit"
+              class="bg-red-600 text-white px-6 py-2 rounded-lg shadow hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+            >
+              Cancel
             </button>
           </div>
         </Form>
@@ -341,6 +390,7 @@ import { DeleteFollowers } from "~/graphql/mutations/event_followers/DeleteFollo
 import { InsertBookmarks } from "~/graphql/mutations/event_bookmarks/InsertBookmarks.gql";
 import { DeleteBookmarks } from "~/graphql/mutations/event_bookmarks/DeleteBookmarks.gql";
 import { UpdateEvent } from "~/graphql/mutations/events/update.gql";
+import { toast } from "vue3-toastify";
 
 const authStore = useAuthStore();
 const isAuthenticated = computed(() => authStore.isAuthenticated);
@@ -528,48 +578,40 @@ const schema = yup.object({
   description: yup.string().required("Description is required"),
   start_date: yup.date().required("Start date is required"),
   end_date: yup.date().required("End date is required"),
-  address: yup.string().required("Address is required"),
+  // address: yup.string().required("Address is required"),
   venue: yup.string().required("Venue is required"),
   capacity: yup
     .number()
     .required("Capacity is required")
     .positive("Capacity must be positive"),
-  price: yup
-    .number()
-    .nullable()
-    .when("is_free", {
-      is: false,
-      then: yup
-        .number()
-        .required("Price is required")
-        .positive("Price must be positive"),
-    }),
+  price: yup.number().nullable(),
 });
 
-const { resetForm, handleSubmit, errors, isSubmitting, setFieldValue, values } =
-  useForm({
-    validationSchema: schema,
-    initialValues: {
-      title: event.value?.title || "",
-      description: event.value?.description || "",
-      start_date: event.value?.start_date || "",
-      end_date: event.value?.end_date || "",
-      address: event.value?.address || "",
-      venue: event.value?.venue || "",
-      capacity: event.value?.capacity || "",
-      price: event.value?.price || null,
-    },
-  });
+// const { resetForm, handleSubmit, errors, isSubmitting, setFieldValue, values } =
+//   useForm({
+//     validationSchema: schema,
+//     initialValues: {
+//       title: event.value?.title || "",
+//       description: event.value?.description || "",
+//       start_date: event.value?.start_date || "",
+//       end_date: event.value?.end_date || "",
+//       // address: event.value?.address || "",
+//       venue: event.value?.venue || "",
+//       capacity: event.value?.capacity || "",
+//       price: event.value?.price || 0,
+//       is_free: event.value?.is_free || false,
+//     },
+//   });
 
-const submitForm = async (values) => {
+const saveEventChanges = async (values) => {
   console.log("Values: ", values);
   try {
     const { data } = await updateEventMutation({
       id: event.value.id,
-      price: values.price,
+      price: values.price || 0,
       description: values.description,
       title: values.title,
-      address: values.address,
+      is_free: values.is_free,
       venue: values.venue,
       capacity: values.capacity,
       end_date: values.end_date,

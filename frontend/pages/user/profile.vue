@@ -61,7 +61,7 @@
             <div class="mt-12 flex justify-center items-center">
               <button
                 type="submit"
-                class="bg-green-600 text-white px-6 py-2 rounded-lg shadow hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 mr-4"
+                class="bg-green-600 text-white px-6 py-2 rounded-lg shadow hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 mr-32"
               >
                 Save
               </button>

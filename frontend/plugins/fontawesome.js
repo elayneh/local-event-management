@@ -14,6 +14,7 @@ import {
   faTag,
   faCog,
   faSignOutAlt,
+  faClose,
 } from "@fortawesome/free-solid-svg-icons";
 
 export default defineNuxtPlugin((nuxtApp) => {
@@ -29,7 +30,8 @@ export default defineNuxtPlugin((nuxtApp) => {
     faCalendarAlt,
     faTag,
     faCog,
-    faSignOutAlt
+    faSignOutAlt,
+    faClose
   );
 
   nuxtApp.vueApp.component("font-awesome-icon", FontAwesomeIcon);

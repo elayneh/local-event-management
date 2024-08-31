@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col h-screen">
-    <header class="fixed top-0 left-0 w-full z-50 bg-transparent">
+    <header class="fixed top-0 left-0 w-full bg-transparent">
       <nav class="flex pt-4 justify-between items-center bg-gray-1">
         <ul class="flex gap-4 items-center ml-20">
           <li class="flex items-center gap-2">
@@ -16,7 +16,7 @@
             </NuxtLink>
           </ul>
           <ul class="flex m-2">
-            <span>All What You Have</span>
+            <span>All What I have</span>
             <li class="relative items-center gap-2">
               <button @click.stop="toggleDropdown">
                 <font-awesome-icon

@@ -1,12 +1,28 @@
-mutation UpdateEvent($id: uuid!) {
-  update_events_by_pk(pk_columns: { id: $id }) {
-    address
-    capacity
-    description
-    end_date
-    price
-    start_date
-    title
-    venue
+mutation UpdateEvent(
+  $id: uuid!
+  # $address: String!
+  $title: String!
+  $description: String!
+  $price: numeric!
+  $start_date: timestamp!
+  $end_date: timestamp!
+  $venue: String!
+  $capacity: numeric!
+  $is_free: Boolean!
+) {
+  update_events_by_pk(
+    pk_columns: { id: $id }
+    _set: {
+      title: $title
+      description: $description
+      price: $price
+      start_date: $start_date
+      end_date: $end_date
+      venue: $venue
+      capacity: $capacity
+      is_free: $is_free
+    }
+  ) {
+    id
   }
 }

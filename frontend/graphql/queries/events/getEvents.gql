@@ -1,5 +1,10 @@
-query GetEvents {
-  events(order_by: { end_date: asc }) {
+query GetEvents($limit: Int!, $offset: Int!, $where: events_bool_exp) {
+  events(
+    limit: $limit
+    offset: $offset
+    where: $where
+    order_by: { end_date: asc }
+  ) {
     address
     capacity
     category_id

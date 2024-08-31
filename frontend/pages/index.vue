@@ -2,26 +2,52 @@
   <div
     class="bg-gradient-to-r from-gray-100 via-red-300 to-gray-500 h-64 w-full"
   >
-    <div class="w-full flex justify-center items-center py-24 gap-24">
-      <div>
-        <img :src="event_images[0]" class="rounded-lg shadow-lg" />
+    <div class="fixed left-96 flex-row justify-center items-center pt-2">
+      <div v-if="isModalVisible">
+        <FilterModal
+          v-if="isModalVisible"
+          :isVisible="isModalVisible"
+          @close-modal="isModalVisible = false"
+          @apply-filters="filterHandler"
+        />
       </div>
-      <div>
-        <h2 class="text-xl font-bold mt-4 text-gray-800">
-          Discover Events Near You
-        </h2>
-        <p class="text-gray-600">
-          Find and attend local events that match your interests.
-        </p>
+      <div class="flex justify-center items-center space-x-4">
+        <ul class="m-2">
+          <li class="relative flex items-center">
+            <input
+              v-model="searchQuery"
+              @change="searchHandler"
+              class="w-96 h-10 rounded-full pl-4 pr-10 bg-gray-300 flex items-center focus:outline-none focus:ring-1 focus:ring-gray-400"
+              placeholder="Search..."
+            />
+            <font-awesome-icon
+              :icon="['fas', 'search']"
+              class="text-gray-600 absolute right-4"
+            />
+          </li>
+        </ul>
+
+        <ul class="m-2">
+          <li class="relative">
+            <button @click="openFilterModalHandler" class="flex items-center">
+              <font-awesome-icon
+                :icon="['fas', 'filter']"
+                class="text-gray-600"
+              />
+              <span class="ml-2 text-gray-500">Filter</span>
+            </button>
+          </li>
+        </ul>
       </div>
     </div>
+    <HomepageImage />
 
     <h2 class="text-2xl font-bold mb-4 text-center text-">Latest Events</h2>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <div v-for="event in events" :key="event.id">
         <!-- <NuxtLink :to="`/events/${event.id}`"> -->
-          <CustomEventCard :event="event" />
+        <CustomEventCard :event="event" />
         <!-- </NuxtLink> -->
       </div>
     </div>
@@ -43,11 +69,18 @@
 
 <script setup>
 import CustomEventCard from "@/components/CustomEventCard.vue";
-import { ref, computed } from "vue";
 import useFetchData from "~/composables/useFetchData";
 import defaultImage from "~/assets/images/home.png";
+import TagsCategoriesComponent from "@/components/TagsCategoriesComponent.vue";
+import FeaturesComponent from "@/components/FeaturesComponent.vue";
+import CustomFooter from "@/components/CustomFooter.vue";
+import { ref, computed, watchEffect, watch, onMounted, onUnmounted } from "vue";
+import { useQuery } from "@vue/apollo-composable";
+import getEvents from "~/graphql/queries/events/getEvents.gql";
+import HomepageImage from "~/components/HomepageImage.vue";
+const events = ref([]);
 
-const { events, categories, tags } = useFetchData();
+const { categories, tags } = useFetchData();
 const visibleEvents = ref([]);
 
 const itemsPerPage = 3;
@@ -81,4 +114,90 @@ const loadMoreEvents = () => {
 const hasMoreEvents = computed(
   () => events.value.length > visibleEvents.value.length
 );
+
+const searchQuery = ref(null);
+
+const filteredEvents = ref({});
+const isModalVisible = ref(false);
+const openFilterModalHandler = () => {
+  isModalVisible.value = !isModalVisible.value;
+};
+
+const filterHandler = async (event) => {
+  console.log("EVEnteee: ", event);
+  filteredEvents.value = event.detail;
+  await fetcher();
+};
+
+onMounted(async () => {
+  await fetcher();
+});
+
+watch(searchQuery, async (newSearchQuery) => {
+  await fetcher();
+});
+const fetcher = async () => {
+  const {
+    onResult: onEventResult,
+    loading: eventLoading,
+    error: eventError,
+  } = useQuery(getEvents, {
+    limit: 10,
+    offset: 0,
+    where: {
+      _and: [
+        {
+          _or: [
+            {
+              title: searchQuery.value
+                ? { _ilike: `%${searchQuery.value}%` }
+                : {},
+            },
+            {
+              description: searchQuery.value
+                ? { _ilike: `%${searchQuery.value}%` }
+                : {},
+            },
+            // {
+            //   tags: searchQuery.value
+            //     ? (where.tags = {
+            //         _in: `{${searchQuery.value
+            //           .split(" ")
+            //           .map((tag) => tag.trim())
+            //           .filter((tag) => tag !== "")}}`,
+            //       })
+            //     : {},
+            // },
+          ],
+        },
+        ...Object.entries(filteredEvents.value).map(([key, value]) => ({
+          [key]: value,
+        })),
+      ],
+    },
+  });
+
+  onEventResult(({ data }) => {
+    if (data?.events) {
+      events.value = data.events;
+    }
+  });
+};
+
+watchEffect(() => {
+  const startIndex = (currentPage.value - 1) * itemsPerPage;
+  visibleEvents.value = events.value.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
+});
+
+onMounted(() => {
+  window.addEventListener("apply-filters", filterHandler);
+  fetcher();
+});
+
+onUnmounted(() => {
+  window.removeEventListener("apply-filters", filterHandler);
+});
 </script>

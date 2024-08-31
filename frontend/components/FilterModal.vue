@@ -1,30 +1,20 @@
 <template>
-  <div class="fixed inset-0 bg-gray-800 bg-opacity-75 z-50 overflow-y-auto">
+  <div
+    class="fixed inset-0 bg-gray-800 bg-opacity-75 z-100 overflow-y-auto"
+    v-if="isVisible"
+  >
     <div
       class="relative max-w-3xl mx-auto mt-12 p-8 bg-white shadow-md rounded-lg overflow-y-auto h-[calc(100vh-3rem)]"
     >
       <button
-        @click="$emit('close')"
-        class="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+        @click="closeModal"
+        class="absolute top-4 right-4 p-2 bg-gray-200 hover:bg-red-100 rounded-full shadow-md transition-all duration-300 ease-in-out transform hover:scale-110 hover:shadow-lg text-gray-600 hover:text-gray-800"
       >
-        <svg
-          class="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M6 18L18 6M6 6l12 12"
-          />
-        </svg>
+        <font-awesome-icon :icon="['fas', 'times']" class="text-lg" />
       </button>
+
       <h2 class="text-lg font-semibold mb-4">Filter Events</h2>
 
-      <!-- Select payment -->
       <div class="mb-4">
         <label class="block text-sm font-medium mb-2">Payment</label>
         <div class="flex space-x-4">
@@ -49,7 +39,6 @@
         </div>
       </div>
 
-      <!-- Category -->
       <div class="mb-5">
         <label class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1"
           >Category</label
@@ -69,7 +58,15 @@
                   @click="removeCategory"
                   class="ml-2 text-white hover:text-gray-200"
                 >
-                  ×
+                  <button
+                    @click="closeModal"
+                    class="absolute top-4 right-4 p-2 bg-gray-200 hover:bg-gray-300 rounded-full shadow-md transition-all duration-300 ease-in-out transform hover:scale-110 hover:shadow-lg text-gray-600 hover:text-gray-800"
+                  >
+                    <font-awesome-icon
+                      :icon="['fas', 'times']"
+                      class="text-lg"
+                    />
+                  </button>
                 </button>
               </span>
               <span v-else class="text-gray-500">Select Category</span>
@@ -110,7 +107,6 @@
         </p>
       </div>
 
-      <!-- Tags Section -->
       <div class="mb-5">
         <label class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1"
           >Tags</label
@@ -129,10 +125,10 @@
               >
                 {{ tag.name }}
                 <button
-                  @click="removeTag(tag)"
-                  class="ml-2 text-white hover:text-gray-200"
+                  @click="closeModal"
+                  class="absolute top-4 right-4 p-2 bg-gray-200 hover:bg-gray-300 rounded-full shadow-md transition-all duration-300 ease-in-out transform hover:scale-110 hover:shadow-lg text-gray-600 hover:text-gray-800"
                 >
-                  ×
+                  <font-awesome-icon :icon="['fas', 'times']" class="text-lg" />
                 </button>
               </span>
               <span v-else class="text-gray-500">Select Tags</span>
@@ -197,7 +193,6 @@
         </p>
       </div>
 
-      <!-- Date -->
       <div class="mb-4 mt-20">
         <label class="block text-sm font-medium mb-2">Start Date</label>
         <input
@@ -215,7 +210,6 @@
         />
       </div>
 
-      <!-- Venue with Map Integration -->
       <div class="mb-4">
         <label class="block text-sm font-medium mb-2">Venue</label>
         <div class="relative">
@@ -225,14 +219,12 @@
             placeholder="Enter venue"
             class="w-full p-3 border rounded"
           />
-          <!-- Map Component Integration -->
           <div class="mt-2">
             <MapComponent @location-selected="handleLocationSelected" />
           </div>
         </div>
       </div>
 
-      <!-- Buttons -->
       <div
         class="mx-12 flex justify-center items-center justify-between space-between"
       >
@@ -240,7 +232,7 @@
           @click="applyFilters"
           class="bg-green-600 text-white px-6 py-3 rounded-full shadow-lg hover:bg-green-700"
         >
-          Apply
+          Filter
         </button>
         <button
           @click="resetFilters"
@@ -260,8 +252,8 @@ import { useQuery } from "@vue/apollo-composable";
 import getEvents from "~/graphql/queries/events/getEvents.gql";
 import getCategories from "~/graphql/queries/categories/getCategories.gql";
 import getTags from "~/graphql/queries/tags/getTags.gql";
+import { defineEmits, defineProps } from "vue";
 
-// Filter fields
 const venue = ref("");
 const start_date = ref("");
 const end_date = ref("");
@@ -284,6 +276,12 @@ const categoryError = ref("");
 const tagOptions = ref([]);
 
 const categoryOptions = ref([]);
+
+const props = defineProps({
+  isVisible: Boolean,
+});
+
+const emit = defineEmits(["item-selected", "close-modal"]);
 
 const { onResult: tagResult, refetch: refetchTags } = useQuery(getTags, {
   limit: 100,
@@ -308,7 +306,7 @@ categoryResult((result) => {
     categoryOptions.value = result.data.categories;
   }
 });
-// Computed property for filtering categories
+
 const filteredCategoryOptions = computed(() => {
   if (!categoryOptions.value) return [];
   if (categorySearchQuery.value) {
@@ -321,19 +319,16 @@ const filteredCategoryOptions = computed(() => {
   return categoryOptions.value;
 });
 
-// Method to toggle the category dropdown
 const toggleCategoryDropdown = () => {
   categoryDropdownOpen.value = !categoryDropdownOpen.value;
 };
 
-// Method to select a category
 const selectCategory = (category) => {
   selectedCategory.value = category;
   selectedCategoryValue.value = category.name;
   categoryDropdownOpen.value = false;
 };
 
-// Method to remove a category
 const removeCategory = () => {
   selectedCategory.value = null;
   selectedCategoryValue.value = null;
@@ -385,12 +380,13 @@ const generateWhereClause = () => {
     where.venue = { _ilike: `%${venue.value}%` };
   }
   if (start_date.value || end_date.value) {
-    where.event_start_time = {};
+    where.start_date = {};
     if (start_date.value) {
-      where.event_start_time._gte = start_date.value;
+      where.start_date._gte = start_date.value;
     }
+    where.end_date = {};
     if (end_date.value) {
-      where.event_end_time._lte = end_date.value;
+      where.end_date._lte = end_date.value;
     }
   }
   if (selectedCategoryValue.value) {
@@ -418,6 +414,7 @@ const clearSelectedTags = () => {
 
 const applyFilters = () => {
   emitFilterData();
+  closeModal();
 };
 
 const resetFilters = () => {
@@ -427,10 +424,14 @@ const resetFilters = () => {
   selectedCategoryValue.value = "";
   selectedTagValues.value = [];
   minPriceRange.value = 0;
-  maxPriceRange.value = 1000;
+  maxPriceRange.value = 5000;
   mapLocation.value = { lat: null, lng: null };
   emitFilterData();
 };
+
+function closeModal() {
+  emit("close-modal");
+}
 
 onMounted(() => {
   window.addEventListener("location-selected", handleLocationSelected);
@@ -440,18 +441,3 @@ onUnmounted(() => {
   window.removeEventListener("location-selected", handleLocationSelected);
 });
 </script>
-
-<style scoped>
-/* Optional: Customize select styles */
-select[multiple] {
-  height: auto;
-  min-height: 100px;
-}
-button:focus {
-  box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.5);
-}
-
-button:focus[aria-label="reset"] {
-  box-shadow: 0 0 0 3px rgba(75, 85, 99, 0.5);
-}
-</style>

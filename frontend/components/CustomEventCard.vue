@@ -2,7 +2,7 @@
   <div
     :class="[
       'bg-white shadow-lg rounded-lg overflow-hidden flex flex-col',
-      'transition-transform duration-300 ease-in-out transform hover:scale-105',
+      'transition-transform duration-300 ease-in-out hover:scale-105',
       customClass,
     ]"
     class="w-full max-w-md mx-auto p-4 hover:bg-indigo-50"
