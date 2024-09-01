@@ -24,7 +24,7 @@
           <td></td>
           <td class="py-2 px-4 border text-center">
             <button
-              @click="deleteUser(user.id)"
+              @click="handleDeleteUser(user.id)"
               class="text-red-500 hover:text-red-700 transition-colors duration-200"
             >
               <i class="fa fa-trash" aria-hidden="true"></i>
@@ -39,7 +39,9 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useQuery } from "@vue/apollo-composable";
+import deleteUser from "~/graphql/mutations/users/delete.gql";
 import getUsers from "~/graphql/queries/users/getUsers.gql";
+import { toast } from "vue3-toastify";
 
 const users = ref([]);
 
@@ -58,5 +60,48 @@ onUsersResult(({ data }) => {
     users.value = data.users;
   }
 });
+
+const {
+  mutate: deleteEventMutation,
+  loading: deleteLoading,
+  error: deleteError,
+} = useAuthenticatedMutation(deleteUser);
+
+const handleDeleteUser = async (user_id) => {
+  try {
+    const { data } = await deleteEventMutation(
+      { id: user_id },
+      {
+        onDone: () => {
+          users.value = users.value.filter((user) => user.id !== user_id);
+        },
+      }
+    );
+
+    if (data) {
+      toast.success("User deleted successfully", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+    }
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    toast.error("Failed to delete user", {
+      position: "top-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+    });
+  }
+};
+
 definePageMeta({ layout: "admin-dashboard" });
 </script>

@@ -381,9 +381,7 @@ const submitFirstStep = async (values) => {
     stepChanger();
   } catch (error) {
     console.error("First step validation errors:", error.errors);
-    toast.error("Please fix the errors in the first step", {
-    
-    });
+    toast.error("Please fix the errors in the first step", {});
   }
   console.log("Submit first step: ", firstSchemaData);
 };
@@ -397,9 +395,7 @@ const submitSecondStep = async (values) => {
     const files = values.event_images;
 
     if (!files || files.length === 0) {
-      toast.error("No files selected", {
-      
-      });
+      toast.error("No files selected", {});
       return;
     }
 
@@ -452,9 +448,7 @@ const submitSecondStep = async (values) => {
     navigateTo("/user");
   } catch (error) {
     console.error("Error:", error);
-    toast.error("Creating event failed, please try again", {
-    
-    });
+    toast.error("Creating event failed, please try again", {});
   }
 };
 
@@ -472,9 +466,7 @@ const submitSecondLevelEvent = async (tags) => {
       )
     );
   } catch (error) {
-    toast.error("Failed to add tags", {
-     
-    });
+    toast.error("Failed to add tags", {});
   }
 };
 
@@ -543,9 +535,9 @@ const firstLevelEventFormSchema = computed(() => ({
     {
       name: "isFree",
       label: "Is the event free?",
-      as: "select",
+      as: "radio",
       options: [
-        { value: "", label: "Select True / False" },
+        // { value: "", label: "Select True / False" },
         { value: "true", label: "True" },
         { value: "false", label: "False" },
       ],

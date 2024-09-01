@@ -42,5 +42,6 @@ query GetEvents($limit: Int!, $offset: Int!, $where: events_bool_exp) {
     title
     uid
     venue
+    created_at
   }
 }

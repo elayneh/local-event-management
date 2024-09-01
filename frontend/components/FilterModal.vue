@@ -117,23 +117,28 @@
             @click="toggleDropdown"
           >
             <div class="flex flex-wrap gap-2">
-              <span
-                v-if="selectedTags.length > 0"
-                v-for="tag in selectedTags"
-                :key="tag.value"
-                class="bg-blue-500 text-white rounded-full px-3 py-1 text-sm flex items-center"
-              >
-                {{ tag.name }}
-                <button
-                  @click="closeModal"
-                  class="absolute top-4 right-4 p-2 bg-gray-200 hover:bg-gray-300 rounded-full shadow-md transition-all duration-300 ease-in-out transform hover:scale-110 hover:shadow-lg text-gray-600 hover:text-gray-800"
+              <template v-if="selectedTags.length > 0">
+                <span
+                  v-for="tag in selectedTags"
+                  :key="tag.value"
+                  class="bg-blue-500 text-white rounded-full px-3 py-1 text-sm flex items-center"
                 >
-                  <font-awesome-icon :icon="['fas', 'times']" class="text-lg" />
-                </button>
-              </span>
+                  {{ tag.name }}
+                  <button
+                    @click="closeModal"
+                    class="absolute top-4 right-4 p-2 bg-gray-200 hover:bg-gray-300 rounded-full shadow-md transition-all duration-300 ease-in-out transform hover:scale-110 hover:shadow-lg text-gray-600 hover:text-gray-800"
+                  >
+                    <font-awesome-icon
+                      :icon="['fas', 'times']"
+                      class="text-lg"
+                    />
+                  </button>
+                </span>
+              </template>
               <span v-else class="text-gray-500">Select Tags</span>
             </div>
           </div>
+
           <div
             v-if="dropdownOpen"
             class="fixed inset-0 bg-gray-800 bg-opacity-70 flex justify-center items-center"

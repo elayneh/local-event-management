@@ -14,7 +14,7 @@
           Yes
         </button>
         <button
-          @click="navigateTo('/tags')"
+          @click="navigateTo('/admin/tags')"
           class="bg-gray-700 text-white px-4 py-2 rounded-full"
         >
           No
@@ -25,31 +25,58 @@
 </template>
 
 <script setup>
-import { useMutation } from "@vue/apollo-composable";
 import { useRouter, useRoute } from "vue-router";
+import { toast } from "vue3-toastify";
 import deleteTag from "~/graphql/mutations/tags/delete.gql";
 
+const tags = ref(null);
 const router = useRouter();
 const route = useRoute();
 
-const { mutate: deleteTagMutation } = useMutation(deleteTag);
+const { mutate: deleteTagMutation, onDone } =
+  useAuthenticatedMutation(deleteTag);
 
-const deleteHandler = () => {
+const deleteHandler = async () => {
   const tagId = route.params.id;
-  console.log("TagID: ", tagId);
+  try {
+    await deleteTagMutation(
+      { id: tagId },
+      {
+        onDone: () => {
+          tags.value = tags.value.filter((tag) => {
+            tag.id !== tagId;
+          });
+        },
+      }
+    );
 
-  deleteTagMutation({ id: tagId })
-    .then(({ data }) => {
-      console.log("Tag deleted", data);
-      router.push("/tags");
-    })
-    .catch((err) => {
-      console.error("Error deleting tag:", err);
+    toast.success("Tag deleted successfully", {
+      position: "top-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
     });
+  } catch (error) {
+    console.error("Error deleting the tag:", error);
+    toast.error("Failed to delete the tag", {
+      position: "top-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+    });
+  } finally {
+    navigateTo("/admin/tags");
+  }
 };
-definePageMeta({ layout: "admin-dashboard" });
 
 const navigateTo = (path) => {
   router.push(path);
 };
+definePageMeta({ layout: "admin-dashboard" });
 </script>
