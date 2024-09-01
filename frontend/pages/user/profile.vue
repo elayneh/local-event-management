@@ -143,7 +143,6 @@ const schema = object({
 
 const { mutate: updateUserMutation } = useMutation(UpdateUser);
 
-// Methods
 const editProfile = () => {
   isEditing.value = true;
   editableUser.value = { ...user.value };

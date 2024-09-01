@@ -26,7 +26,7 @@
               </button>
               <ul
                 v-if="eventDropDown"
-                class="absolute left-0 top-full mt-2 w-48 bg-white rounded-lg shadow-lg z-10"
+                class="absolute left-0 top-full mt-2 w-48 bg-white rounded-lg shadow-lg"
               >
                 <li>
                   <NuxtLink

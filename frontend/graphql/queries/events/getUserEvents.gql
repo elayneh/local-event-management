@@ -43,5 +43,6 @@ query GetUserEvents($id: uuid!) {
     start_date
     title
     venue
+    uid
   }
 }

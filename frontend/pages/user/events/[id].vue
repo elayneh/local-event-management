@@ -247,22 +247,6 @@
             />
             <span class="text-red-500 text-sm mt-1">{{ errors.end_date }}</span>
           </div>
-
-          <!-- <div class="mb-4">
-            <label for="address" class="block text-lg font-medium mb-2"
-              >Address</label
-            >
-            <Field
-              v-model="editableEvent.address"
-              id="address"
-              name="address"
-              type="text"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg"
-              placeholder="Event Address"
-            />
-            <ErrorMessage name="address" class="text-red-500 text-sm mt-1" />
-          </div> -->
-
           <div class="mb-4">
             <label for="venue" class="block text-lg font-medium mb-2"
               >Venue</label
@@ -338,21 +322,6 @@
             />
             <span class="text-red-500 text-sm mt-1">{{ errors.price }}</span>
           </div>
-
-          <!-- <div class="mb-4" v-if="!values.is_free">
-            <label for="price" class="block text-lg font-medium mb-2"
-              >Price</label
-            >
-            <Field
-              v-model="editableEvent.price"
-              id="price"
-              name="price"
-              type="number"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg"
-              placeholder="Event Price"
-            />
-            <ErrorMessage name="price" class="text-red-500 text-sm mt-1" />
-          </div> -->
           <div class="mt-12 flex justify-center items-center">
             <button
               type="submit"

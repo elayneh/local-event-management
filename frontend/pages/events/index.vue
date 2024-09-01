@@ -2,7 +2,7 @@
   <div
     class="bg-gradient-to-r from-gray-100 via-red-300 to-gray-500 h-64 w-full"
   >
-    <div class="fixed w-full flex justify-center items-center pt-2 z-50">
+    <div class="fixed w-full flex justify-center items-center pt-2">
       <div v-if="openFilterModal"></div>
       <div class="flex justify-center items-center space-x-4">
         <ul class="m-2">

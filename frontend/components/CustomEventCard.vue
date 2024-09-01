@@ -25,15 +25,17 @@
         <p class="text-gray-700 mb-2">
           <strong>Address:</strong> {{ event.address || "N/A" }}
         </p>
-        <p class="text-gray-700 mb-2 my-4">
+        <p class="text-gray-700 mb-2 my-4">Posted {{ hoursAgo }}hrs Ago</p>
+        <p class="text-gray-700 mb-2 my-4" v-if="!isClosed">
           <strong>End Date:</strong> {{ formatDate(event.end_date) || "N/A" }}
         </p>
+        <p v-else><strong>Closed</strong></p>
         <p class="text-gray-700 mt-12">
           <span :class="freeClass">{{ isFreeText }}</span>
         </p>
       </div>
     </NuxtLink>
-    <div
+    <!-- <div
       class="p-4 rounded-lg border border-gray-200 flex justify-between items-center"
     >
       <div
@@ -72,6 +74,52 @@
           isTicketAvailable ? (isBought ? "Bought" : "Buy") : "Not available"
         }}</span>
       </div>
+    </div> -->
+    <div v-if="!isOwnEvent" class="mt-8 flex justify-between items-center">
+      <button
+        @click="toggleFollow"
+        :class="{ 'bg-gray-300': following, 'bg-gray-600': !following }"
+        class="px-4 py-2 rounded text-white font-semibold transition-all duration-300 hover:bg-gray-800"
+      >
+        {{ following ? "Following" : "Follow" }}
+      </button>
+
+      <div class="flex items-center justify-center h-full">
+        <font-awesome-icon
+          :icon="['fas', 'bookmark']"
+          :class="[
+            'cursor-pointer transition-colors duration-200',
+            {
+              'text-yellow-500': bookmark,
+              'text-gray-400': !bookmark,
+            },
+          ]"
+          @click="toggleBookmark"
+        />
+      </div>
+
+      <button
+        v-if="!event?.is_free"
+        @click="toggleBuy"
+        :class="{
+          'bg-green-600': !isBought,
+          'bg-gray-500': isBought,
+        }"
+        class="px-4 py-2 rounded text-white font-semibold transition-all duration-300 hover:bg-green-700"
+      >
+        {{ isBought ? "Bought" : "Buy" }}
+      </button>
+      <button
+        v-else
+        @click="toggleBuy"
+        :class="{
+          'bg-green-600': !isReserved,
+          'bg-gray-500': isReserved,
+        }"
+        class="px-4 py-2 rounded text-white font-semibold transition-all duration-300 hover:bg-green-700"
+      >
+        {{ isReserved ? "Reserved" : "Reserve" }}
+      </button>
     </div>
   </div>
 </template>
@@ -88,6 +136,7 @@ import { DeleteBookmarks } from "~/graphql/mutations/event_bookmarks/DeleteBookm
 import { InsertTickets } from "~/graphql/mutations/event_tickets/InsertTickets.gql";
 import { DeleteTickets } from "~/graphql/mutations/event_tickets/DeleteTickets.gql";
 
+const isClosed = ref(false);
 const authStore = useAuthStore();
 const isAuthenticated = authStore.isAuthenticated;
 const user_id = authStore.id;
@@ -105,6 +154,12 @@ const props = defineProps({
 });
 
 const isFree = ref(props.event?.is_free);
+isClosed.value = new Date(props.event.end_date) < Date.now();
+
+const eventDate = new Date(props.event.created_at);
+const hoursAgo = Math.floor(
+  (Date.now() - eventDate.getTime()) / (1000 * 60 * 60)
+);
 
 const isTicketAvailable = ref(
   props.event?.events_tickets?.quantity &&
@@ -118,6 +173,9 @@ const isBought = ref(
   })
 );
 
+const isOwnEvent = computed(() => {
+  return props.event?.uid === user_id;
+});
 const following = ref(
   props.event?.events_followers?.some((follow) => follow?.user_id === user_id)
 );

@@ -374,7 +374,7 @@ const submitFirstStep = async (values) => {
       description: values.description,
       is_free: values.isFree,
       capacity: values.capacity,
-      price: values.isFree === "false" ? values.price : 0,
+      price: values.isFree === "false" ? values.price : 0.0,
       title: values.title,
       category_id: values.category_id,
     };
@@ -516,7 +516,7 @@ const firstLevelEventFormSchema = computed(() => ({
       type: "number",
       rules: yup
         .number()
-        .required("Total Capacity is required field")
+        .required("Total Capacity is a required field")
         .min(1, "Total Capacity cannot be less than 1"),
     },
     {
@@ -535,15 +535,16 @@ const firstLevelEventFormSchema = computed(() => ({
     {
       name: "isFree",
       label: "Is the event free?",
-      as: "radio",
+      as: "select",
       options: [
-        // { value: "", label: "Select True / False" },
-        { value: "true", label: "True" },
-        { value: "false", label: "False" },
+        { value: "", label: "Is the event free?" },
+        { value: "true", label: "Yes" },
+        { value: "false", label: "No" },
       ],
       attrs: {
         required: true,
       },
+      rules: yup.string().required("Please select if the event is free or not"),
     },
     {
       name: "price",
@@ -555,13 +556,16 @@ const firstLevelEventFormSchema = computed(() => ({
       },
       rules: yup.number().when("isFree", {
         is: "false",
-        then: yup.number().required("Price is required for paid events"),
-        otherwise: yup.number().disabled,
+        then: yup
+          .number()
+          .required("Price is required for paid events")
+          .min(0, "Price cannot be negative"),
+        otherwise: yup.number().notRequired(),
       }),
+      visible: (formValues) => formValues.isFree === "false", // Display only if the event is not free
     },
   ],
 }));
-
 const secondLevelEventFormSchema = computed(() => ({
   fields: [
     {

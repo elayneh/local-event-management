@@ -46,7 +46,9 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <div v-for="event in events" :key="event.id">
-        <CustomEventCard :event="event" />
+        <!-- <template v-if="event?.value.uid !== user_id"> -->
+          <CustomEventCard :event="event" />
+        <!-- </template> -->
       </div>
     </div>
 
@@ -82,6 +84,9 @@ import useFetchData from "~/composables/useFetchData";
 import HomepageImage from "~/components/HomepageImage.vue";
 import { useQuery } from "@vue/apollo-composable";
 import getEvents from "~/graphql/queries/events/getEvents.gql";
+import { useAuthStore } from "~/stores";
+
+const user_id = useAuthStore().id;
 
 const searchQuery = ref(null);
 
@@ -96,7 +101,6 @@ const openFilterModalHandler = () => {
 };
 
 const filterHandler = async (event) => {
-  console.log("EVEnteee: ", event);
   filteredEvents.value = event.detail;
   await fetcher();
 };
