@@ -1,3 +1,62 @@
+<script setup>
+import * as yup from "yup";
+import CustomCard from "~/components/CustomCard.vue";
+import DynamicForm from "~/components/DynamicForm.vue";
+import addtag from "~/graphql/mutations/tags/add.gql";
+import { toast } from "vue3-toastify";
+import { reactive } from "vue";
+
+const {
+  mutate: insertTagMutation,
+  onDone,
+  onError,
+} = useAuthenticatedMutation(addtag);
+const formSchema = reactive({
+  fields: [
+    {
+      name: "name",
+      as: "input",
+      placeholder: "Tag Name",
+      rules: yup.string().required("Tag name is required"),
+    },
+    {
+      name: "description",
+      as: "textarea",
+      placeholder: "Tag Description",
+      rules: yup.string().required("Tag description is required"),
+    },
+  ],
+});
+
+async function submitHandler(values) {
+  try {
+    const tagData = {
+      name: values.name,
+      description: values.description,
+    };
+
+    insertTagMutation(tagData);
+  } catch (error) {
+    console.error("Error:", error);
+    toast.error("Something went wrong, try again", {});
+  }
+}
+
+onDone((result) => {
+  toast.success("Tag added successfully", {});
+  navigateTo("/tags");
+});
+
+onError((error) => {
+  console.log("Error: ", error.message);
+  toast.error("Something went wrong, try again", {});
+});
+
+definePageMeta({
+  layout: "admin-dashboard",
+});
+</script>
+
 <template>
   <div class="flex h-screen items-center justify-center">
     <CustomCard title="Add Tag">
@@ -29,69 +88,3 @@
     </CustomCard>
   </div>
 </template>
-
-<script setup>
-import * as yup from "yup";
-import CustomCard from "~/components/CustomCard.vue";
-import DynamicForm from "~/components/DynamicForm.vue";
-import addtag from "~/graphql/mutations/tags/add.gql";
-import { toast } from "vue3-toastify";
-import { reactive } from "vue";
-
-const {
-  mutate: insertTagMutation,
-  onDone,
-  loading,
-  onError,
-} = useAuthenticatedMutation(addtag);
-const formSchema = reactive({
-  fields: [
-    {
-      name: "name",
-      as: "input",
-      placeholder: "Tag Name",
-      rules: yup.string().required("Tag name is required"),
-    },
-    {
-      name: "description",
-      as: "textarea",
-      placeholder: "Tag Description",
-      rules: yup.string().required("Tag description is required"),
-    },
-  ],
-});
-
-async function submitHandler(values) {
-  try {
-    const tagData = {
-      name: values.name,
-      description: values.description,
-    };
-
-    insertTagMutation(tagData);
-  } catch (error) {
-    console.error("Error:", error);
-    toast.error("Something went wrong, try again", {
-      
-    });
-  }
-}
-
-onDone((result) => {
-  toast.success("Tag added successfully", {
- 
-  });
-  navigateTo("/tags");
-});
-
-onError((error) => {
-  console.log("Error: ", error.message);
-  toast.error("Something went wrong, try again", {
-   
-  });
-});
-
-definePageMeta({
-  layout: "admin-dashboard",
-});
-</script>

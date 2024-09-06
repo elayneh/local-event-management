@@ -9,13 +9,37 @@ query GetFollowingEvents($id: uuid!) {
     description
     end_date
     event_images
+    events_bookmarks {
+      created_at
+      event_id
+      id
+      user_id
+    }
+    events_category {
+      description
+      id
+      name
+    }
+    events_followers {
+      event_id
+      id
+      user_id
+    }
+    events_tickets {
+      event_id
+      id
+      purchase_date
+      quantity
+      user_id
+    }
     id
-    is_free
     location
+    is_free
     price
     start_date
     title
     uid
     venue
+    created_at
   }
 }

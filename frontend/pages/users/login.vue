@@ -1,9 +1,80 @@
+
+<script setup>
+import { ref } from "vue";
+import CustomCard from "~/components/CustomCard.vue";
+import DynamicForm from "~/components/DynamicForm.vue";
+import { useAuthStore } from "~/stores";
+import login from "~/graphql/mutations/users/login.gql";
+import { toast } from "vue3-toastify";
+import * as JsCookie from "js-cookie";
+import * as yup from "yup";
+
+const Cookies = JsCookie.default;
+
+const authenticationStore = useAuthStore();
+const { mutate, onDone, loading, onError } = authentication(login);
+
+const formSchema = {
+  fields: [
+    {
+      name: "email",
+      as: "input",
+      placeholder: "Email",
+      rules: yup
+        .string()
+        .email("Invalid email address")
+        .required("Email is required"),
+    },
+    {
+      name: "password",
+      as: "input",
+      type: "password",
+      placeholder: "Password",
+      rules: yup
+        .string()
+        .min(6, "Password must be at least 6 characters")
+        .required("Password is required"),
+    },
+  ],
+};
+const { onLogin } = useApollo();
+
+function submitHandler(values) {
+  const loginCredentials = {
+    email: values.email,
+    password: values.password,
+  };
+  mutate(loginCredentials);
+  onDone((result) => {
+    onLogin(result.data?.login?.token, "authClient");
+    console.log("RESULT: ", result.data);
+    const role = result.data.login.role;
+    toast.success("User logged in successfully", {});
+    Cookies.set("token", result.data.login.token, { expires: 3 });
+    authenticationStore.setToken(result.data.login.token);
+    authenticationStore.setId(result.data.login.id);
+    authenticationStore.setUser(result.data.login.id);
+    authenticationStore.setRole(role);
+    role === "user"
+      ? navigateTo("/user")
+      : role === "admin"
+      ? navigateTo("/admin")
+      : "/";
+  });
+  onError((error) => {
+    console.log("Error: ", error.message);
+    toast.error("Invalid Email or Password", {});
+  });
+}
+</script>
+
+
 <template>
   <div
     class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50"
   >
-    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-      <CustomCard title="Login">
+    <div>
+      <CustomCard title="Login" class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
         <template #body>
           <DynamicForm
             ref="DynamicForm"
@@ -44,71 +115,3 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { ref } from "vue";
-import CustomCard from "~/components/CustomCard.vue";
-import DynamicForm from "~/components/DynamicForm.vue";
-import { useAuthStore } from "~/stores";
-import login from "~/graphql/mutations/users/login.gql";
-import { toast } from "vue3-toastify";
-import * as JsCookie from "js-cookie";
-import * as yup from "yup";
-
-const Cookies = JsCookie.default;
-
-const authenticationStore = useAuthStore();
-const { mutate, onDone, loading, onError } = authentication(login);
-
-const formSchema = {
-  fields: [
-    {
-      name: "email",
-      as: "input",
-      placeholder: "Email",
-      rules: yup
-        .string()
-        .email("Invalid email address")
-        .required("Email is required"),
-    },
-    {
-      name: "password",
-      as: "input",
-      type: "password",
-      placeholder: "Password",
-      rules: yup
-        .string()
-        .min(6, "Password must be at least 6 characters")
-        .required("Password is required"),
-    },
-  ],
-};
-
-function submitHandler(values) {
-  const loginCredentials = {
-    email: values.email,
-    password: values.password,
-  };
-  mutate(loginCredentials);
-  onDone((result) => {
-    const role = result.data.login.role;
-    toast.success("User logged in successfully", {
-     
-    });
-    Cookies.set("token", result.data.login.token, { expires: 3 });
-    authenticationStore.setToken(result.data.login.token);
-    authenticationStore.setId(result.data.login.id);
-    authenticationStore.setUser(result.data.login.id);
-    authenticationStore.setRole(role);
-    role === "user"
-      ? navigateTo("/user")
-      : role === "admin"
-      ? navigateTo("/admin")
-      : "/";
-  });
-  onError((error) => {
-    console.log("Error: ", error.message);
-    toast.error("Invalid Email or Password", {});
-  });
-}
-</script>

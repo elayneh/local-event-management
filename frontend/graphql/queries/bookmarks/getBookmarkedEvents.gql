@@ -1,8 +1,42 @@
 query GetBookmarkedEvents($id: uuid!) {
   events(where: { events_bookmarks: { user_id: { _eq: $id } } }) {
     address
+    capacity
     category_id
     description
     end_date
+    event_images
+    events_bookmarks {
+      created_at
+      event_id
+      id
+      user_id
+    }
+    events_category {
+      description
+      id
+      name
+    }
+    events_followers {
+      event_id
+      id
+      user_id
+    }
+    events_tickets {
+      event_id
+      id
+      purchase_date
+      quantity
+      user_id
+    }
+    id
+    location
+    is_free
+    price
+    start_date
+    title
+    uid
+    venue
+    created_at
   }
 }

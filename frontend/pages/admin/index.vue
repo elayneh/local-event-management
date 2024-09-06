@@ -1,10 +1,85 @@
+
+<script setup>
+import { ref, computed } from "vue";
+import { useQuery } from "@vue/apollo-composable";
+import getUsers from "~/graphql/queries/users/getUsers.gql";
+import getCategories from "~/graphql/queries/categories/getCategories.gql";
+import getTags from "~/graphql/queries/tags/getTags.gql";
+import getEvents from "~/graphql/queries/events/getEvents.gql";
+
+const users = ref([]);
+const events = ref([]);
+const categories = ref([]);
+const tags = ref([]);
+
+const limit = ref(10);
+const offset = ref(0);
+const where = ref(null);
+
+const {
+  loading: eventsLoading,
+  error: eventsError,
+  onResult: onEventsResult,
+} = useQuery(getEvents, {
+  limit: limit.value,
+  offset: offset.value,
+  where: where.value,
+});
+
+const {
+  loading: usersLoading,
+  error: usersError,
+  onResult: onUsersResult,
+} = useQuery(getUsers);
+
+const {
+  loading: categoriesLoading,
+  error: categoriesError,
+  onResult: onCategoriesResult,
+} = useQuery(getCategories);
+const {
+  loading: tagsLoading,
+  error: tagsError,
+  onResult: onTagsResult,
+} = useQuery(getTags);
+
+onUsersResult(({ data }) => {
+  if (data) users.value = data.users;
+});
+onEventsResult(({ data }) => {
+  if (data) events.value = data.events;
+});
+onCategoriesResult(({ data }) => {
+  if (data) categories.value = data.categories;
+});
+onTagsResult(({ data }) => {
+  if (data) tags.value = data.tags;
+});
+
+const loading = computed(
+  () =>
+    usersLoading.value ||
+    eventsLoading.value ||
+    categoriesLoading.value ||
+    tagsLoading.value
+);
+const error = computed(
+  () =>
+    usersError.value ||
+    eventsError.value ||
+    categoriesError.value ||
+    tagsError.value
+);
+
+definePageMeta({ layout: "admin-dashboard" });
+</script>
+
 <template>
   <div>
     <h2 class="text-2xl font-bold mb-6 text-center text-slate-700">
       #Dashboard Overview
     </h2>
 
-    <!-- Grid of Widgets -->
    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
   <NuxtLink to="/admin/users" class="group">
     <div
@@ -64,7 +139,6 @@
 </div>
 
 
-    <!-- Loading and Error Messages -->
     <div v-if="loading" class="mt-4 text-center">
       <svg
         class="animate-spin h-8 w-8 text-blue-500 mx-auto"
@@ -87,81 +161,3 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { ref, computed } from "vue";
-import { useQuery } from "@vue/apollo-composable";
-import getUsers from "~/graphql/queries/users/getUsers.gql";
-import getCategories from "~/graphql/queries/categories/getCategories.gql";
-import getTags from "~/graphql/queries/tags/getTags.gql";
-import getEvents from "~/graphql/queries/events/getEvents.gql";
-
-const users = ref([]);
-const events = ref([]);
-const categories = ref([]);
-const tags = ref([]);
-
-const limit = ref(10);
-const offset = ref(0);
-const where = ref(null);
-
-const {
-  result,
-  loading: eventsLoading,
-  error: eventsError,
-  onResult: onEventsResult,
-} = useQuery(getEvents, {
-  limit: limit.value,
-  offset: offset.value,
-  where: where.value,
-});
-
-const {
-  loading: usersLoading,
-  error: usersError,
-  onResult: onUsersResult,
-} = useQuery(getUsers);
-
-const {
-  loading: categoriesLoading,
-  error: categoriesError,
-  onResult: onCategoriesResult,
-} = useQuery(getCategories);
-const {
-  loading: tagsLoading,
-  error: tagsError,
-  onResult: onTagsResult,
-} = useQuery(getTags);
-
-// Update data when queries resolve
-onUsersResult(({ data }) => {
-  if (data) users.value = data.users;
-});
-onEventsResult(({ data }) => {
-  if (data) events.value = data.events;
-});
-onCategoriesResult(({ data }) => {
-  if (data) categories.value = data.categories;
-});
-onTagsResult(({ data }) => {
-  if (data) tags.value = data.tags;
-});
-
-// Computed properties to determine loading and error states
-const loading = computed(
-  () =>
-    usersLoading.value ||
-    eventsLoading.value ||
-    categoriesLoading.value ||
-    tagsLoading.value
-);
-const error = computed(
-  () =>
-    usersError.value ||
-    eventsError.value ||
-    categoriesError.value ||
-    tagsError.value
-);
-
-definePageMeta({ layout: "admin-dashboard" });
-</script>

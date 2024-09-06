@@ -1,3 +1,14 @@
+
+<script setup>
+import { useRouter } from "vue-router";
+
+const router = useRouter();
+
+function goToLogin() {
+  router.push("/users/login");
+}
+</script>
+
 <template>
   <div
     class="min-h-screen flex flex-col items-center justify-center bg-gradient-to-r from-blue-100 via-green-100 to-yellow-100"
@@ -18,13 +29,3 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { useRouter } from "vue-router";
-
-const router = useRouter();
-
-function goToLogin() {
-  router.push("/users/login");
-}
-</script>

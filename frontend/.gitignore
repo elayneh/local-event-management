@@ -1,8 +1,3 @@
-# Nuxt build and generated files
-.nuxt
-.dist
-output/
-
 # Logs
 npm-debug.log*
 yarn-debug.log*
@@ -41,3 +36,26 @@ coverage/
 # Nuxt temporary files
 **/.nuxt/
 **/.output/
+
+# Nuxt dev/build outputs
+.output
+.data
+.nuxt
+.nitro
+.cache
+dist
+
+# Node dependencies
+node_modules
+
+# Logs
+logs
+*.log
+
+# Misc
+.DS_Store
+
+# Local env files
+.env
+.env.*
+!.env.example

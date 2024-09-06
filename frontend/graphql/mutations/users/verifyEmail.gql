@@ -1,0 +1,8 @@
+mutation verifyEmail($confirmationToken: String!) {
+  update_users(
+    where: { confirmation_token: { _eq: $confirmationToken } }
+    _set: { is_email_verified: true }
+  ) {
+    affected_rows
+  }
+}

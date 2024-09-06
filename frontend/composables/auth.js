@@ -8,6 +8,7 @@ export default function (query, variables) {
       context: {
         headers: {
           "x-hasura-role": "user",
+          "x-hasura-is-email-verified": true,
         },
       },
     })

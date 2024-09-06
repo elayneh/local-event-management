@@ -1,25 +1,6 @@
-<template>
-  <DynamicForm
-    :schema="eventFormSchema"
-    @submit="submitEvent"
-    class="bg-white px-8 pt-6 pb-8 mb-4"
-  >
-    <button
-      type="submit"
-      class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-    >
-      Submit Event
-    </button>
-  </DynamicForm>
-</template>
-
 <script setup>
 import { ref } from "vue";
-import DynamicForm from "./DynamicForm.vue"; // Assuming your dynamic form is saved as DynamicForm.vue
-
-const submitEvent = (values) => {
-  console.log("Event Submitted:", values);
-};
+import DynamicForm from "./DynamicForm.vue";
 
 const eventFormSchema = ref({
   fields: [
@@ -133,3 +114,18 @@ const eventFormSchema = ref({
   ],
 });
 </script>
+
+<template>
+  <DynamicForm
+    :schema="eventFormSchema"
+    @submit="submitEvent"
+    class="bg-white px-8 pt-6 pb-8 mb-4"
+  >
+    <button
+      type="submit"
+      class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+    >
+      Submit Event
+    </button>
+  </DynamicForm>
+</template>

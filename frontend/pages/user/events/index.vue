@@ -1,10 +1,27 @@
+<script setup>
+import { ref, computed } from "vue";
+import CustomEventCard from "~/components/CustomEventCard.vue";
+import HomepageImage from "~/components/HomepageImage.vue";
+import useUserFetchData from "~/composables/useUserFetchData";
+import useFetchData from "~/composables/useFetchData";
+import { useAuthStore } from "~/stores";
+
+const user_id = useAuthStore().id;
+const { userEvents, userEventsLoading, userEventsError } =
+  useUserFetchData(user_id);
+
+const { categories, tags } = useFetchData();
+
+definePageMeta({ layout: "authenticated" });
+</script>
+
 <template>
   <div
     class="bg-gradient-to-r from-gray-100 via-red-300 to-gray-500 h-64 w-full"
   >
     <HomepageImage />
     <h2 class="text-2xl font-bold mb-4 text-center">Your Events</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
       <div v-for="event in userEvents" :key="event.id">
         <CustomEventCard :event="event" />
       </div>
@@ -182,20 +199,3 @@
     <CustomFooter />
   </div>
 </template>
-
-<script setup>
-import { ref, computed } from "vue";
-import CustomEventCard from "~/components/CustomEventCard.vue";
-import HomepageImage from "~/components/HomepageImage.vue";
-import useUserFetchData from "~/composables/useUserFetchData";
-import useFetchData from "~/composables/useFetchData";
-import { useAuthStore } from "~/stores";
-
-const user_id = useAuthStore().id;
-const { userEvents, userEventsLoading, userEventsError } =
-  useUserFetchData(user_id);
-
-const { categories, tags } = useFetchData();
-
-definePageMeta({ layout: "authenticated" });
-</script>

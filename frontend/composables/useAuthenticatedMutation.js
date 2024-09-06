@@ -1,10 +1,11 @@
 export default function useAuthenticatedMutation(mutation) {
   const { mutate, onDone, loading, onError } = useMutation(mutation, () => ({
-    fetchPolicy: "network-only",
+    fetchPolicy: "no-cache",
+    clientId: "authClient",
     context: {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-        "x-hasura-role": "admin",
+        "x-hasura-role": "user",
+        "x-hasura-is-email-verified": true,w
       },
     },
   }));

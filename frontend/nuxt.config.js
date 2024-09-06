@@ -1,5 +1,5 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
-export default defineNuxtConfig({
+// nuxt.config.js
+export default {
   devtools: { enabled: false },
   ssr: false,
 
@@ -11,6 +11,7 @@ export default defineNuxtConfig({
       hasuraAdminSecret: process.env.HASURA_GRAPHQL_ADMIN_SECRET || "",
     },
   },
+
   modules: [
     "@nuxtjs/tailwindcss",
     "@nuxtjs/apollo",
@@ -22,7 +23,7 @@ export default defineNuxtConfig({
     "@nuxtjs/color-mode",
     "@nuxt/image",
   ],
-  // pinia: { storesDirs: ["./stores/**"] },
+
   colorMode: {
     classSuffix: "",
   },
@@ -45,9 +46,7 @@ export default defineNuxtConfig({
   },
 
   veeValidate: {
-    // disable or enable auto imports
     autoImports: true,
-    // Use different names for components
     componentNames: {
       Form: "VeeForm",
       Field: "VeeField",
@@ -66,12 +65,25 @@ export default defineNuxtConfig({
       ],
     },
   },
+
   plugins: ["~/plugins/fontawesome.js", "~/plugins/click-outside.js"],
 
   image: {
-    // Options
     inject: true,
     quality: 80,
   },
+
   compatibilityDate: "2024-08-01",
-});
+
+  router: {
+    options: {
+      scrollBehavior(to, from, savedPosition) {
+        // if (savedPosition) {
+        return savedPosition;
+        // } else {
+        //   return { left: 0, top: 0 };
+        // }
+      },
+    },
+  },
+};

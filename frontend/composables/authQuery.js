@@ -13,6 +13,7 @@ export default (filter, order, limit, offset, getTodos) => {
       context: {
         headers: {
           "x-hasura-role": "user",
+          "x-hasura-is-email-verified": true,
         },
       },
     })

@@ -1,3 +1,21 @@
+<script setup>
+import CustomCard from "~/components/CustomCard.vue";
+import { ref } from "vue";
+import { useQuery } from "@vue/apollo-composable";
+import getCategories from "~/graphql/queries/categories/getCategories.gql";
+
+const categories = ref([]);
+
+const { onResult } = useQuery(getCategories);
+onResult(({ data }) => {
+  if (data) {
+    categories.value = data.categories;
+  }
+});
+
+definePageMeta({ layout: "admin-dashboard" });
+</script>
+
 <template>
   <div>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
@@ -38,21 +56,3 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import CustomCard from "~/components/CustomCard.vue";
-import { ref } from "vue";
-import { useQuery } from "@vue/apollo-composable";
-import getCategories from "~/graphql/queries/categories/getCategories.gql";
-
-const categories = ref([]);
-
-const { result, loading, error, onResult } = useQuery(getCategories);
-onResult(({ data }) => {
-  if (data) {
-    categories.value = data.categories;
-  }
-});
-
-definePageMeta({ layout: "admin-dashboard" });
-</script>

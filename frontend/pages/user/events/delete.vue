@@ -1,3 +1,100 @@
+<script setup>
+import { ref, computed, watch } from "vue";
+import { useQuery } from "@vue/apollo-composable";
+import getCategories from "~/graphql/queries/categories/getCategories.gql";
+import getTags from "~/graphql/queries/tags/getTags.gql";
+import insertEventTags from "~/graphql/mutations/event_tags/insert.gql";
+import insertEventImage from "~/graphql/mutations/event_images/insert.gql";
+import fileToBase64 from "~/composables/fileToBase64";
+
+import * as yup from "yup";
+import { toast } from "vue3-toastify";
+
+const secondLevelSchemaValidation = yup.object({
+  featured_image: yup.mixed().notRequired(),
+});
+
+const { result: categoriesResult } = useQuery(getCategories);
+
+const { result: tagsResult } = useQuery(getTags);
+
+const categories = ref([]);
+const tags = ref([]);
+const selectedTags = ref([]);
+const showTagSelector = ref(false);
+
+watch(
+  categoriesResult,
+  (newResult) => {
+    if (newResult?.categories) {
+      categories.value = newResult.categories.map((category) => ({
+        value: category.id,
+        label: category.name,
+      }));
+    }
+  },
+  { immediate: true }
+);
+
+watch(
+  tagsResult,
+  (newResult) => {
+    if (newResult?.tags) {
+      tags.value = newResult.tags.map((tag) => ({
+        id: tag.id,
+        label: tag.name,
+      }));
+    }
+  },
+  { immediate: true }
+);
+
+const { mutate: insertEventTagsMutation, onDone: OnInsertEventTagsDone } =
+  useAuthenticatedMutation(insertEventTags);
+
+const { mutate: insertEventImageMutation, onDone: OnInsertEventImageDone } =
+  useAuthenticatedMutation(insertEventImage);
+
+const eventId = ref("a4a6067c-f491-422e-9f58-5956826b2fd6");
+
+const submitSecondLevelEvent = async (values) => {
+  try {
+    const imageFile = values.image;
+    const base64Image = await fileToBase64(imageFile);
+
+    const imageData = {
+      event_id: eventId.value,
+      is_featured: true,
+      image_url: base64Image,
+    };
+
+    const tagsData = selectedTags.value.map((tag) => ({
+      event_id: eventId.value,
+      tag_id: tag.id,
+    }));
+    console.log("Image: ", imageData);
+    insertEventImageMutation({ objects: imageData });
+  } catch (error) {
+    console.error("Error:", error);
+    toast.error("Failed to add images and tags", {});
+  }
+};
+
+const secondLevelEventFormSchema = reactive({
+  fields: [
+    {
+      name: "image",
+      as: "input",
+      type: "file",
+      placeholder: "Featured Image",
+      rules: yup.mixed().required("Product image is required"),
+    },
+  ],
+});
+
+definePageMeta({ layout: "authenticated" });
+</script>
+
 <template>
   <div class="relative">
     <DynamicForm
@@ -79,115 +176,3 @@
     </DynamicForm>
   </div>
 </template>
-
-<script setup>
-import { ref, computed, watch } from "vue";
-import { useQuery } from "@vue/apollo-composable";
-import getCategories from "~/graphql/queries/categories/getCategories.gql";
-import getTags from "~/graphql/queries/tags/getTags.gql";
-import insertEventTags from "~/graphql/mutations/event_tags/insert.gql";
-import insertEventImage from "~/graphql/mutations/event_images/insert.gql";
-import fileToBase64 from "~/composables/fileToBase64";
-
-import * as yup from "yup";
-import { toast } from "vue3-toastify";
-import { faSpinner } from "@fortawesome/free-solid-svg-icons";
-
-const now = new Date().toISOString().slice(0, 16);
-
-const secondLevelSchemaValidation = yup.object({
-  featured_image: yup.mixed().notRequired(),
-});
-
-const {
-  result: categoriesResult,
-  loading: loadingCategories,
-  error: categoriesError,
-} = useQuery(getCategories);
-
-const {
-  result: tagsResult,
-  loading: loadingTags,
-  error: tagsError,
-} = useQuery(getTags);
-
-const categories = ref([]);
-const tags = ref([]);
-const selectedTags = ref([]);
-const showTagSelector = ref(false);
-
-watch(
-  categoriesResult,
-  (newResult) => {
-    if (newResult?.categories) {
-      categories.value = newResult.categories.map((category) => ({
-        value: category.id,
-        label: category.name,
-      }));
-    }
-  },
-  { immediate: true }
-);
-
-watch(
-  tagsResult,
-  (newResult) => {
-    if (newResult?.tags) {
-      tags.value = newResult.tags.map((tag) => ({
-        id: tag.id,
-        label: tag.name,
-      }));
-    }
-  },
-  { immediate: true }
-);
-
-const { mutate: insertEventTagsMutation, onDone: OnInsertEventTagsDone } =
-  useAuthenticatedMutation(insertEventTags);
-
-const { mutate: insertEventImageMutation, onDone: OnInsertEventImageDone } =
-  useAuthenticatedMutation(insertEventImage);
-
-const eventId = ref("a4a6067c-f491-422e-9f58-5956826b2fd6");
-
-const submitSecondLevelEvent = async (values) => {
-  try {
-    const imageFile = values.image;
-    const base64Image = await fileToBase64(imageFile);
-
-    const imageData = {
-      event_id: eventId.value,
-      is_featured: true,
-      image_url: base64Image,
-    };
-
-    const tagsData = selectedTags.value.map((tag) => ({
-      event_id: eventId.value,
-      tag_id: tag.id,
-    }));
-    console.log("Image: ", imageData);
-    insertEventImageMutation({ objects: imageData });
-  } catch (error) {
-    console.error("Error:", error);
-    toast.error("Failed to add images and tags", {});
-  }
-};
-
-const secondLevelEventFormSchema = reactive({
-  fields: [
-    {
-      name: "image",
-      as: "input",
-      type: "file",
-      placeholder: "Featured Image",
-      rules: yup.mixed().required("Product image is required"),
-    },
-  ],
-});
-
-// const clearSelectedTags = () => {
-//   selectedTags.value = [];
-// };
-
-definePageMeta({ layout: "authenticated" });
-</script>

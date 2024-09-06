@@ -1,3 +1,65 @@
+
+<script setup>
+import { ref } from "vue";
+import useUserFetchData from "~/composables/useUserFetchData";
+import { useAuthStore } from "~/stores";
+import { UpdateUser } from "~/graphql/mutations/users/update.gql";
+import { useMutation } from "@vue/apollo-composable";
+import { toast } from "vue3-toastify";
+import { Form, Field } from "vee-validate";
+import { object, string } from "yup";
+
+const authStore = useAuthStore();
+const user_id = authStore.id;
+const { user } = useUserFetchData(user_id);
+
+const isEditing = ref(false);
+const editableUser = ref({ ...user.value });
+
+const schema = object({
+  username: string()
+    .required("Username is required")
+    .min(3, "Username must be at least 3 characters"),
+  email: string()
+    .required("Email is required")
+    .email("Email must be a valid email address"),
+});
+
+const { mutate: updateUserMutation } = useMutation(UpdateUser);
+
+const editProfile = () => {
+  isEditing.value = true;
+  editableUser.value = { ...user.value };
+};
+
+const saveProfile = async (values) => {
+  try {
+    const { data } = await updateUserMutation({
+      id: user.value.id,
+      email: values.email,
+      username: values.username,
+    });
+
+    user.value = { ...editableUser.value };
+
+    toast.success("Your Profile Updated Successfully!");
+    isEditing.value = false;
+  } catch (err) {
+    toast.error("Error Updating Your Profile, try again");
+    console.error("Error updating user: ", err);
+  }
+};
+
+const cancelEdit = () => {
+  isEditing.value = false;
+};
+
+definePageMeta({
+  layout: "authenticated",
+});
+</script>
+
+
 <template>
   <div
     class="bg-gradient-to-r from-gray-100 via-red-300 to-gray-500 w-full min-h-screen flex justify-center items-start"
@@ -114,63 +176,3 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { ref } from "vue";
-import useUserFetchData from "~/composables/useUserFetchData";
-import { useAuthStore } from "~/stores";
-import { UpdateUser } from "~/graphql/mutations/users/update.gql";
-import { useMutation } from "@vue/apollo-composable";
-import { toast } from "vue3-toastify";
-import { Form, Field } from "vee-validate";
-import { object, string } from "yup";
-
-const authStore = useAuthStore();
-const user_id = authStore.id;
-const { user } = useUserFetchData(user_id);
-
-const isEditing = ref(false);
-const editableUser = ref({ ...user.value });
-
-const schema = object({
-  username: string()
-    .required("Username is required")
-    .min(3, "Username must be at least 3 characters"),
-  email: string()
-    .required("Email is required")
-    .email("Email must be a valid email address"),
-});
-
-const { mutate: updateUserMutation } = useMutation(UpdateUser);
-
-const editProfile = () => {
-  isEditing.value = true;
-  editableUser.value = { ...user.value };
-};
-
-const saveProfile = async (values) => {
-  try {
-    const { data } = await updateUserMutation({
-      id: user.value.id,
-      email: values.email,
-      username: values.username,
-    });
-
-    user.value = { ...editableUser.value };
-
-    toast.success("Your Profile Updated Successfully!");
-    isEditing.value = false;
-  } catch (err) {
-    toast.error("Error Updating Your Profile, try again");
-    console.error("Error updating user: ", err);
-  }
-};
-
-const cancelEdit = () => {
-  isEditing.value = false;
-};
-
-definePageMeta({
-  layout: "authenticated",
-});
-</script>

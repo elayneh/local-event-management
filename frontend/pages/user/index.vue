@@ -1,23 +1,237 @@
+<script setup>
+import { ref, computed, onMounted } from "vue";
+import CustomEventCard from "@/components/CustomEventCard.vue";
+import TagsCategoriesComponent from "@/components/TagsCategoriesComponent.vue";
+import FeaturesComponent from "@/components/FeaturesComponent.vue";
+import CustomFooter from "@/components/CustomFooter.vue";
+import getEvents from "~/graphql/queries/events/getEvents.gql";
+import { useAuthStore } from "~/stores";
+import useFetchData from "~/composables/useFetchData";
+
+const user_id = useAuthStore().id;
+
+const searchQuery = ref("");
+const isModalVisible = ref(false);
+const events = ref([]);
+const limit = ref(10);
+const offset = ref(0);
+const hasMoreEvents = ref(true);
+
+const filters = ref({
+  isFree: null,
+  start_date: "",
+  end_date: "",
+  venue: "",
+  tags: [],
+});
+
+const { categories, tags } = useFetchData();
+
+const openFilterModalHandler = () => {
+  isModalVisible.value = true;
+};
+
+const filter = computed(() => {
+  const query = {};
+
+  if (searchQuery.value.trim()) {
+    query._or = [
+      { title: { _ilike: `%${searchQuery.value}%` } },
+      { description: { _ilike: `%${searchQuery.value}%` } },
+      { venue: { _ilike: `%${searchQuery.value}%` } },
+    ];
+  }
+
+  if (filters.value.isFree !== null) {
+    query.is_free = { _eq: filters.value.isFree };
+  }
+  if (filters.value.start_date) {
+    query.start_date = { _gte: filters.value.start_date };
+  }
+  if (filters.value.end_date) {
+    query.end_date = { _lte: filters.value.end_date };
+  }
+
+  if (Array.isArray(filters.value.tags) && filters.value.tags.length > 0) {
+    query.tags = {
+      tag: {
+        _in: filters.value.tags,
+      },
+    };
+  }
+
+  return query;
+});
+
+const fetchEvents = async () => {
+  try {
+    await refetch();
+  } catch (error) {
+    console.error("Failed to fetch events:", error);
+  }
+};
+
+const { onResult, refetch } = listQuery(getEvents, {
+  filter,
+  limit,
+  offset,
+});
+
+onResult(({ data }) => {
+  if (data?.events) {
+    if (offset.value === 0) {
+      events.value = data.events;
+    } else {
+      events.value.push(...data.events);
+    }
+    hasMoreEvents.value = data.events.length === limit.value;
+  }
+});
+
+const loadMoreEvents = () => {
+  offset.value += limit.value;
+  fetchEvents();
+};
+
+const applyFilters = () => {
+  isModalVisible.value = false;
+  offset.value = 0;
+  fetchEvents();
+};
+
+const resetFilters = () => {
+  filters.value = {
+    isFree: null,
+    start_date: "",
+    end_date: "",
+    venue: "",
+    tags: [],
+  };
+  applyFilters();
+};
+
+definePageMeta({ layout: "authenticated" });
+</script>
+
 <template>
   <div
     class="bg-gradient-to-r from-gray-100 via-red-300 to-gray-500 h-64 w-full"
   >
     <div class="fixed left-96 flex-row justify-center items-center pt-2">
       <div v-if="isModalVisible">
-        <FilterModal
-          v-if="isModalVisible"
-          :isVisible="isModalVisible"
-          @close-modal="isModalVisible = false"
-          @apply-filters="filterHandler"
-        />
+        <div
+          class="fixed inset-0 bg-gray-800 bg-opacity-75 z-50 overflow-y-auto"
+        >
+          <div
+            class="relative max-w-xl mx-auto mt-12 p-8 bg-white shadow-lg rounded-lg h-[50vh] overflow-y-auto"
+          >
+            <button
+              @click="closeModal"
+              class="absolute top-4 right-4 p-2 bg-gray-200 hover:bg-red-100 rounded-full shadow-md transition-transform transform hover:scale-110 hover:shadow-lg text-gray-600 hover:text-gray-800"
+            >
+              <font-awesome-icon :icon="['fas', 'times']" class="text-lg" />
+            </button>
+
+            <h2 class="text-xl font-semibold mb-6 text-center">
+              Filter Events
+            </h2>
+
+            <div class="mb-6">
+              <label class="block text-sm font-medium mb-2">Payment</label>
+              <div class="flex space-x-6">
+                <label class="inline-flex items-center">
+                  <input
+                    type="radio"
+                    value="true"
+                    v-model="filters.isFree"
+                    class="form-radio text-blue-500"
+                  />
+                  <span class="ml-2 text-gray-700">Free</span>
+                </label>
+                <label class="inline-flex items-center">
+                  <input
+                    type="radio"
+                    value="false"
+                    v-model="filters.isFree"
+                    class="form-radio text-blue-500"
+                  />
+                  <span class="ml-2 text-gray-700">Paid</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="mb-6">
+              <label class="block text-sm font-medium mb-2">Start Date</label>
+              <input
+                v-model="filters.start_date"
+                type="datetime-local"
+                class="w-full p-3 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div class="mb-6">
+              <label class="block text-sm font-medium mb-2">End Date</label>
+              <input
+                v-model="filters.end_date"
+                type="datetime-local"
+                class="w-full p-3 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div class="mb-6">
+              <label class="block text-sm font-medium mb-2">Venue</label>
+              <div class="relative">
+                <input
+                  v-model="filters.venue"
+                  type="text"
+                  placeholder="Enter venue"
+                  class="w-full p-3 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <div class="mt-2">
+                  <MapComponent @location-selected="handleLocationSelected" />
+                </div>
+              </div>
+            </div>
+            <div>
+              <label
+                v-for="tag in availableTags"
+                :key="tag.id"
+                class="inline-flex items-center mt-3"
+              >
+                <input
+                  type="checkbox"
+                  :value="tag.id"
+                  v-model="filters.value.tags"
+                  @change="fetchEvents"
+                />
+                <span class="ml-2 text-gray-700">{{ tag.name }}</span>
+              </label>
+            </div>
+
+            <div class="flex justify-between items-center space-x-4">
+              <button
+                @click="applyFilters"
+                class="bg-green-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-green-700 transition-colors duration-200"
+              >
+                Filter
+              </button>
+              <button
+                @click="resetFilters"
+                class="bg-red-500 text-white px-6 py-3 rounded-full shadow-lg hover:bg-red-600 transition-colors duration-200"
+              >
+                Reset
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="flex justify-center items-center space-x-4">
         <ul class="m-2">
           <li class="relative flex items-center">
             <input
-              v-model="searchQuery"
-              @change="searchHandler"
               class="w-96 h-10 rounded-full pl-4 pr-10 bg-gray-300 flex items-center focus:outline-none focus:ring-1 focus:ring-gray-400"
+              v-model="searchQuery"
+              @input="fetchEvents"
               placeholder="Search..."
             />
             <font-awesome-icon
@@ -40,16 +254,12 @@
         </ul>
       </div>
     </div>
-    <HomepageImage />
 
+    <div class="pt-64"></div>
     <h2 class="text-2xl font-bold mb-4 text-center">Latest Events</h2>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <div v-for="event in events" :key="event.id">
-        <!-- <template v-if="event?.value.uid !== user_id"> -->
-          <CustomEventCard :event="event" />
-        <!-- </template> -->
-      </div>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <CustomEventCard v-for="event in events" :key="event.id" :event="event" />
     </div>
 
     <div class="text-center mt-6">
@@ -73,123 +283,3 @@
     <CustomFooter />
   </div>
 </template>
-
-<script setup>
-import CustomEventCard from "@/components/CustomEventCard.vue";
-import TagsCategoriesComponent from "@/components/TagsCategoriesComponent.vue";
-import FeaturesComponent from "@/components/FeaturesComponent.vue";
-import CustomFooter from "@/components/CustomFooter.vue";
-import { ref, computed, watchEffect, watch, onMounted, onUnmounted } from "vue";
-import useFetchData from "~/composables/useFetchData";
-import HomepageImage from "~/components/HomepageImage.vue";
-import { useQuery } from "@vue/apollo-composable";
-import getEvents from "~/graphql/queries/events/getEvents.gql";
-import { useAuthStore } from "~/stores";
-
-const user_id = useAuthStore().id;
-
-const searchQuery = ref(null);
-
-const { categories, tags } = useFetchData();
-
-const events = ref([]);
-
-const filteredEvents = ref({});
-const isModalVisible = ref(false);
-const openFilterModalHandler = () => {
-  isModalVisible.value = !isModalVisible.value;
-};
-
-const filterHandler = async (event) => {
-  filteredEvents.value = event.detail;
-  await fetcher();
-};
-
-onMounted(async () => {
-  await fetcher();
-});
-
-watch(searchQuery, async (newSearchQuery) => {
-  await fetcher();
-});
-const fetcher = async () => {
-  const {
-    onResult: onEventResult,
-    loading: eventLoading,
-    error: eventError,
-  } = useQuery(getEvents, {
-    limit: 10,
-    offset: 0,
-    where: {
-      _and: [
-        {
-          _or: [
-            {
-              title: searchQuery.value
-                ? { _ilike: `%${searchQuery.value}%` }
-                : {},
-            },
-            {
-              description: searchQuery.value
-                ? { _ilike: `%${searchQuery.value}%` }
-                : {},
-            },
-            // {
-            //   tags: searchQuery.value
-            //     ? (where.tags = {
-            //         _in: `{${searchQuery.value
-            //           .split(" ")
-            //           .map((tag) => tag.trim())
-            //           .filter((tag) => tag !== "")}}`,
-            //       })
-            //     : {},
-            // },
-          ],
-        },
-        ...Object.entries(filteredEvents.value).map(([key, value]) => ({
-          [key]: value,
-        })),
-      ],
-    },
-  });
-
-  onEventResult(({ data }) => {
-    if (data?.events) {
-      events.value = data.events;
-    }
-  });
-};
-
-const visibleEvents = ref([]);
-const itemsPerPage = 3;
-const currentPage = ref(1);
-
-watchEffect(() => {
-  const startIndex = (currentPage.value - 1) * itemsPerPage;
-  visibleEvents.value = events.value.slice(
-    startIndex,
-    startIndex + itemsPerPage
-  );
-});
-
-const loadMoreEvents = () => {
-  if (hasMoreEvents.value) {
-    currentPage.value += 1;
-  }
-};
-
-const hasMoreEvents = computed(
-  () => events.value.length > visibleEvents.value.length
-);
-
-onMounted(() => {
-  window.addEventListener("apply-filters", filterHandler);
-  fetcher();
-});
-
-onUnmounted(() => {
-  window.removeEventListener("apply-filters", filterHandler);
-});
-
-definePageMeta({ layout: "authenticated" });
-</script>

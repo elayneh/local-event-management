@@ -1,4 +1,6 @@
-import Vue from "vue";
+import { defineNuxtPlugin } from "#app";
 import vClickOutside from "vue-click-outside";
 
-Vue.use(vClickOutside);
+export default defineNuxtPlugin((nuxtApp) => {
+  nuxtApp.vueApp.use(vClickOutside);
+});

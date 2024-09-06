@@ -1,36 +1,34 @@
-<template>
-  <div id="map" class="h-screen w-full"></div>
-</template>
-
 <script setup>
-import { onMounted } from 'vue';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css'; // Import Leaflet CSS
+import { onMounted } from "vue";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 
-const latitude = 9.027593829423443; // Replace with your latitude
-const longitude = 38.75139713287354; // Replace with your longitude
+const latitude = 9.027593829423443;
+const longitude = 38.75139713287354;
 
 onMounted(() => {
-  // Initialize the map
-  const map = L.map('map').setView([latitude, longitude], 13);
+  const map = L.map("map").setView([latitude, longitude], 13);
 
-  // Add tile layer
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19,
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
   }).addTo(map);
 
-  // Add marker
   L.marker([latitude, longitude])
     .addTo(map)
-    .bindPopup('Event Location')
+    .bindPopup("Event Location")
     .openPopup();
 });
 </script>
 
 <style scoped>
 #map {
-  height: 100%; /* Ensure full viewport height */
-  width: 100%;  /* Ensure full viewport width */
+  height: 100%;
+  width: 100%;
 }
 </style>
+
+<template>
+  <div id="map" class="h-screen w-full"></div>
+</template>

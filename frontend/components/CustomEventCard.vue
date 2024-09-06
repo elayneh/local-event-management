@@ -136,11 +136,12 @@ import { DeleteBookmarks } from "~/graphql/mutations/event_bookmarks/DeleteBookm
 import { InsertTickets } from "~/graphql/mutations/event_tickets/InsertTickets.gql";
 import { DeleteTickets } from "~/graphql/mutations/event_tickets/DeleteTickets.gql";
 
-const isClosed = ref(false);
+
 const authStore = useAuthStore();
 const isAuthenticated = authStore.isAuthenticated;
 const user_id = authStore.id;
 const router = useRouter();
+
 
 const props = defineProps({
   event: {
@@ -153,32 +154,46 @@ const props = defineProps({
   },
 });
 
-const isFree = ref(props.event?.is_free);
-isClosed.value = new Date(props.event.end_date) < Date.now();
 
-const eventDate = new Date(props.event.created_at);
-const hoursAgo = Math.floor(
-  (Date.now() - eventDate.getTime()) / (1000 * 60 * 60)
-);
+const isClosed = ref(false);
+const isFree = ref(props.event?.is_free || false);
+
+
+if (props.event.end_date) {
+  const endDate = new Date(props.event.end_date);
+  isClosed.value = !isNaN(endDate.getTime()) && endDate < Date.now();
+}
+
+
+const hoursAgo = computed(() => {
+  if (props.event.created_at) {
+    const eventDate = new Date(props.event.created_at);
+    if (!isNaN(eventDate.getTime())) {
+      const timeDifference = Date.now() - eventDate.getTime();
+      return Math.floor(timeDifference / (1000 * 60 * 60)); 
+    }
+  }
+  return 0; 
+});
+
 
 const isTicketAvailable = ref(
   props.event?.events_tickets?.quantity &&
     props.event?.events_tickets?.quantity < props.event?.capacity
 );
 
-const isticketavailable = isTicketAvailable.value;
 const isBought = ref(
-  props.event?.events_tickets?.some((ticket) => {
-    ticket?.user_id === user_id;
-  })
+  props.event?.events_tickets?.some((ticket) => ticket?.user_id === user_id)
 );
 
-const isOwnEvent = computed(() => {
-  return props.event?.uid === user_id;
-});
+
+const isOwnEvent = computed(() => props.event?.uid === user_id);
+
+
 const following = ref(
   props.event?.events_followers?.some((follow) => follow?.user_id === user_id)
 );
+
 const bookmark = ref(
   props.event?.events_bookmarks?.some(
     (bookmark) => bookmark?.user_id === user_id
@@ -199,7 +214,7 @@ const {
   onError: onDeleteFollowersError,
 } = useAuthenticatedMutation(DeleteFollowers);
 
-// bookmark
+
 const {
   mutate: InsertBookmarkMutation,
   onDone: onInsertBookmarkDone,
@@ -214,7 +229,7 @@ const {
   onError: onDeleteBookmarkError,
 } = useAuthenticatedMutation(DeleteBookmarks);
 
-// Buy Ticket
+
 const {
   mutate: InsertBuyTicketMutation,
   onDone: onInsertBuyTicketDone,
@@ -229,7 +244,7 @@ const {
   onError: onDeleteBuyTicketError,
 } = useAuthenticatedMutation(DeleteTickets);
 
-// Toggle following
+
 const toggleFollow = async () => {
   if (!user_id) {
     return router.push("/users/login");
@@ -262,7 +277,7 @@ const toggleFollow = async () => {
   }
 };
 
-// toggle bookmark
+
 const toggleBookmark = async () => {
   if (!user_id) {
     return router.push("/users/login");
@@ -294,7 +309,8 @@ const toggleBookmark = async () => {
   }
 };
 
-// toggle buy
+
+
 
 const toggleBuyTicket = async (quantity) => {
   if (!user_id) {

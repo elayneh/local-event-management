@@ -1,4 +1,3 @@
-// constants/routes.js
 export const unAuthenticatedRoutes = [
   "/",
   "/users",

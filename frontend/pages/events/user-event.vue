@@ -1,3 +1,42 @@
+
+<script setup>
+import CustomEventCard from "@/components/CustomEventCard.vue";
+import { ref, computed } from "vue";
+import { useAuthStore } from "~/stores";
+const isAuthnticated = useAuthStore();
+
+const userId = isAuthnticated.id;
+import useFetchData from "~/composables/useFetchData";
+const { events, categories, tags } = useFetchData(userId);
+
+const visibleEvents = ref([]);
+
+const itemsPerPage = 9;
+const currentPage = ref(1);
+
+const updateVisibleEvents = () => {
+  const startIndex = (currentPage.value - 1) * itemsPerPage;
+  visibleEvents.value = events.value.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
+};
+
+const loadMoreEvents = () => {
+  if (hasMoreEvents) {
+    currentPage.value += 1;
+    updateVisibleEvents();
+  }
+};
+
+const hasMoreEvents = computed(
+  () => events.value.length > visibleEvents.value.length
+);
+
+definePageMeta({ layout: "authenticated" });
+</script>
+
+
 <template>
 <div class="bg-gradient-to-r from-gray-100 via-red-300 to-gray-500 h-64 w-full">
     <div class="w-full flex justify-center items-center pt-24">
@@ -9,7 +48,7 @@
       </div>
     </div>
     <h2 class="text-2xl font-bold mb-4 text-center">Latest Events</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
       <div v-for="event in events" :key="event.id">
         <CustomEventCard :event="event" />
       </div>
@@ -24,9 +63,7 @@
       </button>
     </div>
 
-    <!-- Categories and Tags Section -->
     <div class="bg-violet-200 mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <!-- Categories -->
       <div>
         <h2 class="text-xl font-bold mb-2">Categories</h2>
         <div class="flex flex-wrap gap-2">
@@ -40,7 +77,6 @@
         </div>
       </div>
 
-      <!-- Tags -->
       <div>
         <h2 class="text-xl font-bold mb-2">Tags</h2>
         <div class="flex flex-wrap gap-2">
@@ -55,23 +91,19 @@
       </div>
     </div>
 
-    <!-- Interactive Features and Create Event Section -->
     <div class="mt-12">
       <div
         class="flex flex-col lg:flex-row items-center lg:items-start justify-between bg-gradient-to-r from-purple-300 via-blue-300 to-pink-300 p-6 rounded-lg shadow-lg"
       >
-        <!-- Features Info Card -->
         <div class="mb-6 lg:mb-0 lg:w-2/3 bg-white p-6 rounded-lg shadow-md">
           <h2 class="text-2xl font-bold mb-6 text-gray-800">
             Explore Amazing Features
           </h2>
           <div class="space-y-4">
-            <!-- Feature 1 -->
             <div class="flex items-center">
               <div
                 class="flex-shrink-0 bg-blue-500 text-white rounded-full p-3"
               >
-                <!-- Icon for customization -->
                 <svg
                   class="w-6 h-6"
                   fill="none"
@@ -97,12 +129,10 @@
               </div>
             </div>
 
-            <!-- Feature 2 -->
             <div class="flex items-center">
               <div
                 class="flex-shrink-0 bg-green-500 text-white rounded-full p-3"
               >
-                <!-- Icon for community -->
                 <svg
                   class="w-6 h-6"
                   fill="none"
@@ -128,12 +158,10 @@
               </div>
             </div>
 
-            <!-- Feature 3 -->
             <div class="flex items-center">
               <div
                 class="flex-shrink-0 bg-yellow-500 text-white rounded-full p-3"
               >
-                <!-- Icon for management -->
                 <svg
                   class="w-6 h-6"
                   fill="none"
@@ -159,10 +187,8 @@
               </div>
             </div>
 
-            <!-- Feature 4 -->
             <div class="flex items-center">
               <div class="flex-shrink-0 bg-red-500 text-white rounded-full p-3">
-                <!-- Icon for analytics -->
                 <svg
                   class="w-6 h-6"
                   fill="none"
@@ -204,40 +230,3 @@
     <CustomFooter />
   </div>
 </template>
-
-<script setup>
-import CustomEventCard from "@/components/CustomEventCard.vue";
-import { ref, watch, computed } from "vue";
-import { useAuthStore } from "~/stores";
-const isAuthnticated = useAuthStore();
-
-const userId = isAuthnticated.id;
-import useFetchData from "~/composables/useFetchData";
-const { events, categories, tags } = useFetchData(userId);
-
-const visibleEvents = ref([]);
-
-const itemsPerPage = 9;
-const currentPage = ref(1);
-
-const updateVisibleEvents = () => {
-  const startIndex = (currentPage.value - 1) * itemsPerPage;
-  visibleEvents.value = events.value.slice(
-    startIndex,
-    startIndex + itemsPerPage
-  );
-};
-
-const loadMoreEvents = () => {
-  if (hasMoreEvents) {
-    currentPage.value += 1;
-    updateVisibleEvents();
-  }
-};
-
-const hasMoreEvents = computed(
-  () => events.value.length > visibleEvents.value.length
-);
-
-definePageMeta({ layout: "authenticated" });
-</script>

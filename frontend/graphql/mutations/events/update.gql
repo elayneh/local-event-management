@@ -1,6 +1,5 @@
 mutation UpdateEvent(
   $id: uuid!
-  # $address: String!
   $title: String!
   $description: String!
   $price: numeric!

@@ -1,35 +1,3 @@
-<template>
-  <div class="flex h-screen items-center justify-center">
-    <CustomCard title="Add Product">
-      <template #body>
-        <DynamicForm
-          ref="DynamicForm"
-          :schema="formSchema"
-          :submitHandler="submitHandler"
-        >
-          <div>
-            <div class="flex items-center justify-center gap-4 mt-4">
-              <button
-                type="submit"
-                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-              >
-                Add Category
-              </button>
-              <button
-                type="button"
-                @click="clearForm"
-                class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-              >
-                Clear
-              </button>
-            </div>
-          </div>
-        </DynamicForm>
-      </template>
-    </CustomCard>
-  </div>
-</template>
-
 <script setup>
 import * as yup from "yup";
 import CustomCard from "~/components/CustomCard.vue";
@@ -86,3 +54,35 @@ definePageMeta({
   layout: "admin-dashboard",
 });
 </script>
+
+<template>
+  <div class="flex h-screen items-center justify-center">
+    <CustomCard title="Add Product">
+      <template #body>
+        <DynamicForm
+          ref="DynamicForm"
+          :schema="formSchema"
+          :submitHandler="submitHandler"
+        >
+          <div>
+            <div class="flex items-center justify-center gap-4 mt-4">
+              <button
+                type="submit"
+                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              >
+                Add Category
+              </button>
+              <button
+                type="button"
+                @click="clearForm"
+                class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              >
+                Clear
+              </button>
+            </div>
+          </div>
+        </DynamicForm>
+      </template>
+    </CustomCard>
+  </div>
+</template>

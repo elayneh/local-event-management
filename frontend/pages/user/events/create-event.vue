@@ -1,3 +1,425 @@
+<script setup>
+import { ref, computed, watch } from "vue";
+import { useQuery, useMutation } from "@vue/apollo-composable";
+import getCategories from "~/graphql/queries/categories/getCategories.gql";
+import getTags from "~/graphql/queries/tags/getTags.gql";
+import insertEvent from "~/graphql/mutations/events/insert.gql";
+import insertEventTags from "~/graphql/mutations/event_tags/insert.gql";
+import ImageUploadMutation from "~/graphql/mutations/image_upload.gql";
+import * as yup from "yup";
+import { toast } from "vue3-toastify";
+import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import LeafletMap from "~/components/LeafletMap.vue";
+import { useAuthStore } from "~/stores";
+
+const firstSchemaData = ref(null);
+const step = ref(1);
+const isEventCreated = ref(false);
+const showModal = ref(false);
+const locationText = ref("");
+const searchQuery = ref("");
+const selectedTags = ref([]);
+const selectedTagValues = ref([]);
+const categorySearchQuery = ref("");
+const locationError = ref("");
+const zoom = 13;
+const center = ref([9.0306, 38.7506]);
+const marker = ref(null);
+const address = ref("");
+const locationData = ref(null);
+const user_id = useAuthStore().id;
+const now = new Date().toISOString().slice(0, 16);
+const eventId = ref(null);
+const categories = ref([]);
+const tags = ref([]);
+const showTagSelector = ref(false);
+
+const {
+  result: categoriesResult,
+  loading: loadingCategories,
+  error: categoriesError,
+} = useQuery(getCategories);
+const {
+  result: tagsResult,
+  loading: loadingTags,
+  error: tagsErr,
+} = useQuery(getTags);
+
+const {
+  mutate: insertEventMutation,
+  onError: onEventError,
+  onDone: onEventDone,
+  loading: createEventLoading,
+} = useMutation(insertEvent, {
+  fetchPolicy: "no-cache",
+  clientId: "authClient",
+  context: {
+    headers: {
+      "x-hasura-role": "user",
+      "x-hasura-is-email-verified": true,
+    },
+  },
+});
+const {
+  mutate: insertEventTagsMutation,
+  onError: onTagsError,
+  onDone: onTagsDone,
+} = useMutation(insertEventTags, {
+  fetchPolicy: "no-cache",
+  clientId: "authClient",
+  context: {
+    headers: {
+      "x-hasura-role": "user",
+      "x-hasura-is-email-verified": true,
+    },
+  },
+});
+const {
+  mutate: uploadImages,
+  loading: uploadImageLoading,
+  onDone: onUploadImageDone,
+  onError: onUploadImageError,
+} = useMutation(ImageUploadMutation, {
+  fetchPolicy: "no-cache",
+  clientId: "authClient",
+  context: {
+    headers: {
+      "x-hasura-role": "user",
+      "x-hasura-is-email-verified": true,
+    },
+  },
+});
+
+watch(
+  categoriesResult,
+  (newResult) => {
+    if (newResult?.categories) {
+      categories.value = newResult.categories.map((category) => ({
+        value: category.id,
+        label: category.name,
+      }));
+    }
+  },
+  { immediate: true }
+);
+
+watch(
+  tagsResult,
+  (newResult) => {
+    if (newResult?.tags) {
+      tags.value = newResult.tags.map((tag) => ({
+        id: tag.id,
+        label: tag.name,
+      }));
+    }
+  },
+  { immediate: true }
+);
+
+const stepChanger = () => {
+  step.value === 1 ? (step.value = 2) : (step.value = 1);
+};
+
+const openLocationModal = () => {
+  showModal.value = true;
+};
+
+const closeLocationModal = () => {
+  showModal.value = false;
+};
+
+const handleMapClick = async (coords) => {
+  marker.value = [coords.lat, coords.lng, coords.address];
+  locationText.value = marker.value[2];
+  locationData.value = {
+    address: coords.address,
+    latitude: coords.lat,
+    longitude: coords.lng,
+  };
+};
+
+const removeTag = (tag) => {
+  selectedTags.value = selectedTags.value.filter((t) => t.value !== tag.value);
+  selectedTagValues.value = selectedTagValues.value.filter(
+    (v) => v !== tag.value
+  );
+};
+
+const validateForm = () => {
+  locationError.value = locationData.value ? "" : "Location is required";
+  return !locationError.value;
+};
+
+const firstLevelSchemaValidation = yup.object({
+  title: yup.string().required("Event title is required"),
+  description: yup.string().required("Event description is required"),
+  category_id: yup.string().required("Category is required"),
+  isFree: yup.string().required("Please specify if the event is free"),
+  price: yup.number(),
+});
+
+const secondLevelValidation = yup.object({
+  venue: yup.string().required("Venue is required"),
+  start_date: yup
+    .date()
+    .min(now, "Start date cannot be in the past")
+    .required("Start date is required"),
+  end_date: yup
+    .date()
+    .min(yup.ref("start_date"), "End date cannot be before start date")
+    .required("End date is required"),
+  event_images: yup.mixed().required("At least one image is required"),
+});
+
+const submitFirstStep = async (values) => {
+  try {
+    await firstLevelSchemaValidation.validate(values, { abortEarly: false });
+    firstSchemaData.value = {
+      description: values.description,
+      is_free: values.isFree,
+      capacity: values.capacity,
+      price: values.isFree === "false" ? values.price : 0.0,
+      title: values.title,
+      category_id: values.category_id,
+    };
+    stepChanger();
+  } catch (error) {
+    console.error("First step validation errors:", error.errors);
+    toast.error("Please fix the errors in the first step", {});
+  }
+  console.log("Submit first step: ", firstSchemaData);
+};
+
+const submitSecondStep = async (values) => {
+  if (!validateForm()) return;
+
+  try {
+    await secondLevelValidation.validate(values, { abortEarly: false });
+
+    const files = values.event_images;
+
+    if (!files || files.length === 0) {
+      toast.error("No files selected", {});
+      return;
+    }
+
+    const readFilesAsBase64 = (file) => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          if (reader.result) {
+            resolve(reader.result.split(",")[1]);
+          } else {
+            reject(new Error("Failed to read file"));
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+    };
+
+    const base64Files = await Promise.all(
+      files.map((file) => readFilesAsBase64(file))
+    );
+
+    const uploadImagesInput = { input: { files: base64Files } };
+    const { data } = await uploadImages(uploadImagesInput);
+
+    if (!data || !data.uploadImages || !data.uploadImages.imageUrls) {
+      throw new Error("Failed to upload images");
+    }
+
+    const uploadedImages = data.uploadImages.imageUrls;
+
+    const eventData = {
+      ...firstSchemaData.value,
+      uid: user_id,
+      address: locationData.value.address,
+      location: locationData.value
+        ? `${locationData.value.latitude},${locationData.value.longitude}`
+        : values.location,
+      end_date: values.end_date,
+      start_date: values.start_date,
+      venue: values.venue,
+      event_images: `{${uploadedImages.join(",")}}`,
+    };
+
+    console.log("Submit second step: ", eventData);
+    const result = await insertEventMutation(eventData);
+    eventId.value = result.data.insert_events.returning[0].id;
+    isEventCreated.value = true;
+
+    await submitSecondLevelEvent(selectedTags.value);
+    navigateTo("/user");
+  } catch (error) {
+    console.error("Error:", error);
+    toast.error("Creating event failed, please try again", {});
+  }
+};
+
+const submitSecondLevelEvent = async (tags) => {
+  try {
+    if (!eventId.value) return;
+
+    await Promise.all(
+      tags.map(
+        async (tag) =>
+          await insertEventTagsMutation({
+            tag_id: tag.id,
+            eventId: eventId.value,
+          })
+      )
+    );
+  } catch (error) {
+    toast.error("Failed to add tags", {});
+  }
+};
+
+const clearSelectedTags = () => {
+  showTagSelector.value = false;
+  selectedTags.value = [];
+};
+
+const filteredTagOptions = computed(() =>
+  tags.value.filter((option) =>
+    option.label.toLowerCase().includes(searchQuery.value.toLowerCase())
+  )
+);
+
+const filteredCategoryOptions = computed(() =>
+  categories.value.filter((option) =>
+    option.label.toLowerCase().includes(categorySearchQuery.value.toLowerCase())
+  )
+);
+
+const firstLevelEventFormSchema = computed(() => ({
+  fields: [
+    {
+      name: "title",
+      label: "Event Title",
+      placeholder: "Enter event title",
+      type: "text",
+      attrs: {
+        required: true,
+      },
+    },
+    {
+      name: "description",
+      label: "Event Description",
+      placeholder: "Enter event description",
+      type: "textarea",
+      as: "textarea",
+      attrs: {
+        required: true,
+      },
+    },
+    {
+      as: "input",
+      name: "capacity",
+      label: "Total Capacity of the event",
+      placeholder: "Enter Total Holding capacity of the event",
+      type: "number",
+      rules: yup
+        .number()
+        .required("Total Capacity is a required field")
+        .min(1, "Total Capacity cannot be less than 1"),
+    },
+    {
+      name: "category_id",
+      label: "Category",
+      placeholder: "Select category",
+      as: "select",
+      options:
+        categories.value.length > 0
+          ? [{ value: "", label: "Select a category" }, ...categories.value]
+          : [],
+      attrs: {
+        required: true,
+      },
+    },
+    {
+      name: "isFree",
+      label: "Is the event free?",
+      as: "select",
+      options: [
+        { value: "", label: "Is the event free?" },
+        { value: "true", label: "Yes" },
+        { value: "false", label: "No" },
+      ],
+      attrs: {
+        required: true,
+      },
+      rules: yup.string().required("Please select if the event is free or not"),
+    },
+    {
+      name: "price",
+      label: "Price",
+      placeholder: "Enter price",
+      type: "number",
+      attrs: {
+        step: "0.01",
+      },
+      rules: yup.number().when("isFree", {
+        is: "false",
+        then: yup
+          .number()
+          .required("Price is required for paid events")
+          .min(0, "Price cannot be negative"),
+        otherwise: yup.number().notRequired(),
+      }),
+      visible: (formValues) => formValues.isFree === "false",
+    },
+  ],
+}));
+const secondLevelEventFormSchema = computed(() => ({
+  fields: [
+    {
+      name: "venue",
+      label: "Venue",
+      placeholder: "Enter event venue",
+      type: "text",
+      attrs: {
+        required: true,
+      },
+    },
+    {
+      name: "start_date",
+      label: "Start Date",
+      type: "datetime-local",
+      attrs: {
+        required: true,
+      },
+    },
+    {
+      name: "end_date",
+      label: "End Date",
+      type: "datetime-local",
+      attrs: {
+        required: true,
+      },
+    },
+    {
+      name: "event_images",
+      label: "Event Images",
+      type: "file",
+      attrs: {
+        multiple: true,
+        accept: "image/*",
+      },
+      rules: yup
+        .mixed()
+        .required("At least one image is required")
+        .test(
+          "fileSize",
+          "The file is too large",
+          (value) => value && value[0].size <= 5 * 1024 * 1024
+        ),
+    },
+  ],
+}));
+
+definePageMeta({ layout: "authenticated" });
+</script>
+
 <template>
   <div
     class="bg-gradient-to-r from-gray-100 via-red-300 to-gray-500 h-64 w-full"
@@ -217,401 +639,3 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { ref, computed, watch } from "vue";
-import { useQuery, useMutation } from "@vue/apollo-composable";
-import getCategories from "~/graphql/queries/categories/getCategories.gql";
-import getTags from "~/graphql/queries/tags/getTags.gql";
-import insertEvent from "~/graphql/mutations/events/insert.gql";
-import insertEventTags from "~/graphql/mutations/event_tags/insert.gql";
-import ImageUploadMutation from "~/graphql/mutations/image_upload.gql";
-import * as yup from "yup";
-import { toast } from "vue3-toastify";
-import { faSpinner } from "@fortawesome/free-solid-svg-icons";
-import LeafletMap from "~/components/LeafletMap.vue";
-import { useAuthStore } from "~/stores";
-
-const firstSchemaData = ref(null);
-const step = ref(1);
-const isEventCreated = ref(false);
-const showModal = ref(false);
-const locationText = ref("");
-const searchQuery = ref("");
-const selectedTags = ref([]);
-const selectedTagValues = ref([]);
-const categorySearchQuery = ref("");
-const locationError = ref("");
-const zoom = 13;
-const center = ref([9.0306, 38.7506]);
-const marker = ref(null);
-const address = ref("");
-const locationData = ref(null);
-const user_id = useAuthStore().id;
-const now = new Date().toISOString().slice(0, 16);
-const eventId = ref(null);
-const categories = ref([]);
-const tags = ref([]);
-const showTagSelector = ref(false);
-
-// Query and Mutation Hooks
-const {
-  result: categoriesResult,
-  loading: loadingCategories,
-  error: categoriesError,
-} = useQuery(getCategories);
-const {
-  result: tagsResult,
-  loading: loadingTags,
-  error: tagsErr,
-} = useQuery(getTags);
-
-const {
-  mutate: insertEventMutation,
-  onError: onEventError,
-  onDone: onEventDone,
-  loading: createEventLoading,
-} = useMutation(insertEvent);
-const {
-  mutate: insertEventTagsMutation,
-  onError: onTagsError,
-  onDone: onTagsDone,
-} = useMutation(insertEventTags);
-const {
-  mutate: uploadImages,
-  loading: uploadImageLoading,
-  onDone: onUploadImageDone,
-  onError: onUploadImageError,
-} = useMutation(ImageUploadMutation);
-
-// Watch for categories and tags updates
-watch(
-  categoriesResult,
-  (newResult) => {
-    if (newResult?.categories) {
-      categories.value = newResult.categories.map((category) => ({
-        value: category.id,
-        label: category.name,
-      }));
-    }
-  },
-  { immediate: true }
-);
-
-watch(
-  tagsResult,
-  (newResult) => {
-    if (newResult?.tags) {
-      tags.value = newResult.tags.map((tag) => ({
-        id: tag.id,
-        label: tag.name,
-      }));
-    }
-  },
-  { immediate: true }
-);
-
-// Methods
-const stepChanger = () => {
-  step.value === 1 ? (step.value = 2) : (step.value = 1);
-};
-
-const openLocationModal = () => {
-  showModal.value = true;
-};
-
-const closeLocationModal = () => {
-  showModal.value = false;
-};
-
-const handleMapClick = async (coords) => {
-  marker.value = [coords.lat, coords.lng, coords.address];
-  locationText.value = marker.value[2];
-  locationData.value = {
-    address: coords.address,
-    latitude: coords.lat,
-    longitude: coords.lng,
-  };
-};
-
-const removeTag = (tag) => {
-  selectedTags.value = selectedTags.value.filter((t) => t.value !== tag.value);
-  selectedTagValues.value = selectedTagValues.value.filter(
-    (v) => v !== tag.value
-  );
-};
-
-const validateForm = () => {
-  locationError.value = locationData.value ? "" : "Location is required";
-  return !locationError.value;
-};
-
-const firstLevelSchemaValidation = yup.object({
-  title: yup.string().required("Event title is required"),
-  description: yup.string().required("Event description is required"),
-  category_id: yup.string().required("Category is required"),
-  isFree: yup.string().required("Please specify if the event is free"),
-  price: yup.number(),
-});
-
-const secondLevelValidation = yup.object({
-  venue: yup.string().required("Venue is required"),
-  start_date: yup
-    .date()
-    .min(now, "Start date cannot be in the past")
-    .required("Start date is required"),
-  end_date: yup
-    .date()
-    .min(yup.ref("start_date"), "End date cannot be before start date")
-    .required("End date is required"),
-  event_images: yup.mixed().required("At least one image is required"),
-});
-
-const submitFirstStep = async (values) => {
-  try {
-    await firstLevelSchemaValidation.validate(values, { abortEarly: false });
-    firstSchemaData.value = {
-      description: values.description,
-      is_free: values.isFree,
-      capacity: values.capacity,
-      price: values.isFree === "false" ? values.price : 0.0,
-      title: values.title,
-      category_id: values.category_id,
-    };
-    stepChanger();
-  } catch (error) {
-    console.error("First step validation errors:", error.errors);
-    toast.error("Please fix the errors in the first step", {});
-  }
-  console.log("Submit first step: ", firstSchemaData);
-};
-
-const submitSecondStep = async (values) => {
-  if (!validateForm()) return;
-
-  try {
-    await secondLevelValidation.validate(values, { abortEarly: false });
-
-    const files = values.event_images;
-
-    if (!files || files.length === 0) {
-      toast.error("No files selected", {});
-      return;
-    }
-
-    const readFilesAsBase64 = (file) => {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          if (reader.result) {
-            resolve(reader.result.split(",")[1]); // Return only the base64 part
-          } else {
-            reject(new Error("Failed to read file"));
-          }
-        };
-        reader.readAsDataURL(file);
-      });
-    };
-
-    const base64Files = await Promise.all(
-      files.map((file) => readFilesAsBase64(file))
-    );
-
-    const uploadImagesInput = { input: { files: base64Files } };
-    const { data } = await uploadImages(uploadImagesInput);
-
-    if (!data || !data.uploadImages || !data.uploadImages.imageUrls) {
-      throw new Error("Failed to upload images");
-    }
-
-    const uploadedImages = data.uploadImages.imageUrls;
-
-    const eventData = {
-      ...firstSchemaData.value,
-      uid: user_id,
-      address: locationData.value.address,
-      location: locationData.value
-        ? `${locationData.value.latitude},${locationData.value.longitude}`
-        : values.location,
-      end_date: values.end_date,
-      start_date: values.start_date,
-      venue: values.venue,
-      event_images: `{${uploadedImages.join(",")}}`,
-    };
-
-    console.log("Submit second step: ", eventData);
-    const result = await insertEventMutation(eventData);
-    eventId.value = result.data.insert_events.returning[0].id;
-    isEventCreated.value = true;
-
-    await submitSecondLevelEvent(selectedTags.value);
-    navigateTo("/user");
-  } catch (error) {
-    console.error("Error:", error);
-    toast.error("Creating event failed, please try again", {});
-  }
-};
-
-const submitSecondLevelEvent = async (tags) => {
-  try {
-    if (!eventId.value) return;
-
-    await Promise.all(
-      tags.map(
-        async (tag) =>
-          await insertEventTagsMutation({
-            tag_id: tag.id,
-            eventId: eventId.value,
-          })
-      )
-    );
-  } catch (error) {
-    toast.error("Failed to add tags", {});
-  }
-};
-
-const clearSelectedTags = () => {
-  showTagSelector.value = false;
-  selectedTags.value = [];
-};
-
-const filteredTagOptions = computed(() =>
-  tags.value.filter((option) =>
-    option.label.toLowerCase().includes(searchQuery.value.toLowerCase())
-  )
-);
-
-const filteredCategoryOptions = computed(() =>
-  categories.value.filter((option) =>
-    option.label.toLowerCase().includes(categorySearchQuery.value.toLowerCase())
-  )
-);
-
-const firstLevelEventFormSchema = computed(() => ({
-  fields: [
-    {
-      name: "title",
-      label: "Event Title",
-      placeholder: "Enter event title",
-      type: "text",
-      attrs: {
-        required: true,
-      },
-    },
-    {
-      name: "description",
-      label: "Event Description",
-      placeholder: "Enter event description",
-      type: "textarea",
-      as: "textarea",
-      attrs: {
-        required: true,
-      },
-    },
-    {
-      as: "input",
-      name: "capacity",
-      label: "Total Capacity of the event",
-      placeholder: "Enter Total Holding capacity of the event",
-      type: "number",
-      rules: yup
-        .number()
-        .required("Total Capacity is a required field")
-        .min(1, "Total Capacity cannot be less than 1"),
-    },
-    {
-      name: "category_id",
-      label: "Category",
-      placeholder: "Select category",
-      as: "select",
-      options:
-        categories.value.length > 0
-          ? [{ value: "", label: "Select a category" }, ...categories.value]
-          : [],
-      attrs: {
-        required: true,
-      },
-    },
-    {
-      name: "isFree",
-      label: "Is the event free?",
-      as: "select",
-      options: [
-        { value: "", label: "Is the event free?" },
-        { value: "true", label: "Yes" },
-        { value: "false", label: "No" },
-      ],
-      attrs: {
-        required: true,
-      },
-      rules: yup.string().required("Please select if the event is free or not"),
-    },
-    {
-      name: "price",
-      label: "Price",
-      placeholder: "Enter price",
-      type: "number",
-      attrs: {
-        step: "0.01",
-      },
-      rules: yup.number().when("isFree", {
-        is: "false",
-        then: yup
-          .number()
-          .required("Price is required for paid events")
-          .min(0, "Price cannot be negative"),
-        otherwise: yup.number().notRequired(),
-      }),
-      visible: (formValues) => formValues.isFree === "false", // Display only if the event is not free
-    },
-  ],
-}));
-const secondLevelEventFormSchema = computed(() => ({
-  fields: [
-    {
-      name: "venue",
-      label: "Venue",
-      placeholder: "Enter event venue",
-      type: "text",
-      attrs: {
-        required: true,
-      },
-    },
-    {
-      name: "start_date",
-      label: "Start Date",
-      type: "datetime-local",
-      attrs: {
-        required: true,
-      },
-    },
-    {
-      name: "end_date",
-      label: "End Date",
-      type: "datetime-local",
-      attrs: {
-        required: true,
-      },
-    },
-    {
-      name: "event_images",
-      label: "Event Images",
-      type: "file",
-      attrs: {
-        multiple: true,
-        accept: "image/*",
-      },
-      rules: yup
-        .mixed()
-        .required("At least one image is required")
-        .test(
-          "fileSize",
-          "The file is too large",
-          (value) => value && value[0].size <= 5 * 1024 * 1024
-        ),
-    },
-  ],
-}));
-
-definePageMeta({ layout: "authenticated" });
-</script>

@@ -1,3 +1,50 @@
+<script setup>
+import CustomEventCard from "@/components/CustomEventCard.vue";
+import TagsCategoriesComponent from "~/components/TagsCategoriesComponent.vue";
+import FeaturesComponent from "~/components/FeaturesComponent.vue";
+import CustomFooter from "~/components/CustomFooter.vue";
+import { ref, computed, onMounted } from "vue";
+import useUserFetchData from "~/composables/useUserFetchData";
+import useFetchData from "~/composables/useFetchData";
+import { useAuthStore } from "~/stores";
+import HomepageImage from "~/components/HomepageImage.vue";
+const isAuthnticated = useAuthStore();
+
+const userId = isAuthnticated.id;
+
+const { followingEvents } = useUserFetchData(userId);
+const { tags, categories } = useFetchData();
+
+const visibleEvents = ref([]);
+const itemsPerPage = 3;
+const currentPage = ref(1);
+
+const updateVisibleEvents = () => {
+  const startIndex = (currentPage.value - 1) * itemsPerPage;
+  visibleEvents.value = followingEvents.value.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
+};
+
+const loadMoreEvents = () => {
+  if (hasMoreEvents.value) {
+    currentPage.value += 1;
+    updateVisibleEvents();
+  }
+};
+
+const hasMoreEvents = computed(
+  () => followingEvents.value.length > visibleEvents.value.length
+);
+
+onMounted(() => {
+  updateVisibleEvents();
+});
+
+definePageMeta({ layout: "authenticated" });
+</script>
+
 <template>
   <div
     class="bg-gradient-to-r from-gray-100 via-red-300 to-gray-500 h-64 w-full"
@@ -42,49 +89,3 @@
     <CustomFooter />
   </div>
 </template>
-
-<script setup>
-import CustomEventCard from "@/components/CustomEventCard.vue";
-import TagsCategoriesComponent from "~/components/TagsCategoriesComponent.vue";
-import FeaturesComponent from "~/components/FeaturesComponent.vue";
-import CustomFooter from "~/components/CustomFooter.vue";
-import { ref, computed, onMounted } from "vue";
-import useUserFetchData from "~/composables/useUserFetchData";
-import useFetchData from "~/composables/useFetchData";
-import { useAuthStore } from "~/stores";
-import HomepageImage from "~/components/HomepageImage.vue";
-const isAuthnticated = useAuthStore();
-
-const userId = isAuthnticated.id;
-const { followingEvents } = useUserFetchData(userId);
-const { tags, categories } = useFetchData();
-
-const visibleEvents = ref([]);
-const itemsPerPage = 3;
-const currentPage = ref(1);
-
-const updateVisibleEvents = () => {
-  const startIndex = (currentPage.value - 1) * itemsPerPage;
-  visibleEvents.value = followingEvents.value.slice(
-    startIndex,
-    startIndex + itemsPerPage
-  );
-};
-
-const loadMoreEvents = () => {
-  if (hasMoreEvents.value) {
-    currentPage.value += 1;
-    updateVisibleEvents();
-  }
-};
-
-const hasMoreEvents = computed(
-  () => followingEvents.value.length > visibleEvents.value.length
-);
-
-onMounted(() => {
-  updateVisibleEvents();
-});
-
-definePageMeta({ layout: "authenticated" });
-</script>

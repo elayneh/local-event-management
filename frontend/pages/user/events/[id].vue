@@ -1,3 +1,303 @@
+<script setup>
+import { ref, computed } from "vue";
+import { useRoute } from "vue-router";
+import { useQuery } from "@vue/apollo-composable";
+import { useForm, Field, Form, ErrorMessage } from "vee-validate";
+import * as yup from "yup";
+import defaultImage from "@/assets/images/home.png";
+import getEvent from "~/graphql/queries/events/getSingleEvent.gql";
+import { useAuthStore } from "~/stores";
+import { InsertFollowers } from "~/graphql/mutations/event_followers/InsertFollowers.gql";
+import { DeleteFollowers } from "~/graphql/mutations/event_followers/DeleteFollowers.gql";
+import { InsertBookmarks } from "~/graphql/mutations/event_bookmarks/InsertBookmarks.gql";
+import { DeleteBookmarks } from "~/graphql/mutations/event_bookmarks/DeleteBookmarks.gql";
+import { UpdateEvent } from "~/graphql/mutations/events/update.gql";
+import { toast } from "vue3-toastify";
+
+const authStore = useAuthStore();
+const user_id = authStore.id;
+
+const router = useRoute();
+const event = ref({});
+const isBought = ref(false);
+const isReserved = ref(false);
+const ownEvent = ref(false);
+const isClosed = ref(false);
+const following = ref(false);
+const bookmark = ref(false);
+const isEditing = ref(false);
+const editableEvent = ref({});
+
+const { result, loading, error, onResult } = useQuery(
+  getEvent,
+  {
+    id: router.params.id,
+  },
+
+  {
+    fetchPolicy: "no-cache",
+    clientId: "authClient",
+    context: {
+      headers: {
+        "x-hasura-role": "user",
+        "x-hasura-is-email-verified": true,
+      },
+    },
+  }
+);
+onResult((response) => {
+  const newResult = response.data?.events_by_pk;
+  if (newResult) {
+    event.value = newResult;
+    editableEvent.value = { ...event.value };
+    ownEvent.value = event?.value?.uid == user_id;
+    isClosed.value = new Date(event?.value?.end_date) < Date.now();
+
+    following.value = event.value.events_followers?.some(
+      (follow) => follow?.user_id === user_id
+    );
+
+    bookmark.value = event.value.events_bookmarks?.some(
+      (bookmark) => bookmark?.user_id === user_id
+    );
+  } else {
+    console.error.call("Error: events_by_pk not found");
+  }
+});
+
+const { mutate: updateEventMutation } = useMutation(UpdateEvent, {
+  fetchPolicy: "no-cache",
+  clientId: "authClient",
+  context: {
+    headers: {
+      "x-hasura-role": "user",
+      "x-hasura-is-email-verified": true,
+    },
+  },
+});
+
+const editHandler = () => {
+  isEditing.value = true;
+  editableEvent.value = { ...event.value };
+};
+
+const cancelEdit = () => {
+  isEditing.value = false;
+};
+
+const event_images = computed(() => {
+  if (event.value?.event_images) {
+    const imagesArray = event?.value.event_images
+      .replace(/{|}/g, "")
+      .split(",");
+    return imagesArray.length > 0 ? imagesArray : [defaultImage];
+  }
+  return [defaultImage];
+});
+
+const location = computed(() => {
+  if (event.value?.location) {
+    return event.value.location
+      .replace(/{|}/g, "")
+      .split(",")
+      .map((coord) => parseFloat(coord));
+  }
+  return [0, 0];
+});
+
+const {
+  mutate: InsertFollowersMutation,
+  onDone: onInsertFollowersDone,
+  loading: loadingFollowers,
+  onError: onInsertFollowersError,
+} = useAuthenticatedMutation(InsertFollowers, {
+  fetchPolicy: "no-cache",
+  clientId: "authClient",
+  context: {
+    headers: {
+      "x-hasura-role": "user",
+      "x-hasura-is-email-verified": true,
+    },
+  },
+});
+
+const {
+  mutate: DeleteFollowersMutation,
+  onDone: onDeleteFollowersDone,
+  loading: loadingDeleteFollowers,
+  onError: onDeleteFollowersError,
+} = useAuthenticatedMutation(DeleteFollowers, {
+  fetchPolicy: "no-cache",
+  clientId: "authClient",
+  context: {
+    headers: {
+      "x-hasura-role": "user",
+      "x-hasura-is-email-verified": true,
+    },
+  },
+});
+
+const {
+  mutate: InsertBookmarkMutation,
+  onDone: onInsertBookmarkDone,
+  loading: loadingBookmark,
+  onError: onInsertBookmarkError,
+} = useAuthenticatedMutation(InsertBookmarks, {
+  fetchPolicy: "no-cache",
+  clientId: "authClient",
+  context: {
+    headers: {
+      "x-hasura-role": "user",
+      "x-hasura-is-email-verified": true,
+    },
+  },
+});
+
+const {
+  mutate: DeleteBookmarkMutation,
+  onDone: onDeleteBookmarkDone,
+  loading: loadingDeleteBookmark,
+  onError: onDeleteBookmarkError,
+} = useAuthenticatedMutation(DeleteBookmarks);
+
+const toggleFollow = async () => {
+  if (!user_id) {
+    return router.push("/users/login");
+  }
+
+  const isCurrentlyFollowing = following.value;
+  try {
+    if (!isCurrentlyFollowing) {
+      const followingPayload = {
+        user_id: user_id,
+        event_id: event?.value.id,
+      };
+      await InsertFollowersMutation(followingPayload);
+      following.value = true;
+    } else {
+      const unFollowingPayload = {
+        user_id: user_id,
+        event_id: event?.value.id,
+      };
+      await DeleteFollowersMutation(unFollowingPayload);
+      following.value = false;
+    }
+  } catch (error) {
+    console.log(
+      `Error occurred while ${
+        isCurrentlyFollowing ? "unfollowing" : "following"
+      } the event:`,
+      error
+    );
+  }
+};
+
+const toggleBookmark = async () => {
+  if (!user_id) {
+    return router.push("/users/login");
+  }
+  const isCurrentlyBookmarked = bookmark.value;
+  try {
+    if (!isCurrentlyBookmarked) {
+      const bookmarkPayload = {
+        user_id: user_id,
+        event_id: event?.value.id,
+      };
+      await InsertBookmarkMutation(bookmarkPayload);
+      bookmark.value = true;
+    } else {
+      const unBookmarkPayload = {
+        user_id: user_id,
+        event_id: event?.value.id,
+      };
+      await DeleteBookmarkMutation(unBookmarkPayload);
+      bookmark.value = false;
+    }
+  } catch (error) {
+    console.log(
+      `Error occurred while ${
+        isCurrentlyBookmarked ? "unbookmarked" : "bookmark"
+      } the event:`,
+      error
+    );
+  }
+};
+
+const toggleBuy = () => {
+  isBought.value = !isBought.value;
+  isReserved.value = !isReserved.value;
+};
+
+const isFreeText = computed(() => (event?.value?.is_free ? "Free" : "Paid"));
+
+const freeClass = computed(() =>
+  event.value?.is_free
+    ? "bg-green-300 text-white px-2 py-1 rounded"
+    : "bg-red-800 text-white px-2 py-1 rounded"
+);
+
+const redirectToGoogleMap = () => {
+  const [latitude, longitude] = location.value;
+  const url = `https://www.google.com/maps?q=${latitude},${longitude}`;
+  window.open(url, "_blank");
+};
+
+const schema = yup.object({
+  title: yup.string().required("Title is required"),
+  description: yup.string().required("Description is required"),
+  start_date: yup.date().required("Start date is required"),
+  end_date: yup.date().required("End date is required"),
+
+  venue: yup.string().required("Venue is required"),
+  capacity: yup
+    .number()
+    .required("Capacity is required")
+    .positive("Capacity must be positive"),
+  price: yup.number().nullable(),
+});
+
+const saveEventChanges = async (values) => {
+  console.log("Values: ", values);
+  try {
+    const { data } = await updateEventMutation({
+      id: event.value.id,
+      price: values.price || 0,
+      description: values.description,
+      title: values.title,
+      is_free: values.is_free,
+      venue: values.venue,
+      capacity: values.capacity,
+      end_date: values.end_date,
+      start_date: values.start_date,
+    });
+    console.log("Updatting");
+    event.value = { ...editableEvent.value };
+
+    toast.success("The Event Updated Successfully!");
+    isEditing.value = false;
+  } catch (err) {
+    toast.error("Error Updating the event, try again");
+    console.error("Error updating the event: ", err);
+  }
+};
+
+const formatDate = (dateString) => {
+  if (!dateString) return "";
+  const options = {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  };
+  const date = new Date(dateString);
+  return date.toLocaleDateString(undefined, options) + " ";
+};
+
+definePageMeta({ layout: "authenticated" });
+</script>
+
 <template>
   <div
     class="relative bg-gradient-to-r from-gray-100 via-red-300 to-gray-500 min-h-screen w-full"
@@ -61,8 +361,8 @@
             </div>
 
             <p class="text-lg mb-6">
-              <strong>Date:</strong> {{ event?.start_date || "" }} to
-              {{ event?.end_date || "" }}
+              <strong>Date:</strong> {{ formatDate(event?.start_date) }} to
+              {{ formatDate(event?.end_date) }}
             </p>
             <p class="text-lg mb-6">
               <strong>Address:</strong> {{ event?.address || "" }}
@@ -344,258 +644,3 @@
     <CustomFooter class="mt-auto" />
   </div>
 </template>
-
-<script setup>
-import { ref, computed } from "vue";
-import { useRoute } from "vue-router";
-import { useQuery } from "@vue/apollo-composable";
-import { useForm, Field, Form, ErrorMessage } from "vee-validate";
-import * as yup from "yup";
-import defaultImage from "@/assets/images/home.png";
-import getEvent from "~/graphql/queries/events/getSingleEvent.gql";
-import { useAuthStore } from "~/stores";
-import { InsertFollowers } from "~/graphql/mutations/event_followers/InsertFollowers.gql";
-import { DeleteFollowers } from "~/graphql/mutations/event_followers/DeleteFollowers.gql";
-import { InsertBookmarks } from "~/graphql/mutations/event_bookmarks/InsertBookmarks.gql";
-import { DeleteBookmarks } from "~/graphql/mutations/event_bookmarks/DeleteBookmarks.gql";
-import { UpdateEvent } from "~/graphql/mutations/events/update.gql";
-import { toast } from "vue3-toastify";
-
-const authStore = useAuthStore();
-const isAuthenticated = computed(() => authStore.isAuthenticated);
-const user_id = authStore.id;
-
-const router = useRoute();
-const event = ref({});
-const isBought = ref(false);
-const isReserved = ref(false);
-const ownEvent = ref(false);
-const isClosed = ref(false);
-const following = ref(false);
-const bookmark = ref(false);
-const isEditing = ref(false);
-const editableEvent = ref({});
-
-const { result, loading, error, onResult } = useQuery(getEvent, {
-  id: router.params.id,
-});
-onResult((response) => {
-  const newResult = response.data?.events_by_pk;
-  if (newResult) {
-    event.value = newResult;
-    editableEvent.value = { ...event.value };
-    ownEvent.value = event?.value?.uid == user_id;
-    isClosed.value = new Date(event?.value?.end_date) < Date.now();
-
-    following.value = event.value.events_followers?.some(
-      (follow) => follow?.user_id === user_id
-    );
-
-    bookmark.value = event.value.events_bookmarks?.some(
-      (bookmark) => bookmark?.user_id === user_id
-    );
-  } else {
-    console.error.call("Error: events_by_pk not found");
-  }
-  console.log("Events: ", event);
-});
-
-const { mutate: updateEventMutation } = useMutation(UpdateEvent);
-
-const editHandler = () => {
-  isEditing.value = true;
-  editableEvent.value = { ...event.value };
-};
-
-const cancelEdit = () => {
-  isEditing.value = false;
-};
-
-const event_images = computed(() => {
-  if (event.value?.event_images) {
-    const imagesArray = event?.value.event_images
-      .replace(/{|}/g, "")
-      .split(",");
-    return imagesArray.length > 0 ? imagesArray : [defaultImage];
-  }
-  return [defaultImage];
-});
-
-const location = computed(() => {
-  if (event.value?.location) {
-    return event.value.location
-      .replace(/{|}/g, "")
-      .split(",")
-      .map((coord) => parseFloat(coord));
-  }
-  return [0, 0];
-});
-
-const {
-  mutate: InsertFollowersMutation,
-  onDone: onInsertFollowersDone,
-  loading: loadingFollowers,
-  onError: onInsertFollowersError,
-} = useAuthenticatedMutation(InsertFollowers);
-
-const {
-  mutate: DeleteFollowersMutation,
-  onDone: onDeleteFollowersDone,
-  loading: loadingDeleteFollowers,
-  onError: onDeleteFollowersError,
-} = useAuthenticatedMutation(DeleteFollowers);
-
-const {
-  mutate: InsertBookmarkMutation,
-  onDone: onInsertBookmarkDone,
-  loading: loadingBookmark,
-  onError: onInsertBookmarkError,
-} = useAuthenticatedMutation(InsertBookmarks);
-
-const {
-  mutate: DeleteBookmarkMutation,
-  onDone: onDeleteBookmarkDone,
-  loading: loadingDeleteBookmark,
-  onError: onDeleteBookmarkError,
-} = useAuthenticatedMutation(DeleteBookmarks);
-
-const toggleFollow = async () => {
-  if (!user_id) {
-    return router.push("/users/login");
-  }
-
-  const isCurrentlyFollowing = following.value;
-  try {
-    if (!isCurrentlyFollowing) {
-      const followingPayload = {
-        user_id: user_id,
-        event_id: event?.value.id,
-      };
-      await InsertFollowersMutation(followingPayload);
-      following.value = true;
-    } else {
-      const unFollowingPayload = {
-        user_id: user_id,
-        event_id: event?.value.id,
-      };
-      await DeleteFollowersMutation(unFollowingPayload);
-      following.value = false;
-    }
-  } catch (error) {
-    console.log(
-      `Error occurred while ${
-        isCurrentlyFollowing ? "unfollowing" : "following"
-      } the event:`,
-      error
-    );
-  }
-};
-
-const toggleBookmark = async () => {
-  if (!user_id) {
-    return router.push("/users/login");
-  }
-  const isCurrentlyBookmarked = bookmark.value;
-  try {
-    if (!isCurrentlyBookmarked) {
-      const bookmarkPayload = {
-        user_id: user_id,
-        event_id: event?.value.id,
-      };
-      await InsertBookmarkMutation(bookmarkPayload);
-      bookmark.value = true;
-    } else {
-      const unBookmarkPayload = {
-        user_id: user_id,
-        event_id: event?.value.id,
-      };
-      await DeleteBookmarkMutation(unBookmarkPayload);
-      bookmark.value = false;
-    }
-  } catch (error) {
-    console.log(
-      `Error occurred while ${
-        isCurrentlyBookmarked ? "unbookmarked" : "bookmark"
-      } the event:`,
-      error
-    );
-  }
-};
-
-const toggleBuy = () => {
-  isBought.value = !isBought.value;
-  isReserved.value = !isReserved.value;
-};
-
-const isFreeText = computed(() => (event?.value?.is_free ? "Free" : "Paid"));
-
-const freeClass = computed(() =>
-  event.value?.is_free
-    ? "bg-green-300 text-white px-2 py-1 rounded"
-    : "bg-red-800 text-white px-2 py-1 rounded"
-);
-
-const redirectToGoogleMap = () => {
-  const [latitude, longitude] = location.value;
-  const url = `https://www.google.com/maps?q=${latitude},${longitude}`;
-  window.open(url, "_blank");
-};
-
-// Form Setup
-const schema = yup.object({
-  title: yup.string().required("Title is required"),
-  description: yup.string().required("Description is required"),
-  start_date: yup.date().required("Start date is required"),
-  end_date: yup.date().required("End date is required"),
-  // address: yup.string().required("Address is required"),
-  venue: yup.string().required("Venue is required"),
-  capacity: yup
-    .number()
-    .required("Capacity is required")
-    .positive("Capacity must be positive"),
-  price: yup.number().nullable(),
-});
-
-// const { resetForm, handleSubmit, errors, isSubmitting, setFieldValue, values } =
-//   useForm({
-//     validationSchema: schema,
-//     initialValues: {
-//       title: event.value?.title || "",
-//       description: event.value?.description || "",
-//       start_date: event.value?.start_date || "",
-//       end_date: event.value?.end_date || "",
-//       // address: event.value?.address || "",
-//       venue: event.value?.venue || "",
-//       capacity: event.value?.capacity || "",
-//       price: event.value?.price || 0,
-//       is_free: event.value?.is_free || false,
-//     },
-//   });
-
-const saveEventChanges = async (values) => {
-  console.log("Values: ", values);
-  try {
-    const { data } = await updateEventMutation({
-      id: event.value.id,
-      price: values.price || 0,
-      description: values.description,
-      title: values.title,
-      is_free: values.is_free,
-      venue: values.venue,
-      capacity: values.capacity,
-      end_date: values.end_date,
-      start_date: values.start_date,
-    });
-    console.log("Updatting");
-    event.value = { ...editableEvent.value };
-
-    toast.success("The Event Updated Successfully!");
-    isEditing.value = false;
-  } catch (err) {
-    toast.error("Error Updating the event, try again");
-    console.error("Error updating the event: ", err);
-  }
-};
-
-definePageMeta({ layout: "authenticated" });
-</script>

@@ -32,10 +32,6 @@ const props = defineProps({
   },
 });
 
-// Log the ticket to the console
-console.log("Ticket data:", props.ticket);
-
-// Utility function to format the purchase date
 const formatDate = (dateString) =>
   format(new Date(dateString), "MMMM dd, yyyy");
 </script>

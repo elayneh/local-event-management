@@ -1,70 +1,14 @@
-<template>
-  <div
-    class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50"
-    @click.self="closeModal"
-  >
-    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-      <CustomCard title="Sign Up">
-        <template #body>
-          <DynamicForm
-            ref="DynamicForm"
-            :schema="formSchema"
-            :submitHandler="submitHandler"
-          >
-            <div class="mt-24">
-              <div class="flex items-center justify-center gap-4 mt-4">
-                <button
-                  type="submit"
-                  class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                >
-                  Register
-                </button>
-                <button
-                  type="button"
-                  @click="navigateTo('/')"
-                  class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                >
-                  Cancel
-                </button>
-              </div>
-              <div>
-                <p class="mt-5 text-gray-700 text-center">
-                  Already have an account?
-                  <NuxtLink
-                    class="text-blue-500 hover:text-blue-700 font-semibold ml-1"
-                    to="/users/login"
-                  >
-                    <span>Login</span>
-                  </NuxtLink>
-                </p>
-              </div>
-            </div>
-          </DynamicForm>
-        </template>
-      </CustomCard>
-    </div>
-  </div>
-</template>
-
 <script setup>
 import { ref } from "vue";
 import CustomCard from "~/components/CustomCard.vue";
 import DynamicForm from "~/components/DynamicForm.vue";
-import { useAuthStore } from "~/stores";
 import register from "~/graphql/mutations/users/register.gql";
 import { toast } from "vue3-toastify";
-import * as JsCookie from "js-cookie";
 import * as yup from "yup";
 
-const Cookies = JsCookie.default;
+const emit = defineEmits(["close"]);
 
-const authenticationStore = useAuthStore();
-const {
-  mutate: userRegistration,
-  onDone,
-  loading,
-  onError,
-} = authentication(register);
+const { mutate: userRegistration, onDone, onError } = authentication(register);
 
 const formSchema = {
   fields: [
@@ -107,6 +51,9 @@ const formSchema = {
   ],
 };
 
+const showModal = ref(false);
+const showRegisterForm = ref(true);
+
 function submitHandler(values) {
   console.log("User form data: ", values);
   const formData = {
@@ -120,26 +67,163 @@ function submitHandler(values) {
 
 onDone((result) => {
   const { id, role, token } = result.data.register;
-  toast.success("User registered successfully", {});
-  Cookies.set("token", token, { expires: 3 });
-  authenticationStore.setToken(token);
-  authenticationStore.setId(token);
-  authenticationStore.setUser(id);
-  authenticationStore.setRole(role);
-  role === "user"
-    ? navigateTo("/user")
-    : role === "admin"
-    ? navigateTo("/admin")
-    : "/";
-  emit("close");
+  toast.success("User registered successfully", {
+    autoClose: 2000,
+  });
+
+  closeRegistrationForm();
+  openModal();
 });
 
 onError((error) => {
   console.log("Error: ", error.message);
-  toast.error("Something went wrong, try again", {});
+  toast.error("Something went wrong while registering the user", {
+    autoClose: 10000,
+  });
 });
 
-function closeModal() {
-  emit("close");
+function closeRegistrationForm() {
+  showRegisterForm.value = false;
 }
+
+function openModal() {
+  showModal.value = true;
+}
+
+function closeModal() {
+  showModal.value = false;
+}
+
+const getStarted = () => {
+  console.log("Get Started clicked");
+  closeModal();
+  window.open("https://mailtrap.io/inboxes/2756361/messages", "_blank");
+};
 </script>
+
+<style scoped>
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-title {
+  margin: 0;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.modal-body {
+  margin-top: 10px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.primary-button {
+  background-color: #007bff;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+</style>
+
+<template>
+  <div>
+    <div class="modal" v-if="showModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title">Confirm Email</h3>
+          <button class="close-button" @click="closeModal">X</button>
+        </div>
+        <div class="modal-body">
+          <p>An email has been sent to confirm your registration.</p>
+        </div>
+        <div class="modal-footer">
+          <button class="primary-button" @click="getStarted">
+            Go to Gmail
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      v-if="showRegisterForm"
+      class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50 transition-opacity duration-500 ease-in-out"
+    >
+      <div class="animate__animated animate__zoomIn">
+        <CustomCard
+          title="Sign Up"
+          customClass="bg-white p-6 rounded-lg shadow-lg w-full max-w-md transform transition-transform duration-300 hover:scale-105 hover:shadow-2xl"
+        >
+          <template #body>
+            <DynamicForm
+              ref="DynamicForm"
+              :schema="formSchema"
+              :submitHandler="submitHandler"
+            >
+              <div class="mt-24">
+                <div class="flex items-center justify-center gap-4 mt-4">
+                  <button
+                    type="submit"
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transform transition-transform duration-300 hover:scale-110"
+                  >
+                    Register
+                  </button>
+                  <button
+                    type="button"
+                    @click="navigateTo('/')"
+                    class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transform transition-transform duration-300 hover:scale-110"
+                  >
+                    Cancel
+                  </button>
+                </div>
+                <div>
+                  <p class="mt-5 text-gray-700 text-center">
+                    Already have an account?
+                    <NuxtLink
+                      class="text-blue-500 hover:text-blue-700 font-semibold ml-1 transition-colors duration-300"
+                      to="/users/login"
+                    >
+                      <span>Login</span>
+                    </NuxtLink>
+                  </p>
+                </div>
+              </div>
+            </DynamicForm>
+          </template>
+        </CustomCard>
+      </div>
+    </div>
+  </div>
+</template>

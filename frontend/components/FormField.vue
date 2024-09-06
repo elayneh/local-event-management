@@ -9,7 +9,10 @@
       :type="type"
       :as="as"
       :placeholder="placeholder"
-      :class="['w-full px-4 py-2 border rounded-lg', { 'border-red-500': hasError }]"
+      :class="[
+        'w-full px-4 py-2 border rounded-lg',
+        { 'border-red-500': hasError },
+      ]"
       v-model="modelValue"
     />
     <ErrorMessage :name="name" class="text-red-500 text-sm mt-1" />
@@ -54,5 +57,8 @@ const props = defineProps({
 const { name, modelValue, fieldProps } = toRefs(props);
 
 // Check if the field has an error
-const hasError = computed(() => !!fieldProps.value.errors && fieldProps.value.errors[name.value]?.length > 0);
+const hasError = computed(
+  () =>
+    !!fieldProps.value.errors && fieldProps.value.errors[name.value]?.length > 0
+);
 </script>

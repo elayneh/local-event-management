@@ -1,3 +1,44 @@
+<script setup>
+import CustomEventCard from "@/components/CustomEventCard.vue";
+import { ref } from "vue";
+import { useQuery } from "@vue/apollo-composable";
+import HomepageImage from "~/components/HomepageImage.vue";
+
+const openFilterModal = ref(false);
+const { onEventResult, categories, tags } = useQuery();
+const openFilterModalHandler = () => {
+  openFilterModal.value = !openFilterModal.value;
+};
+const searchQuery = ref("");
+const visibleEvents = ref(null);
+const hasMoreEvents = ref(null);
+
+const searchHandler = () => {
+  onEventResult((data) => {
+    if (!searchQuery.value) {
+      visibleEvents.value = data.events;
+    } else {
+      visibleEvents.value = data.events.filter((event) => {
+        const query = searchQuery.value.toLowerCase();
+        return (
+          event.title.toLowerCase().includes(query) ||
+          event.description.toLowerCase().includes(query)
+        );
+      });
+    }
+    hasMoreEvents = computed(
+      () => events.value.length > visibleEvents?.value.length
+    );
+  });
+};
+
+const loadMoreEvents = () => {
+  if (hasMoreEvents) {
+    currentPage.value += 1;
+  }
+};
+</script>
+
 <template>
   <div
     class="bg-gradient-to-r from-gray-100 via-red-300 to-gray-500 h-64 w-full"
@@ -36,7 +77,7 @@
     <HomepageImage />
 
     <h2 class="text-2xl font-bold mb-4 text-center">Latest Events</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
       <div v-for="event in visibleEvents" :key="event.id">
         <CustomEventCard :event="event" />
       </div>
@@ -62,7 +103,6 @@
             Explore Amazing Features
           </h2>
           <div class="space-y-4">
-            <!-- Feature 1 -->
             <div class="flex items-center">
               <div
                 class="flex-shrink-0 bg-blue-500 text-white rounded-full p-3"
@@ -92,12 +132,10 @@
               </div>
             </div>
 
-            <!-- Feature 2 -->
             <div class="flex items-center">
               <div
                 class="flex-shrink-0 bg-green-500 text-white rounded-full p-3"
               >
-                <!-- Icon for community -->
                 <svg
                   class="w-6 h-6"
                   fill="none"
@@ -152,10 +190,8 @@
               </div>
             </div>
 
-            <!-- Feature 4 -->
             <div class="flex items-center">
               <div class="flex-shrink-0 bg-red-500 text-white rounded-full p-3">
-                <!-- Icon for analytics -->
                 <svg
                   class="w-6 h-6"
                   fill="none"
@@ -197,53 +233,3 @@
     <CustomFooter />
   </div>
 </template>
-<script setup>
-import CustomEventCard from "@/components/CustomEventCard.vue";
-import { ref, watch } from "vue";
-import { useQuery } from "@vue/apollo-composable";
-import getEvents from "~/graphql/queries/events/getEvents.gql";
-import getCategories from "~/graphql/queries/categories/getCategories.gql";
-import getTags from "~/graphql/queries/tags/getTags.gql";
-import HomepageImage from "~/components/HomepageImage.vue";
-
-const openFilterModal = ref(false);
-const { onEventResult, categories, tags } = useQuery();
-const openFilterModalHandler = () => {
-  openFilterModal.value = !openFilterModal.value;
-  console.log("openFilterModal: ", openFilterModal);
-};
-const searchQuery = ref("");
-const visibleEvents = ref(null);
-const hasMoreEvents = ref(null);
-
-const searchHandler = () => {
-  onEventResult((data) => {
-    if (!searchQuery.value) {
-      visibleEvents.value = data.events;
-    } else {
-      visibleEvents.value = data.events.filter((event) => {
-        const query = searchQuery.value.toLowerCase();
-        return (
-          event.title.toLowerCase().includes(query) ||
-          event.description.toLowerCase().includes(query)
-        );
-      });
-    }
-    hasMoreEvents = computed(
-      () => events.value.length > visibleEvents?.value.length
-    );
-  });
-};
-
-const loadMoreEvents = () => {
-  if (hasMoreEvents) {
-    currentPage.value += 1;
-  }
-};
-
-// definePageMeta(() => {
-//   return {
-//     layout: isAuthenticated ? "authenticated" : "",
-//   };
-// });
-</script>

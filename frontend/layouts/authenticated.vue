@@ -1,3 +1,60 @@
+<script setup>
+import { ref, onMounted, onUnmounted } from "vue";
+import * as JsCookie from "js-cookie";
+import { useAuthStore } from "~/stores";
+import { useRouter } from "vue-router";
+const router = useRouter();
+
+const Cookies = JsCookie.default;
+
+const authenticationStore = useAuthStore();
+const dropdownOpen = ref(false);
+const eventDropDown = ref(false);
+const isLogoutModalOpen = ref(false);
+
+const toggleDropdown = () => {
+  eventDropDown.value = !eventDropDown.value;
+};
+
+const toggleProfileDropdown = () => {
+  dropdownOpen.value = !dropdownOpen.value;
+};
+
+const openLogoutModal = () => {
+  isLogoutModalOpen.value = true;
+};
+
+const closeLogoutModal = () => {
+  window.location.reload();
+  isLogoutModalOpen.value = false;
+};
+
+const confirmLogout = () => {
+  useCookie("token").value = null;
+  authenticationStore.setToken(null);
+  authenticationStore.setId(null);
+  authenticationStore.setUser(null);
+  authenticationStore.setRole(null);
+  closeLogoutModal();
+};
+const handleClickOutside = (event) => {
+  if (!event.target.closest(".relative")) {
+    eventDropDown.value = false;
+  }
+  if (!event.target.closest(".relativep")) {
+    dropdownOpen.value = false;
+  }
+};
+
+onMounted(() => {
+  document.addEventListener("click", handleClickOutside);
+});
+
+onUnmounted(() => {
+  document.removeEventListener("click", handleClickOutside);
+});
+</script>
+
 <template>
   <div class="flex flex-col h-screen">
     <header class="fixed top-0 left-0 w-full bg-transparent">
@@ -16,7 +73,7 @@
             </NuxtLink>
           </ul>
           <ul class="flex m-2">
-            <span>All What I have</span>
+            <span>My dashboard</span>
             <li class="relative items-center gap-2">
               <button @click.stop="toggleDropdown">
                 <font-awesome-icon
@@ -32,7 +89,7 @@
                   <NuxtLink
                     to="/user/events"
                     class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                    >All events</NuxtLink
+                    >My events</NuxtLink
                   >
                 </li>
                 <li>
@@ -149,62 +206,3 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { ref, onMounted, onUnmounted } from "vue";
-import * as JsCookie from "js-cookie";
-import { useAuthStore } from "~/stores";
-import { useRouter } from "vue-router";
-const router = useRouter();
-
-const Cookies = JsCookie.default;
-
-const authenticationStore = useAuthStore();
-const dropdownOpen = ref(false);
-const eventDropDown = ref(false);
-const isLogoutModalOpen = ref(false);
-
-const toggleDropdown = () => {
-  eventDropDown.value = !eventDropDown.value;
-};
-
-const toggleProfileDropdown = () => {
-  dropdownOpen.value = !dropdownOpen.value;
-};
-
-const openLogoutModal = () => {
-  isLogoutModalOpen.value = true;
-};
-
-const closeLogoutModal = () => {
-  window.location.reload();
-
-  isLogoutModalOpen.value = false;
-};
-
-const confirmLogout = () => {
-  Cookies.remove("token");
-  authenticationStore.setToken(null);
-  authenticationStore.setId(null);
-  authenticationStore.setUser(null);
-  authenticationStore.setRole(null);
-  closeLogoutModal();
-  return router.push("/");
-};
-const handleClickOutside = (event) => {
-  if (!event.target.closest(".relative")) {
-    eventDropDown.value = false;
-  }
-  if (!event.target.closest(".relativep")) {
-    dropdownOpen.value = false;
-  }
-};
-
-onMounted(() => {
-  document.addEventListener("click", handleClickOutside);
-});
-
-onUnmounted(() => {
-  document.removeEventListener("click", handleClickOutside);
-});
-</script>

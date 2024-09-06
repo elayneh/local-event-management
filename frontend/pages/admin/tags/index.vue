@@ -1,3 +1,22 @@
+<script setup>
+import { ref } from "vue";
+import { useQuery } from "@vue/apollo-composable";
+import getTags from "~/graphql/queries/tags/getTags.gql";
+
+const tags = ref([]);
+
+const { onResult } = useQuery(getTags);
+
+onResult((response) => {
+  const newResult = response.data?.tags;
+  if (newResult) {
+    tags.value = newResult;
+  }
+});
+
+definePageMeta({ layout: "admin-dashboard" });
+</script>
+
 <template>
   <div class="p-6">
     <div v-if="tags.length === 0" class="text-center text-gray-500">
@@ -60,27 +79,3 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { ref } from "vue";
-import { useQuery } from "@vue/apollo-composable";
-import getTags from "~/graphql/queries/tags/getTags.gql";
-
-const tags = ref([]);
-
-const {
-  result: tagsResult,
-  loading: tagsLoading,
-  error: tagsError,
-  onResult,
-} = useQuery(getTags);
-
-onResult((response) => {
-  const newResult = response.data?.tags;
-  if (newResult) {
-    tags.value = newResult;
-  }
-});
-
-definePageMeta({ layout: "admin-dashboard" });
-</script>

@@ -10,11 +10,13 @@ export const useAuthStore = defineStore("auth", {
     id: null,
     role: null,
     user: null,
+    isEmailVerified: false,
   }),
 
   getters: {
     isAuthenticated: (state) => !!state.token,
     getUserRole: (state) => state.role,
+    getIsEmailVerified: (state) => state.isEmailVerified,
   },
 
   actions: {
@@ -24,6 +26,10 @@ export const useAuthStore = defineStore("auth", {
 
     setRole(role) {
       this.role = role;
+    },
+
+    setIsEmailVerified(isEmailVerified) {
+      this.isEmailVerified = isEmailVerified;
     },
 
     setId(id) {
@@ -58,9 +64,15 @@ export const useAuthStore = defineStore("auth", {
           const id =
             decoded["https://hasura.io/jwt/claims"]["x-hasura-user-id"];
           const role = decoded["https://hasura.io/jwt/claims"]["x-hasura-role"];
+          const is_email_verified =
+            decoded["https://hasura.io/jwt/claims"][
+              "x-hasura-is-email-verified"
+            ];
+          console.log("is_email_verified: ", is_email_verified);
           this.setId(id);
           this.setUser(id);
-          this.setRole(role);
+          this.setIsEmailVerified(is_email_verified);
+          this.setRole;
         } else {
           this.logout();
         }

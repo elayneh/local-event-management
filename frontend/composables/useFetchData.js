@@ -4,7 +4,20 @@ import getEvents from "~/graphql/queries/events/getEvents.gql";
 import getCategories from "~/graphql/queries/categories/getCategories.gql";
 import getTags from "~/graphql/queries/tags/getTags.gql";
 
-export default function useFetchData() {
+export default function useFetchData(fetchOptions = {}) {
+  const defaultOptions = {
+    fetchPolicy: "no-cache",
+    clientId: "authClient",
+    context: {
+      headers: {
+        "x-hasura-role": "user",
+        "x-hasura-is-email-verified": true,
+      },
+    },
+  };
+
+  const options = { ...defaultOptions, ...fetchOptions };
+
   const events = ref([]);
   const categories = ref([]);
   const tags = ref([]);
@@ -13,7 +26,7 @@ export default function useFetchData() {
     onResult: onEventResult,
     loading: eventLoading,
     error: eventError,
-  } = useQuery(getEvents);
+  } = useQuery(getEvents, {}, options);
 
   onEventResult(({ data }) => {
     if (data?.events) {
@@ -25,7 +38,7 @@ export default function useFetchData() {
     onResult: onCategoryResult,
     loading: loadingCategories,
     error: categoryError,
-  } = useQuery(getCategories);
+  } = useQuery(getCategories, {}, options);
 
   onCategoryResult(({ data }) => {
     if (data?.categories) {
@@ -37,7 +50,7 @@ export default function useFetchData() {
     onResult: onTagResult,
     loading: loadingTags,
     error: tagError,
-  } = useQuery(getTags);
+  } = useQuery(getTags, {}, options);
 
   onTagResult(({ data }) => {
     if (data?.tags) {

@@ -1,3 +1,29 @@
+<script setup>
+import CustomCard from "~/components/CustomCard.vue";
+import { ref } from "vue";
+import { useQuery } from "@vue/apollo-composable";
+import getEvents from "~/graphql/queries/events/getEvents.gql";
+
+const events = ref([]);
+const { result, loading, error } = useQuery(getEvents);
+
+definePageMeta({ layout: "admin-dashboard" });
+
+watch(result, (newResult) => {
+  if (newResult?.events) {
+    events.value = newResult.events;
+  }
+});
+
+watch(loading, (newLoading) => {
+  console.log("Loading:", newLoading);
+});
+
+watch(error, (newError) => {
+  console.error("Error:", newError);
+});
+</script>
+
 <template>
   <div>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
@@ -31,29 +57,3 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import CustomCard from "~/components/CustomCard.vue";
-import { ref } from "vue";
-import { useQuery } from "@vue/apollo-composable";
-import getEvents from "~/graphql/queries/events/getEvents.gql";
-
-const events = ref([]);
-const { result, loading, error } = useQuery(getEvents);
-
-definePageMeta({ layout: "admin-dashboard" });
-
-watch(result, (newResult) => {
-  if (newResult?.events) {
-    events.value = newResult.events;
-  }
-});
-
-watch(loading, (newLoading) => {
-  console.log("Loading:", newLoading);
-});
-
-watch(error, (newError) => {
-  console.error("Error:", newError);
-});
-</script>

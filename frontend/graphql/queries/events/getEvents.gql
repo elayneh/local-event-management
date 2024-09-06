@@ -1,8 +1,8 @@
-query GetEvents($limit: Int!, $offset: Int!, $where: events_bool_exp) {
+query GetEvents($limit: Int, $offset: Int, $filter: events_bool_exp) {
   events(
     limit: $limit
     offset: $offset
-    where: $where
+    where: $filter
     order_by: { end_date: asc }
   ) {
     address
