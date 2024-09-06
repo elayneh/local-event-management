@@ -12,6 +12,7 @@ require (
 	github.com/cloudinary/cloudinary-go/v2 v2.8.0 // indirect
 	github.com/creasty/defaults v1.7.0 // indirect
 	github.com/felixge/httpsnoop v1.0.3 // indirect
+	github.com/golang-jwt/jwt/v4 v4.5.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/schema v1.4.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect

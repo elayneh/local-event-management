@@ -24,7 +24,8 @@ func SendGraphQLRequest(query string, variables map[string]interface{}) (*GraphQ
 		return nil, fmt.Errorf("error creating request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("x-hasura-admin-secret", "myadminsecretkey	")
+	req.Header.Set("x-hasura-admin-secret", "myadminsecretkey")
+	req.Header.Set("x-hasura-role", "admin")
 
 	client := &http.Client{}
 	res, err := client.Do(req)

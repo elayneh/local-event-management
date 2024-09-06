@@ -12,27 +12,27 @@ import (
 	"github.com/machinebox/graphql"
 )
 
-func sendToken(w http.ResponseWriter, role string, response AuthResponse) {
-	token, err := utils.GetToken(response.ID, role)
+func sendToken(w http.ResponseWriter, role string, response AuthResponse, is_email_verified bool) {
+	token, err := utils.GetToken(response.ID, role, is_email_verified)
 	if err != nil {
-		fmt.Println(err.Error(), "when generating token")
 		http.Error(w, "Something went wrong when creating token", http.StatusBadRequest)
 		return
 	}
 
 	response.Role = role
 	response.Token = token
+	response.IsEmailVerified = is_email_verified
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
+
 func Login(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Error reading request body", http.StatusInternalServerError)
 		return
 	}
-	fmt.Println("\n\n\nBODY: ", string(body))
 
 	r.Body = io.NopCloser(bytes.NewBuffer(body))
 
@@ -49,9 +49,9 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	loginCredentials := loginRequest.Input.LoginCredentials
-	fmt.Println("Login input: ", loginRequest.Input)
+	client := utils.Client()
 
+	loginCredentials := loginRequest.Input.LoginCredentials
 	req := graphql.NewRequest(`
         query($email: String!) {
             users(where: {email: {_eq: $email}}) {
@@ -59,22 +59,23 @@ func Login(w http.ResponseWriter, r *http.Request) {
                 email
                 password
                 role
+                is_email_verified
             }
         }
     `)
 
+	req.Header.Set("x-hasura-role", "admin")
 	req.Var("email", loginCredentials.Email)
 
 	var respData struct {
 		Users []struct {
-			ID       string `json:"id"`
-			Email    string `json:"email"`
-			Password string `json:"password"`
-			Role     string `json:"role"`
+			ID              string `json:"id"`
+			Email           string `json:"email"`
+			Password        string `json:"password"`
+			Role            string `json:"role"`
+			IsEmailVerified bool   `json:"is_email_verified"`
 		} `json:"users"`
 	}
-
-	client := utils.Client()
 
 	err = client.Run(context.Background(), req, &respData)
 	if err != nil {
@@ -82,11 +83,12 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if len(respData.Users) > 0 && utils.ComparePasswords(respData.Users[0].Password, loginCredentials.Password) {
+	if len(respData.Users) > 0 && utils.ComparePasswords(respData.Users[0].Password, loginCredentials.Password) && respData.Users[0].IsEmailVerified {
 		var response AuthResponse
 		response.ID = respData.Users[0].ID
 		response.Role = respData.Users[0].Role
-		sendToken(w, respData.Users[0].Role, response)
+		response.IsEmailVerified = respData.Users[0].IsEmailVerified
+		sendToken(w, respData.Users[0].Role, response, respData.Users[0].IsEmailVerified)
 		return
 	}
 
@@ -109,10 +111,17 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	newUser := reqBody.Input.UserInput
-	fmt.Println("\n\nNew User: ", newUser, "\n\n")
+
 	password, err := utils.HashPassword(newUser.Password)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Generate the confirmation token
+	confirmationToken, err := utils.GetToken(newUser.Username, "user", false)
+	if err != nil {
+		http.Error(w, "Failed to generate confirmation token", http.StatusInternalServerError)
 		return
 	}
 
@@ -125,13 +134,16 @@ func Register(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	`)
+	req.Header.Set("x-hasura-role", "admin")
 
 	req.Var("objects", []map[string]interface{}{
 		{
-			"username": newUser.Username,
-			"role":     newUser.Role,
-			"email":    newUser.Email,
-			"password": password,
+			"username":           newUser.Username,
+			"role":               newUser.Role,
+			"email":              newUser.Email,
+			"password":           password,
+			"is_email_verified":  newUser.IsEmailVerified,
+			"confirmation_token": confirmationToken,
 		},
 	})
 
@@ -160,6 +172,5 @@ func Register(w http.ResponseWriter, r *http.Request) {
 
 	var response AuthResponse
 	response.ID = respData.InsertUsers.Returning[0].ID
-	fmt.Println("\n\nResponse: ", respData, "\n\n", response, "\n\n")
-	sendToken(w, newUser.Role, response)
+	sendToken(w, newUser.Role, response, newUser.IsEmailVerified)
 }

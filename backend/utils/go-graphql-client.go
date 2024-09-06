@@ -7,7 +7,6 @@ import (
 	"github.com/machinebox/graphql"
 )
 
-// headersTransport is a custom HTTP transport that adds headers to each request
 type headersTransport struct {
 	headers http.Header
 	base    http.RoundTripper
@@ -26,16 +25,20 @@ var client *graphql.Client
 
 func Client() *graphql.Client {
 	if client == nil {
-		// Get the Hasura URL from the environment variable
 		hasuraURL := os.Getenv("HASURA_GRAPHQL_URL")
 		if hasuraURL == "" {
-			hasuraURL = "http://minabtest-hasura-1:8080/v1/graphql" // Default value if env variable is not set
+			hasuraURL = "http://localhost:8080/v1/graphql" // Ensure URL is correct
 		}
 
-		// Set up the HTTP client
-		httpClient := &http.Client{}
+		httpClient := &http.Client{
+			Transport: &headersTransport{
+				headers: http.Header{
+					"x-hasura-role": []string{"admin"},
+				},
+				base: http.DefaultTransport,
+			},
+		}
 
-		// Set up the GraphQL client with the custom HTTP client
 		client = graphql.NewClient(hasuraURL, graphql.WithHTTPClient(httpClient))
 	}
 

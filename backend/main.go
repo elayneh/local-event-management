@@ -41,6 +41,8 @@ func main() {
 	mux.HandleFunc("/login", controller.Login)
 
 	mux.HandleFunc("/uploadImage", controller.UploadImagesHandler)
+	mux.HandleFunc("/sendConfirmationEmail", controller.EmailConfirmationWebhook)
+	mux.HandleFunc("/verifyEmail", controller.ConfirmEmail)
 
 	handler := loggingMiddleware(corsMiddleware(mux))
 	port := os.Getenv("PORT")

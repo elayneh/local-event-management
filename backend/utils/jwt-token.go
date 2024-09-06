@@ -1,17 +1,16 @@
 package utils
 
 import (
+	"os"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v4"
 )
 
 func createJWTToken(payload map[string]interface{}, secretKey string, tokenExpiration int64) (string, error) {
-	// Create a new JWT token with the given payload and secret key
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims(payload))
-	// Set the token expiration time to 1 hour from now
-	token.Claims.(jwt.MapClaims)["exp"] = tokenExpiration
-	// Sign the token with the secret key and return the signed token as a string
+	claims := jwt.MapClaims(payload)
+	claims["exp"] = tokenExpiration
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	signedToken, err := token.SignedString([]byte(secretKey))
 	if err != nil {
 		return "", err
@@ -19,23 +18,28 @@ func createJWTToken(payload map[string]interface{}, secretKey string, tokenExpir
 	return signedToken, nil
 }
 
-func GetToken(userId string, role string) (string, error) {
+func GetToken(userId string, role string, isEmailVerified bool) (string, error) {
+	isEmailVerifiedStr := "false"
+	if isEmailVerified {
+		isEmailVerifiedStr = "true"
+	}
+	secretKey := os.Getenv("JWT_SECRET")
 	payload := map[string]interface{}{
-		"sub": "12345",                               // The user ID
-		"iat": time.Now().Unix(),                     // The token issue time (UNIX timestamp)
-		"exp": time.Now().Add(time.Hour * 48).Unix(), // The token expiration time (UNIX timestamp)
+		"sub": userId,
+		"iat": time.Now().Unix(),
 		"https://hasura.io/jwt/claims": map[string]interface{}{
-			"x-hasura-allowed-roles": []string{"organizer", "user", "admin", "public"}, // The allowed roles for the user
-			"x-hasura-default-role":  "user",                                           // The default role for the user
-			"x-hasura-user-id":       userId,                                           // The user ID
-			"x-hasura-role":          role,                                             // The current role for the user
+			"x-hasura-allowed-roles":     []string{"user", "admin"},
+			"x-hasura-default-role":      "user",
+			"x-hasura-user-id":           userId,
+			"x-hasura-role":              role,
+			"x-hasura-is-email-verified": isEmailVerifiedStr,
 		},
 		"metadata": map[string]interface{}{
 			"userId": userId,
 		},
 	}
-	tokenExpiration := time.Now().Add(time.Hour * 48).Unix()
-	token, err := createJWTToken(payload, "jwtsecretkey", tokenExpiration)
+	tokenExpiration := time.Now().Add(time.Hour * 24).Unix()
+	token, err := createJWTToken(payload, secretKey, tokenExpiration)
 	if err != nil {
 		return "", err
 	}
