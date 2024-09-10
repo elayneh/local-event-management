@@ -8,11 +8,11 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 )
 
 func init() {
-
 	err := godotenv.Load(".env")
 	if err != nil {
 		log.Fatal("Error loading .env file")
@@ -34,19 +34,23 @@ func corsMiddleware(next http.Handler) http.Handler {
 }
 
 func main() {
+	router := mux.NewRouter()
 
-	mux := http.NewServeMux()
+	router.HandleFunc("/register", controller.Register).Methods("POST")
+	router.HandleFunc("/login", controller.Login).Methods("POST")
+	router.HandleFunc("/uploadImage", controller.UploadImagesHandler).Methods("POST")
+	router.HandleFunc("/sendConfirmationEmail", controller.EmailConfirmationWebhook).Methods("POST")
+	router.HandleFunc("/verifyEmail", controller.ConfirmEmail).Methods("GET")
+	router.HandleFunc("/ticketPayment", controller.InitializePayment).Methods("POST")
 
-	mux.HandleFunc("/register", controller.Register)
-	mux.HandleFunc("/login", controller.Login)
+	handler := loggingMiddleware(corsMiddleware(router))
 
-	mux.HandleFunc("/uploadImage", controller.UploadImagesHandler)
-	mux.HandleFunc("/sendConfirmationEmail", controller.EmailConfirmationWebhook)
-	mux.HandleFunc("/verifyEmail", controller.ConfirmEmail)
-
-	handler := loggingMiddleware(corsMiddleware(mux))
 	port := os.Getenv("PORT")
-	fmt.Println("Server is running on port 5050")
+	if port == "" {
+		port = "5050"
+	}
+
+	fmt.Printf("Server is running on port %s\n", port)
 
 	log.Fatal(http.ListenAndServe(":"+port, handler))
 }

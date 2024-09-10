@@ -60,3 +60,30 @@ type EventPayload struct {
 		} `json:"data"`
 	} `json:"event"`
 }
+
+type ActionRequest struct {
+	Input PaymentInput `json:"input"`
+}
+
+type PaymentInput struct {
+	PaymentCredentials PaymentCredentials `json:"paymentCredentials"`
+}
+
+type PaymentCredentials struct {
+	Amount      int    `json:"amount"`
+	Currency    string `json:"currency"`
+	TxRef       string `json:"txRef"`
+	CallbackURL string `json:"callbackURL"`
+	ReturnURL   string `json:"returnURL"`
+	UserId      string `json:"user_id"`
+	EventId     string `json:"event_id"`
+	UserName    string `json:"user_name"`
+}
+
+type ChapaResponse struct {
+	Message string `json:"message"`
+	Status  string `json:"status"`
+	Data    struct {
+		CheckoutURL string `json:"checkout_url"`
+	} `json:"data"`
+}
