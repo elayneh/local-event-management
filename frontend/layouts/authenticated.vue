@@ -59,63 +59,79 @@ onUnmounted(() => {
   <div class="flex flex-col h-screen">
     <header class="fixed top-0 left-0 w-full bg-transparent">
       <nav class="flex pt-4 justify-between items-center bg-gray-1">
-        <ul class="flex gap-4 items-center ml-20">
-          <li class="flex items-center gap-2">
-            <NuxtLink to="/">
-              <i class="fas fa-home"> </i>
+        <ul class="flex gap-4 items-center ml-8 p-0 m-0">
+          <li class="flex items-center gap-2 p-0 m-0">
+            <NuxtLink
+              to="/user"
+              @click.native="scrollToTop"
+              class="flex items-center p-0 m-0"
+            >
+              <img
+                src="~/assets/images/logo.png"
+                alt="Logo"
+                class="h-16 w-auto transition-transform transform hover:scale-110"
+              />
             </NuxtLink>
           </li>
         </ul>
-        <div class="flex space-x-4 gap-4 justify-center items-center pr-24">
-          <ul class="flex justify-center items-center">
-            <NuxtLink to="/user/events/create-event">
-              <button>Create event</button>
-            </NuxtLink>
-          </ul>
-          <ul class="flex m-2">
-            <span>My dashboard</span>
-            <li class="relative items-center gap-2">
-              <button @click.stop="toggleDropdown">
-                <font-awesome-icon
-                  :icon="['fas', 'caret-down']"
-                  class="text-zinc-950 pl-4"
-                />
-              </button>
-              <ul
-                v-if="eventDropDown"
-                class="absolute left-0 top-full mt-2 w-48 bg-white rounded-lg shadow-lg"
+        <div class="flex space-x-4 gap-48 justify-center items-center mr-24">
+          <div class="flex gap-8">
+            <div class="flex justify-center items-center">
+              <NuxtLink
+                to="/user/events/create-event"
+                class="bg-gradient-to-r from-green-400 via-green-500 to-green-600 text-white font-bold uppercase tracking-wide py-3 px-6 rounded-full shadow-lg hover:shadow-xl transform hover:-translate-y-1 hover:scale-105 hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-300 transition-all duration-500 ease-in-out"
               >
-                <li>
-                  <NuxtLink
-                    to="/user/events"
-                    class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                    >My events</NuxtLink
+                Create event
+              </NuxtLink>
+            </div>
+
+            <div>
+              <ul class="flex m-2 items-center">
+                <button
+                  @click.stop="toggleDropdown"
+                  class="bg-gradient-to-r from-green-400 via-gray-950 to-gray-600 text-white font-bold uppercase tracking-wide py-3 px-6 rounded-full shadow-lg hover:shadow-xl transform hover:-translate-y-1 hover:scale-105 hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-300 transition-all duration-500 ease-in-out"
+                >
+                  <span>My Dashboard</span>
+                </button>
+                <li class="relative items-center gap-1">
+                  <ul
+                    v-if="eventDropDown"
+                    class="absolute left-auto left-0 top-full mt-2 w-40 bg-white rounded-lg shadow-lg transition-transform transform duration-300 ease-out origin-top-right scale-95"
                   >
-                </li>
-                <li>
-                  <NuxtLink
-                    to="/user/events/bookmarked"
-                    class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                    >Bookmarks</NuxtLink
-                  >
-                </li>
-                <li>
-                  <NuxtLink
-                    to="/user/events/following"
-                    class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                    >Following</NuxtLink
-                  >
-                </li>
-                <li>
-                  <NuxtLink
-                    to="/user/events/tickets"
-                    class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                    >Purchased Events</NuxtLink
-                  >
+                    <li>
+                      <NuxtLink
+                        to="/user/events"
+                        class="block px-4 py-2 text-gray-700 hover:bg-gray-100 hover:text-blue-600 transition-colors duration-200"
+                        >My Events</NuxtLink
+                      >
+                    </li>
+                    <li>
+                      <NuxtLink
+                        to="/user/events/bookmarked"
+                        class="block px-4 py-2 text-gray-700 hover:bg-gray-100 hover:text-blue-600 transition-colors duration-200"
+                        >Bookmarks</NuxtLink
+                      >
+                    </li>
+                    <li>
+                      <NuxtLink
+                        to="/user/events/following"
+                        class="block px-4 py-2 text-gray-700 hover:bg-gray-100 hover:text-blue-600 transition-colors duration-200"
+                        >Following</NuxtLink
+                      >
+                    </li>
+                    <li>
+                      <NuxtLink
+                        to="/user/events/tickets"
+                        class="block px-4 py-2 text-gray-700 hover:bg-gray-100 hover:text-blue-600 transition-colors duration-200"
+                        >Purchased Events</NuxtLink
+                      >
+                    </li>
+                  </ul>
                 </li>
               </ul>
-            </li>
-          </ul>
+            </div>
+          </div>
+
           <ul class="flex gap-4 items-center mr-20">
             <li class="relativep">
               <button
@@ -173,7 +189,7 @@ onUnmounted(() => {
       </nav>
     </header>
 
-    <main class="flex-1 overflow-y-auto pt-18">
+    <main class="flex-1 overflow-y-auto">
       <div>
         <slot />
       </div>

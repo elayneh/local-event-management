@@ -12,6 +12,7 @@ import { DeleteFollowers } from "~/graphql/mutations/event_followers/DeleteFollo
 import { InsertBookmarks } from "~/graphql/mutations/event_bookmarks/InsertBookmarks.gql";
 import { DeleteBookmarks } from "~/graphql/mutations/event_bookmarks/DeleteBookmarks.gql";
 import { UpdateEvent } from "~/graphql/mutations/events/update.gql";
+import InsertTickets from "~/graphql/mutations/tickets/insert.gql";
 import { toast } from "vue3-toastify";
 
 const authStore = useAuthStore();
@@ -138,6 +139,22 @@ const {
 });
 
 const {
+  mutate: InsertTicketsMutation,
+  onDone: onInsertTicketsDone,
+  loading: loadingInsertTickets,
+  onError: onInsertTicketsError,
+} = useAuthenticatedMutation(InsertTickets, {
+  fetchPolicy: "no-cache",
+  clientId: "authClient",
+  context: {
+    headers: {
+      "x-hasura-role": "user",
+      "x-hasura-is-email-verified": true,
+    },
+  },
+});
+
+const {
   mutate: InsertBookmarkMutation,
   onDone: onInsertBookmarkDone,
   loading: loadingBookmark,
@@ -223,10 +240,41 @@ const toggleBookmark = async () => {
   }
 };
 
-const toggleBuy = () => {
-  isBought.value = !isBought.value;
-  isReserved.value = !isReserved.value;
+import { useRuntimeConfig } from "#imports";
+
+const toggleBuy = async () => {
+  const config = useRuntimeConfig();
+
+  if (!user_id) {
+    return router.push("/users/login");
+  }
+  const isCurrentlyBought = isBought.value;
+  if (!isCurrentlyBought) {
+    const paymentPayload = {
+      user_id: user_id,
+      amount: event?.value.price,
+      event_id: event?.value.id,
+      currency: "ETB",
+      user_name: user_id,
+    };
+
+    console.log("\nPayment Payload:", paymentPayload);
+    const { data, error } = await InsertTicketsMutation(paymentPayload);
+    if (data.ticketPayment.status === "success") {
+      const checkoutUrl = data.ticketPayment.data.checkout_url;
+      window.location.href = checkoutUrl;
+    } else {
+      // Handle error message from the response
+      console.error(data.ticketPayment.message);
+    }
+    isBought.value = true;
+  } else {
+    isBought.value = false;
+  }
 };
+//   isBought.value = !isBought.value;
+//   isReserved.value = !isReserved.value;
+// };
 
 const isFreeText = computed(() => (event?.value?.is_free ? "Free" : "Paid"));
 

@@ -1,7 +1,5 @@
-mutation InsertTickets($user_id: uuid!, $event_id: uuid!, $quantity: numeric!) {
-  insert_tickets(
-    objects: { event_id: $event_id, user_id: $user_id, quantity: $quantity }
-  ) {
+mutation InsertTickets($user_id: uuid!, $event_id: uuid!) {
+  insert_tickets(objects: { event_id: $event_id, user_id: $user_id }) {
     returning {
       event_id
       user_id

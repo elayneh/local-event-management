@@ -30,8 +30,8 @@ query GetEvents($limit: Int, $offset: Int, $filter: events_bool_exp) {
     events_tickets {
       event_id
       id
-      purchase_date
-      quantity
+      created_at
+      status
       user_id
     }
     id

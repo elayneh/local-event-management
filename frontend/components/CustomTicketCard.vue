@@ -10,12 +10,12 @@
       <p class="text-gray-600 mb-1">
         <span class="font-semibold">Price:</span>
       </p>
-      <p class="text-gray-600 mb-1">
+      <!-- <p class="text-gray-600 mb-1">
         <span class="font-semibold">Quantity:</span> {{ ticket.quantity }}
-      </p>
+      </p> -->
       <p class="text-gray-600 mb-1">
         <span class="font-semibold">Purchase Date:</span>
-        {{ formatDate(ticket.purchase_date) }}
+        {{ formatDate(ticket.created_at) }}
       </p>
     </div>
   </div>

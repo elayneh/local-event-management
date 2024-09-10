@@ -68,7 +68,6 @@ function submitHandler(values) {
 }
 </script>
 
-
 <template>
   <div
     class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50"
@@ -98,13 +97,21 @@ function submitHandler(values) {
                 </button>
               </div>
               <div class="mt-10 text-gray-700 text-center">
-                <p>
+                <p class="mb-2">
                   Don't have an account?
                   <NuxtLink
                     class="text-blue-500 hover:text-blue-700 font-semibold ml-1"
                     to="/users/register"
                   >
                     Register
+                  </NuxtLink>
+                </p>
+                <p>
+                  <NuxtLink
+                    class="text-blue-500 hover:text-blue-700 font-semibold"
+                    to="/users/forgot-password"
+                  >
+                    Forgot Password?
                   </NuxtLink>
                 </p>
               </div>

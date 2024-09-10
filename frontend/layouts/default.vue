@@ -4,7 +4,11 @@
       <nav class="flex pt-4 justify-between items-center bg-gray-1">
         <ul class="flex gap-4 items-center ml-8 p-0 m-0">
           <li class="flex items-center gap-2 p-0 m-0">
-            <NuxtLink to="/" class="flex items-center p-0 m-0">
+            <NuxtLink
+              to="/"
+              @click.native="scrollToTop"
+              class="flex items-center p-0 m-0"
+            >
               <img
                 src="~/assets/images/logo.png"
                 alt="Logo"
@@ -13,73 +17,47 @@
             </NuxtLink>
           </li>
         </ul>
-
         <div class="flex space-x-4 gap-4 justify-center items-center mr-24">
           <ul
-            class="flex justify-center items-center text-white bg-gray-950 rounded-lg p-2 transition delay-150 duration-300 ease-in-out hover:delay-150 hover:-translate-y-2 hover:skew-x-1 hover:bg-gray-500 hover:scale-105 hover:shadow-lg hover:shadow-gray-800 hover:text-yellow-300 delay-50 active:scale-95 active:bg-gray-700 active:shadow-inner active:text-yellow-400 focus:outline-none focus:ring-2 focus:ring-gray-700 focus:ring-offset-2 focus:ring-offset-gray-950"
+            class="bg-gradient-to-r from-gray-400 via-gray-500 to-gray-600 text-white font-bold uppercase tracking-wide py-3 px-6 rounded-full shadow-lg hover:shadow-xl transform hover:-translate-y-1 hover:scale-105 hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-300 transition-all duration-500 ease-in-out"
           >
-            <NuxtLink to="/">Home</NuxtLink>
+            <NuxtLink to="/" @click.native="scrollToTop">Home</NuxtLink>
           </ul>
           <ul
-            class="flex justify-center items-center text-white bg-gray-950 rounded-lg p-2 transition delay-150 duration-300 ease-in-out hover:delay-150 hover:-translate-y-2 hover:skew-x-1 hover:bg-gray-500 hover:scale-105 hover:shadow-lg hover:shadow-gray-800 hover:text-yellow-300 delay-50 active:scale-95 active:bg-gray-700 active:shadow-inner active:text-yellow-400 focus:outline-none focus:ring-2 focus:ring-gray-700 focus:ring-offset-2 focus:ring-offset-gray-950"
+            class="bg-gradient-to-r from-gray-400 via-gray-500 to-gray-600 text-white font-bold uppercase tracking-wide py-3 px-6 rounded-full shadow-lg hover:shadow-xl transform hover:-translate-y-1 hover:scale-105 hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-300 transition-all duration-500 ease-in-out"
           >
             <NuxtLink to="/about"> About Us </NuxtLink>
           </ul>
           <ul
-            class="flex justify-center items-center text-white bg-gray-950 rounded-lg p-2 transition delay-150 duration-300 ease-in-out hover:delay-150 hover:-translate-y-2 hover:skew-x-1 hover:bg-gray-500 hover:scale-105 hover:shadow-lg hover:shadow-gray-800 hover:text-yellow-300 delay-50 active:scale-95 active:bg-gray-700 active:shadow-inner active:text-yellow-400 focus:outline-none focus:ring-2 focus:ring-gray-700 focus:ring-offset-2 focus:ring-offset-gray-950"
+            class="bg-gradient-to-r from-gray-400 via-gray-500 to-gray-600 text-white font-bold uppercase tracking-wide py-3 px-6 rounded-full shadow-lg hover:shadow-xl transform hover:-translate-y-1 hover:scale-105 hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-300 transition-all duration-500 ease-in-out"
           >
             <NuxtLink to="/services"> Services </NuxtLink>
           </ul>
           <ul
-            class="flex justify-center items-center text-white bg-green-500 rounded-lg p-2 transition delay-150 duration-300 ease-in-out hover:delay-150 hover:-translate-y-2 hover:skew-x-1 hover:bg-gray-500 hover:scale-105 hover:shadow-lg hover:shadow-gray-800 hover:text-yellow-300 delay-50 active:scale-95 active:bg-gray-700 active:shadow-inner active:text-yellow-400 focus:outline-none focus:ring-2 focus:ring-gray-700 focus:ring-offset-2 focus:ring-offset-gray-950"
+            class="bg-gradient-to-r from-green-400 via-green-500 to-green-600 text-white font-bold uppercase tracking-wide py-3 px-6 rounded-full shadow-lg hover:shadow-xl transform hover:-translate-y-1 hover:scale-105 hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-300 transition-all duration-500 ease-in-out"
           >
-            <NuxtLink to="/user/events/create-event">
-              <button @click="isUserAuthenticated">Create event</button>
+            <NuxtLink
+              to="/user/events/create-event"
+              @click="isUserAuthenticated"
+              >Create event
             </NuxtLink>
           </ul>
           <ul
-            class="flex justify-center items-center bg-blue-500 rounded-lg p-2 justify-center items-center transition delay-150 duration-300 ease-in-out hover:delay-150 hover:-translate-y-2 hover:skew-x-1 hover:bg-blue-700 hover:scale-105 hover:shadow-lg hover:shadow-gray-800 hover:text-yellow-300 delay-50 active:scale-95 active:bg-gray-700 active:shadow-inner active:text-yellow-400 focus:outline-none focus:ring-2 focus:ring-gray-700 focus:ring-offset-2 focus:ring-offset-gray-950"
+            class="bg-gradient-to-r from-blue-500 via-blue-500 to-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 hover:scale-105 hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-300 transition-all duration-500 ease-in-out"
           >
             <li class="text-white">
-              <NuxtLink to="/users/register"
-                ><Button>Register</Button></NuxtLink
-              >
+              <NuxtLink to="/users/register">Register</NuxtLink>
             </li>
           </ul>
         </div>
       </nav>
     </header>
 
-    <main class="flex-1 overflow-y-auto pt-18">
+    <main ref="mainContent" class="flex-1 overflow-y-auto pt-18">
       <div>
         <slot />
       </div>
     </main>
-    <div
-      v-if="isLogoutModalOpen"
-      class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
-    >
-      <div
-        class="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full text-center"
-      >
-        <h2 class="text-xl font-semibold mb-4">Confirm Logout</h2>
-        <p class="mb-6">Are you sure you want to log out?</p>
-        <div class="flex justify-center gap-4">
-          <button
-            @click="confirmLogout"
-            class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-          >
-            Yes
-          </button>
-          <button
-            @click="closeLogoutModal"
-            class="bg-gray-300 hover:bg-gray-400 text-gray-700 font-bold py-2 px-4 rounded"
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -89,8 +67,13 @@ import { ref, onMounted, onUnmounted } from "vue";
 const dropdownOpen = ref(false);
 const eventDropDown = ref(false);
 const isLogoutModalOpen = ref(false);
+const mainContent = ref(null);
 
-const isUserAuthenticated = () => {};
+const scrollToTop = () => {
+  if (mainContent.value) {
+    mainContent.value.scrollTo({ top: 0, behavior: "smooth" });
+  }
+};
 
 const closeLogoutModal = () => {
   isLogoutModalOpen.value = false;

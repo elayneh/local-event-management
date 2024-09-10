@@ -5,7 +5,7 @@ export default function useAuthenticatedMutation(mutation) {
     context: {
       headers: {
         "x-hasura-role": "user",
-        "x-hasura-is-email-verified": true,w
+        "x-hasura-is-email-verified": true,
       },
     },
   }));

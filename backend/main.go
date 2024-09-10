@@ -42,6 +42,8 @@ func main() {
 	router.HandleFunc("/sendConfirmationEmail", controller.EmailConfirmationWebhook).Methods("POST")
 	router.HandleFunc("/verifyEmail", controller.ConfirmEmail).Methods("GET")
 	router.HandleFunc("/ticketPayment", controller.InitializePayment).Methods("POST")
+	router.HandleFunc("/password-reset", controller.ResetPassword)
+	router.HandleFunc("/update-password", controller.UpdatePassword)
 
 	handler := loggingMiddleware(corsMiddleware(router))
 

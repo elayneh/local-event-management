@@ -7,10 +7,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
+	"os"
 
 	"github.com/machinebox/graphql"
 )
+
+var secretKey = []byte(os.Getenv("JWT_SECRET"))
 
 func sendToken(w http.ResponseWriter, role string, response AuthResponse, is_email_verified bool) {
 	token, err := utils.GetToken(response.ID, role, is_email_verified)
@@ -118,7 +122,6 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Generate the confirmation token
 	confirmationToken, err := utils.GetToken(newUser.Username, "user", false)
 	if err != nil {
 		http.Error(w, "Failed to generate confirmation token", http.StatusInternalServerError)
@@ -173,4 +176,133 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	var response AuthResponse
 	response.ID = respData.InsertUsers.Returning[0].ID
 	sendToken(w, newUser.Role, response, newUser.IsEmailVerified)
+}
+
+func ResetPassword(w http.ResponseWriter, r *http.Request) {
+	var req PasswordResetRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request payload: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	email := req.Input.ResetRequestInput.Email
+	if email == "" {
+		http.Error(w, "Email is required", http.StatusBadRequest)
+		return
+	}
+
+	resetToken, err := generateResetToken(email)
+	if err != nil {
+		http.Error(w, "Error generating reset token: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if err := EmailSender(false, email, resetToken); err != nil {
+		log.Printf("Error sending reset email to %s: %v", email, err)
+		http.Error(w, "Failed to send password reset email", http.StatusInternalServerError)
+		return
+	}
+
+	reqGraphQL := graphql.NewRequest(`
+        mutation UpdateResetToken($reset_token: String!, $email: String!) {
+            update_users(where: {email: {_eq: $email}}, _set: {reset_token: $reset_token}) {
+                affected_rows
+            }
+        }
+    `)
+	reqGraphQL.Var("email", email)
+	reqGraphQL.Var("reset_token", resetToken)
+
+	client := utils.Client()
+	var respData struct {
+		UpdateUsers struct {
+			AffectedRows int `json:"affected_rows"`
+		} `json:"update_users"`
+	}
+
+	if err := client.Run(context.Background(), reqGraphQL, &respData); err != nil {
+		http.Error(w, "Error setting reset token: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if respData.UpdateUsers.AffectedRows == 0 {
+		http.Error(w, "Invalid token or user not found", http.StatusBadRequest)
+		return
+	}
+
+	// Respond with a success message
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"message": "Password reset email sent"})
+}
+func UpdatePassword(w http.ResponseWriter, r *http.Request) {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Error reading request body", http.StatusInternalServerError)
+		return
+	}
+
+	// Reset r.Body for further reading
+	r.Body = io.NopCloser(bytes.NewBuffer(body))
+
+	var req UpdatePasswordRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request payload: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	newPassword := req.Input.UpdatePasswordInput.NewPassword
+	resetToken := req.Input.UpdatePasswordInput.ResetToken
+
+	if newPassword == "" || resetToken == "" {
+		http.Error(w, "Password and token are required", http.StatusBadRequest)
+		return
+	}
+
+	email, err := verifyResetToken(resetToken)
+	if err != nil {
+		http.Error(w, "Invalid reset token: "+err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	log.Println("Email: ", email)
+
+	hashedPassword, err := utils.HashPassword(newPassword)
+	if err != nil {
+		log.Println("Error hashing password: ", err)
+		http.Error(w, "Error hashing password: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	reqGraphQL := graphql.NewRequest(`
+        mutation UpdatePassword($email:String! $password:String!){
+            update_users(where: {email: {_eq: $email}}, _set: {password: $password, reset_token: ""}) {
+                affected_rows
+            }
+        }
+    `)
+	reqGraphQL.Var("email", email)
+	reqGraphQL.Var("password", hashedPassword)
+
+	client := utils.Client()
+	var respData struct {
+		UpdateUsers struct {
+			AffectedRows int `json:"affected_rows"`
+		} `json:"update_users"`
+	}
+
+	if err := client.Run(context.Background(), reqGraphQL, &respData); err != nil {
+		http.Error(w, "Error updating password: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if respData.UpdateUsers.AffectedRows == 0 {
+		http.Error(w, "User not found", http.StatusNotFound)
+		return
+	}
+
+	log.Println("Response data: ", respData.UpdateUsers.AffectedRows)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"message": "Password updated successfully"})
 }

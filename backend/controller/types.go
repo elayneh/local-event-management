@@ -87,3 +87,35 @@ type ChapaResponse struct {
 		CheckoutURL string `json:"checkout_url"`
 	} `json:"data"`
 }
+
+type PasswordResetRequest struct {
+	Input struct {
+		ResetRequestInput struct {
+			Email string `json:"email"`
+		} `json:"resetRequestInput"`
+	} `json:"input"`
+}
+
+//	type UpdatePasswordRequest struct {
+//		Input struct {
+//			UpdatePasswordInput struct {
+//				NewPassword string `json:"new_password"`
+//				ResetToken  string `json:"reset_token"`
+//			} `json:"updatePasswordInput`
+//		} `json:"input"`
+//	}
+type UpdatePasswordRequest struct {
+	Action struct {
+		Name string `json:"name"`
+	} `json:"action"`
+	Input struct {
+		UpdatePasswordInput struct {
+			NewPassword string `json:"new_password"`
+			ResetToken  string `json:"reset_token"`
+		} `json:"updatePasswordInput"`
+	} `json:"input"`
+	RequestQuery     string `json:"request_query"`
+	SessionVariables struct {
+		Role string `json:"x-hasura-role"`
+	} `json:"session_variables"`
+}

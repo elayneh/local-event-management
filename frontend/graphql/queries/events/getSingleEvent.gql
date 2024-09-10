@@ -29,8 +29,7 @@ query GetSingleEvent($id: uuid!) {
     events_tickets {
       id
       event_id
-      purchase_date
-      quantity
+      created_at
       user_id
     }
     events_user {

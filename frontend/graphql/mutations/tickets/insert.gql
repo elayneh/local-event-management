@@ -1,0 +1,22 @@
+mutation TicketPayment(
+  $amount: Int!
+  $currency: String!
+  $user_name: String!
+  $user_id: String!
+  $event_id: String!
+) {
+  ticketPayment(
+    paymentCredentials: {
+      amount: $amount
+      currency: $currency
+      event_id: $event_id
+      user_id: $user_id
+      user_name: $user_name
+    }
+  ) {
+    status
+    data {
+      checkout_url
+    }
+  }
+}

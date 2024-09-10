@@ -25,8 +25,7 @@ query GetBookmarkedEvents($id: uuid!) {
     events_tickets {
       event_id
       id
-      purchase_date
-      quantity
+      created_at
       user_id
     }
     id

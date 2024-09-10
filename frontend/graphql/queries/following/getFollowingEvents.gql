@@ -28,7 +28,7 @@ query GetFollowingEvents($id: uuid!) {
     events_tickets {
       event_id
       id
-      purchase_date
+      created_at
       quantity
       user_id
     }

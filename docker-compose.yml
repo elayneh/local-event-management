@@ -10,23 +10,32 @@ services:
     volumes:
       - minabtest:/var/lib/postgresql/data
     networks:
-      - minabtest_minabnetwork
+      - minabnetwork
     restart: always
     container_name: database
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d mydatabase"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   hasura:
     image: hasura/graphql-engine:v2.23.0
     environment:
       HASURA_GRAPHQL_DATABASE_URL: postgres://user:password@database:5432/mydatabase
-      # HASURA_GRAPHQL_ADMIN_SECRET: myadminsecretkey
       HASURA_GRAPHQL_ENABLE_CONSOLE: "true"
       HASURA_GRAPHQL_DEV_MODE: "true"
+      HASURA_GRAPHQL_UNAUTHORIZED_ROLE: "anonymous"
+      HASURA_GRAPHQL_ADMIN_SECRET: "myadminsecretkey"
+      HASURA_GRAPHQL_JWT_SECRET: '{ "type": "HS256", "key": "oursupersecretsupersecurekey1234567890" }'
+
     ports:
       - "8080:8080"
     depends_on:
-      - database
+      database:
+        condition: service_healthy
     networks:
-      - minabtest_minabnetwork
+      - minabnetwork
     restart: always
     container_name: hasura
 
@@ -43,7 +52,7 @@ services:
     depends_on:
       - database
     networks:
-      - minabtest_minabnetwork
+      - minabnetwork
     restart: always
     container_name: backend
 
@@ -51,6 +60,5 @@ volumes:
   minabtest:
 
 networks:
-  minabtest_minabnetwork:
+  minabnetwork:
     driver: bridge
-    external: true

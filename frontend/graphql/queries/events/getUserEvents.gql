@@ -29,7 +29,7 @@ query GetUserEvents($id: uuid!) {
     events_tickets(where: { user_id: { _eq: $id } }) {
       id
       event_id
-      purchase_date
+      created_at
       quantity
       user_id
     }

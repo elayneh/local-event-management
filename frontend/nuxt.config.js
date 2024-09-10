@@ -6,6 +6,7 @@ export default {
   runtimeConfig: {
     public: {
       hasuraAdminSecret: process.env.HASURA_GRAPHQL_ADMIN_SECRET || "",
+      CALLBACK_URL: process.env.NUXT_ENV_CALLBACK_URL,
     },
     private: {
       hasuraAdminSecret: process.env.HASURA_GRAPHQL_ADMIN_SECRET || "",
@@ -74,16 +75,4 @@ export default {
   },
 
   compatibilityDate: "2024-08-01",
-
-  router: {
-    options: {
-      scrollBehavior(to, from, savedPosition) {
-        // if (savedPosition) {
-        return savedPosition;
-        // } else {
-        //   return { left: 0, top: 0 };
-        // }
-      },
-    },
-  },
 };

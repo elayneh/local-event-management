@@ -29,9 +29,9 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     if (userRole === "admin" && !isAdminRoute) {
       return navigateTo("/admin");
     } else if (userRole === "user" && !isUserRoute) {
-
       return navigateTo("/user");
-    } else if (!isAdminRoute && !isUserRoute) {      if (to.path !== "/users/unauthorized") {
+    } else if (!isAdminRoute && !isUserRoute) {
+      if (to.path !== "/users/unauthorized") {
         return navigateTo("/users/unauthorized");
       }
     }

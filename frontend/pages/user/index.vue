@@ -115,7 +115,7 @@ definePageMeta({ layout: "authenticated" });
 
 <template>
   <div
-    class="bg-gradient-to-r from-gray-100 via-red-300 to-gray-500 h-64 w-full"
+    class="bg-gradient-to-r from-gray-100 via-red-300 to-gray-500 w-full pl-12 pr-12 moving-clouds-bg"
   >
     <div class="fixed left-96 flex-row justify-center items-center pt-2">
       <div v-if="isModalVisible">
@@ -225,39 +225,89 @@ definePageMeta({ layout: "authenticated" });
           </div>
         </div>
       </div>
-      <div class="flex justify-center items-center space-x-4">
-        <ul class="m-2">
+      <div
+        class="flex justify-center items-center gap-16 p-1 bg-gray-100 rounded-lg shadow-md"
+      >
+        <ul class="mx-2">
           <li class="relative flex items-center">
             <input
-              class="w-96 h-10 rounded-full pl-4 pr-10 bg-gray-300 flex items-center focus:outline-none focus:ring-1 focus:ring-gray-400"
+              class="w-96 h-12 rounded-full pl-6 pr-12 bg-gray-200 text-gray-800 placeholder-gray-500 border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 ease-in-out"
               v-model="searchQuery"
               @input="fetchEvents"
               placeholder="Search..."
             />
             <font-awesome-icon
               :icon="['fas', 'search']"
-              class="text-gray-600 absolute right-4"
+              class="text-gray-500 absolute right-4"
             />
           </li>
         </ul>
 
         <ul class="m-2">
           <li class="relative">
-            <button @click="openFilterModalHandler" class="flex items-center">
-              <font-awesome-icon
-                :icon="['fas', 'filter']"
-                class="text-gray-600"
-              />
-              <span class="ml-2 text-gray-500">Filter</span>
+            <button
+              @click="openFilterModalHandler"
+              class="flex items-center bg-blue-500 text-white px-6 py-3 rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-300 ease-in-out"
+            >
+              <font-awesome-icon :icon="['fas', 'filter']" class="text-white" />
+              <span class="ml-4 font-semibold">Filter</span>
             </button>
           </li>
         </ul>
       </div>
     </div>
 
-    <div class="pt-64"></div>
-    <h2 class="text-2xl font-bold mb-4 text-center">Latest Events</h2>
+    <div class="flex items-center justify-center pt-24 mb-8">
+      <div
+        class="flex flex-col md:flex-row w-full h-auto md:w-3/4 items-center justify-center gap-8 px-4 transition-transform duration-1000 ease-in-out"
+      >
+        <div
+          class="w-full md:w-1/2 flex items-center justify-center side-to-side-animation"
+        >
+          <img
+            src="~/assets/images/eventimage1.png"
+            alt="Home page image"
+            class="w-full max-w-lg h-64 mt-12 md:mt-0 rounded-lg shadow-lg hover:scale-110 hover:rotate-6 hover:shadow-2xl hover:brightness-110 hover:contrast-125 transition-all duration-700 ease-in-out animate-pulse"
+          />
+        </div>
 
+        <div
+          class="w-full md:w-1/2 flex flex-col justify-center gap-6 text-center"
+        >
+          <h2
+            class="text-2xl font-bold mb-2 transition-transform hover:scale-105 duration-1000 ease-in-out"
+          >
+            Welcome to Our Event
+          </h2>
+          <p
+            class="text-white leading-relaxed text-lg transition-opacity duration-1000 hover:opacity-90"
+          >
+            Discover the most exciting and memorable events in your area.
+            Whether you're looking for music, arts, or fun activities, we have
+            it all!
+          </p>
+          <p
+            class="text-white leading-relaxed text-lg transition-opacity duration-1000 hover:opacity-90"
+          >
+            Get ready for an experience like no other, with engaging talks,
+            workshops, and live performances to spark your creativity.
+          </p>
+          <a
+            href="#"
+            class="align-right bg-pink-500 px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-500 ease-in-out"
+          >
+            Learn More
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <h2
+      class="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 text-center mb-12 animate-fadeInBounce"
+    >
+      Latest Events
+    </h2>
+    `
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
       <CustomEventCard v-for="event in events" :key="event.id" :event="event" />
     </div>
@@ -283,3 +333,26 @@ definePageMeta({ layout: "authenticated" });
     <CustomFooter />
   </div>
 </template>
+
+<style scoped>
+.side-to-side-animation {
+  animation: sideToSideAnimation 5s ease-in-out infinite;
+}
+
+.moving-clouds-bg {
+  background-image: url("~/assets/images/clouds2.png");
+  background-size: cover;
+  background-position: 0 0;
+  background-repeat: repeat-x;
+  animation: moveClouds 30s linear infinite;
+}
+
+@keyframes moveClouds {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 100% 0;
+  }
+}
+</style>

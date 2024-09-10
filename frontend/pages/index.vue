@@ -120,10 +120,9 @@ const resetFilters = () => {
   applyFilters();
 };
 </script>
-
 <template>
   <div
-    class="bg-gradient-to-r from-gray-100 via-red-300 to-gray-500 h-64 w-full"
+    class="bg-gradient-to-r from-gray-100 via-red-300 to-gray-500 w-full pl-12 pr-12  moving-clouds-bg "
   >
     <div class="fixed left-96 flex-row justify-center items-center pt-2">
       <div v-if="isModalVisible">
@@ -200,6 +199,7 @@ const resetFilters = () => {
                 </div>
               </div>
             </div>
+
             <div>
               <label
                 v-for="tag in availableTags"
@@ -233,6 +233,7 @@ const resetFilters = () => {
           </div>
         </div>
       </div>
+
       <div class="flex justify-center items-center space-x-4">
         <ul class="m-2">
           <li class="relative flex items-center">
@@ -263,8 +264,65 @@ const resetFilters = () => {
       </div>
     </div>
 
-    <div class="pt-64"></div>
-    <h2 class="text-2xl font-bold mb-4 text-center">Latest Events</h2>
+    <div class="flex items-center justify-center pt-24 mb-8">
+      <div
+        class="flex flex-col md:flex-row w-full h-auto md:w-3/4 items-center justify-center gap-8 px-4 transition-transform duration-1000 ease-in-out"
+      >
+        <div
+          class="w-full md:w-1/2 flex items-center justify-center side-to-side-animation"
+        >
+          <img
+            src="~/assets/images/eventimage1.png"
+            alt="Home page image"
+            class="w-full h-96 md:w-lg mt-12 md:mt-0 rounded-lg shadow-lg hover:scale-110 hover:rotate-6 hover:shadow-2xl hover:brightness-110 hover:contrast-125 transition-all duration-700 ease-in-out animate-pulse"
+          />
+        </div>
+
+        <div
+          class="w-full md:w-1/2 flex flex-col h-96 justify-center items-center gap-8 text-center bg-pink-200 p-6 rounded-lg shadow-lg transition-all duration-500 transform hover:scale-105"
+        >
+          <h2
+            class="text-3xl font-bold text-gray-900 mb-4 transition-transform duration-700 ease-in-out hover:scale-110"
+          >
+            Discover Amazing Events Around You
+          </h2>
+          <p
+            class="text-gray-700 leading-relaxed text-lg max-w-md transition-opacity duration-1000 hover:opacity-90"
+          >
+            Join our community of event-goers and never miss out on exciting
+            experiences. From concerts, festivals, to workshops—find everything
+            in one place!
+          </p>
+          <p
+            class="text-gray-700 leading-relaxed text-lg max-w-md transition-opacity duration-1000 hover:opacity-90"
+          >
+            Sign up to access exclusive events and personalized recommendations
+            tailored to your interests.
+          </p>
+
+          <div class="flex flex-col md:flex-row gap-4 justify-center mt-6">
+            <NuxtLink
+              to="/users/register"
+              class="text-white bg-green-500 px-6 py-3 rounded-lg shadow-md hover:bg-green-700 transition-colors duration-500 ease-in-out"
+            >
+              Get Started
+            </NuxtLink>
+            <a
+              href="/about"
+              class="text-white bg-blue-500 px-6 py-3 rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-500 ease-in-out"
+            >
+              Learn More
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h2
+      class="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 text-center mb-12 animate-fadeInBounce"
+    >
+      Latest Events
+    </h2>
 
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
       <CustomEventCard v-for="event in events" :key="event.id" :event="event" />
@@ -291,3 +349,26 @@ const resetFilters = () => {
     <CustomFooter />
   </div>
 </template>
+
+<style scoped>
+.side-to-side-animation {
+  animation: sideToSideAnimation 5s ease-in-out infinite;
+}
+
+.moving-clouds-bg {
+  background-image: url("~/assets/images/clouds.png");
+  background-size: cover;
+  background-position: 0 0;
+  background-repeat: repeat-x;
+  animation: moveClouds 30s linear infinite;
+}
+
+@keyframes moveClouds {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 100% 0;
+  }
+}
+</style>

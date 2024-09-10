@@ -68,11 +68,11 @@ export const useAuthStore = defineStore("auth", {
             decoded["https://hasura.io/jwt/claims"][
               "x-hasura-is-email-verified"
             ];
-          console.log("is_email_verified: ", is_email_verified);
+          console.log("Is email verified: ", is_email_verified);
           this.setId(id);
           this.setUser(id);
           this.setIsEmailVerified(is_email_verified);
-          this.setRole;
+          this.setRole(role);
         } else {
           this.logout();
         }
