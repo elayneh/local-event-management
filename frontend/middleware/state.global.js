@@ -16,9 +16,9 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
   const isUserRoute = userRoutes.some((route) =>
     route instanceof RegExp ? route.test(to.path) : route === to.path
   );
-  const userRole = authStore.role?.toLowerCase();
+  const userRole = authStore.role;
 
-  if (!authStore.isAuthenticated) {
+  if (!authStore.isAuthenticated || !authStore.isEmailVerified) {
     if (isUnAuthenticatedRoute) {
       return;
     }
@@ -29,9 +29,9 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     if (userRole === "admin" && !isAdminRoute) {
       return navigateTo("/admin");
     } else if (userRole === "user" && !isUserRoute) {
+
       return navigateTo("/user");
-    } else if (!isAdminRoute && !isUserRoute) {
-      if (to.path !== "/users/unauthorized") {
+    } else if (!isAdminRoute && !isUserRoute) {      if (to.path !== "/users/unauthorized") {
         return navigateTo("/users/unauthorized");
       }
     }

@@ -3,6 +3,7 @@ export const unAuthenticatedRoutes = [
   "/users",
   "/about",
   "/events",
+  "/services",
   "/users/login",
   "/users/register",
   "/users/unauthorized",
