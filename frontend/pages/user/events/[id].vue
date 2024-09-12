@@ -58,6 +58,10 @@ onResult((response) => {
       (follow) => follow?.user_id === user_id
     );
 
+    isBought.value = event.value.events_tickets?.some(
+      (isBought) => isBought?.user_id === user_id
+    );
+
     bookmark.value = event.value.events_bookmarks?.some(
       (bookmark) => bookmark?.user_id === user_id
     );
@@ -240,15 +244,13 @@ const toggleBookmark = async () => {
   }
 };
 
-import { useRuntimeConfig } from "#imports";
-
 const toggleBuy = async () => {
-  const config = useRuntimeConfig();
-
   if (!user_id) {
     return router.push("/users/login");
   }
+
   const isCurrentlyBought = isBought.value;
+
   if (!isCurrentlyBought) {
     const paymentPayload = {
       user_id: user_id,
@@ -258,20 +260,39 @@ const toggleBuy = async () => {
       user_name: user_id,
     };
 
-    console.log("\nPayment Payload:", paymentPayload);
     const { data, error } = await InsertTicketsMutation(paymentPayload);
-    if (data.ticketPayment.status === "success") {
+
+    if (error) {
+      // Handle error from the mutation
+      console.error("Mutation error:", error.message);
+      return;
+    }
+
+    if (data?.ticketPayment?.status === "success") {
       const checkoutUrl = data.ticketPayment.data.checkout_url;
-      window.location.href = checkoutUrl;
+
+      if (checkoutUrl) {
+        // Open URL in a new tab
+        window.open(checkoutUrl, "_blank");
+      } else {
+        // Show error message if URL is missing
+        console.error("Checkout URL is missing.");
+        toast.error("Checkout URL is missing. Please try again.");
+      }
     } else {
       // Handle error message from the response
-      console.error(data.ticketPayment.message);
+      console.error(data?.ticketPayment?.message || "Unknown error occurred.");
+      toast.error(
+        data?.ticketPayment?.message || "An error occurred. Please try again."
+      );
     }
+
     isBought.value = true;
   } else {
     isBought.value = false;
   }
 };
+
 //   isBought.value = !isBought.value;
 //   isReserved.value = !isReserved.value;
 // };

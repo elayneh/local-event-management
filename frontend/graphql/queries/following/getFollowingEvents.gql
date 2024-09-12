@@ -29,7 +29,6 @@ query GetFollowingEvents($id: uuid!) {
       event_id
       id
       created_at
-      quantity
       user_id
     }
     id

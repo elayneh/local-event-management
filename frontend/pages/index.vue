@@ -1,31 +1,17 @@
 <script setup>
 import CustomEventCard from "@/components/CustomEventCard.vue";
 import useFetchData from "~/composables/useFetchData";
-import defaultImage from "~/assets/images/home.png";
 import TagsCategoriesComponent from "@/components/TagsCategoriesComponent.vue";
 import FeaturesComponent from "@/components/FeaturesComponent.vue";
 import CustomFooter from "@/components/CustomFooter.vue";
-import { ref, computed } from "vue";
-import getEvents from "~/graphql/queries/events/getEvents.gql";
+import { ref, computed, onMounted } from "vue";
+import getEvents from "~/graphql/queries/events/getUnauthEvents.gql";
 import { useAuthStore } from "~/stores";
+
 const events = ref([]);
-
-const { categories, tags } = useFetchData();
-
-const event_images = computed(() => {
-  if (events?.value?.event_images) {
-    const imagesArray = events.value.event_images
-      .replace(/{|}/g, "")
-      .split(",");
-    return imagesArray.length > 0 ? imagesArray : [defaultImage];
-  }
-  return [defaultImage];
-});
-const user_id = useAuthStore().id;
-
 const searchQuery = ref("");
 const isModalVisible = ref(false);
-const limit = ref(10);
+const limit = ref(4);
 const offset = ref(0);
 const hasMoreEvents = ref(true);
 
@@ -37,13 +23,12 @@ const filters = ref({
   tags: [],
 });
 
-const openFilterModalHandler = () => {
-  isModalVisible.value = true;
-};
+const { id: user_id } = useAuthStore();
 
-const filter = computed(() => {
+const { categories, tags } = useFetchData();
+
+const buildQueryFilters = () => {
   const query = {};
-
   if (searchQuery.value.trim()) {
     query._or = [
       { title: { _ilike: `%${searchQuery.value}%` } },
@@ -51,7 +36,6 @@ const filter = computed(() => {
       { venue: { _ilike: `%${searchQuery.value}%` } },
     ];
   }
-
   if (filters.value.isFree !== null) {
     query.is_free = { _eq: filters.value.isFree };
   }
@@ -61,28 +45,30 @@ const filter = computed(() => {
   if (filters.value.end_date) {
     query.end_date = { _lte: filters.value.end_date };
   }
-
   if (Array.isArray(filters.value.tags) && filters.value.tags.length > 0) {
-    query.tags = {
-      tag: {
-        _in: filters.value.tags,
-      },
-    };
+    query.tags = { tag: { _in: filters.value.tags } };
   }
-
   return query;
-});
+};
 
 const fetchEvents = async () => {
   try {
-    await refetch();
+    const { data } = await refetch();
+    if (data?.events) {
+      if (offset.value === 0) {
+        events.value = data.events;
+      } else {
+        events.value.push(...data.events);
+      }
+      hasMoreEvents.value = data.events.length === limit.value;
+    }
   } catch (error) {
     console.error("Failed to fetch events:", error);
   }
 };
 
 const { onResult, refetch } = listQuery(getEvents, {
-  filter,
+  filter: computed(() => buildQueryFilters()),
   limit,
   offset,
 });
@@ -119,10 +105,21 @@ const resetFilters = () => {
   };
   applyFilters();
 };
+
+const resetPagination = () => {
+  offset.value = 0;
+  events.value = [];
+  hasMoreEvents.value = true;
+  loadMoreEvents();
+};
+
+onMounted(() => {
+  fetchEvents();
+});
 </script>
 <template>
   <div
-    class="bg-gradient-to-r from-gray-100 via-red-300 to-gray-500 w-full pl-12 pr-12  moving-clouds-bg "
+    class="bg-gradient-to-r from-gray-100 via-red-300 to-gray-500 w-full moving-clouds-bg"
   >
     <div class="fixed left-96 flex-row justify-center items-center pt-2">
       <div v-if="isModalVisible">
@@ -234,33 +231,38 @@ const resetFilters = () => {
         </div>
       </div>
 
-      <div class="flex justify-center items-center space-x-4">
-        <ul class="m-2">
-          <li class="relative flex items-center">
+      <div
+        class="fixed flex flex-col md:flex-row justify-center items-center pt-5"
+      >
+        <div
+          class="flex flex-col md:flex-row justify-center items-center space-x-0 md:space-x-4 w-full md:w-auto"
+        >
+          <div class="relative w-full md:w-96 mb-4 md:mb-0">
             <input
-              class="w-96 h-10 rounded-full pl-4 pr-10 flex items-center focus:outline-none px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 ease-in-out"
+              class="w-full h-10 rounded-full pl-4 pr-10 flex items-center focus:outline-none px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 ease-in-out"
               v-model="searchQuery"
               @input="fetchEvents"
               placeholder="Search..."
             />
             <font-awesome-icon
               :icon="['fas', 'search']"
-              class="text-gray-600 absolute right-4"
+              class="text-gray-600 absolute right-4 top-2"
             />
-          </li>
-        </ul>
+          </div>
 
-        <ul class="m-2">
-          <li class="relative">
-            <button @click="openFilterModalHandler" class="flex items-center">
+          <div class="relative">
+            <button
+              @click="openFilterModalHandler"
+              class="flex items-center bg-gray-100 py-2 px-4 rounded-full shadow-md hover:bg-gray-200 transition duration-300"
+            >
               <font-awesome-icon
                 :icon="['fas', 'filter']"
                 class="text-gray-600"
               />
               <span class="ml-2 text-gray-500">Filter</span>
             </button>
-          </li>
-        </ul>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -323,8 +325,7 @@ const resetFilters = () => {
     >
       Latest Events
     </h2>
-
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-12">
       <CustomEventCard v-for="event in events" :key="event.id" :event="event" />
     </div>
 
@@ -332,15 +333,17 @@ const resetFilters = () => {
       <button
         @click="loadMoreEvents"
         v-if="hasMoreEvents"
-        class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-200"
+        class="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-full shadow-lg transform transition-transform duration-300 hover:scale-105 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-blue-300"
       >
-        Load More
+        Load More Events
       </button>
+
       <button
+        @click="resetPagination"
         v-else
-        class="bg-blue-500 text-white px-4 py-2 rounded opacity-50 cursor-not-allowed"
+        class="bg-gray-300 text-gray -700 px-6 py-3 rounded-full cursor-pointer shadow-md transform transition-transform duration-300"
       >
-        No more events
+        No More Events, Reset
       </button>
     </div>
 
@@ -349,7 +352,6 @@ const resetFilters = () => {
     <CustomFooter />
   </div>
 </template>
-
 <style scoped>
 .side-to-side-animation {
   animation: sideToSideAnimation 5s ease-in-out infinite;

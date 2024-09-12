@@ -30,7 +30,6 @@ query GetUserEvents($id: uuid!) {
       id
       event_id
       created_at
-      quantity
       user_id
     }
     events_user {

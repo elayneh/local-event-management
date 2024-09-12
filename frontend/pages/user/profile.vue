@@ -1,9 +1,9 @@
-
 <script setup>
 import { ref } from "vue";
 import useUserFetchData from "~/composables/useUserFetchData";
 import { useAuthStore } from "~/stores";
 import { UpdateUser } from "~/graphql/mutations/users/update.gql";
+import { ChangePassword } from "~/graphql/mutations/users/changePassword.gql";
 import { useMutation } from "@vue/apollo-composable";
 import { toast } from "vue3-toastify";
 import { Form, Field } from "vee-validate";
@@ -13,6 +13,7 @@ const authStore = useAuthStore();
 const user_id = authStore.id;
 const { user } = useUserFetchData(user_id);
 
+const isChangePassword = ref(false);
 const isEditing = ref(false);
 const editableUser = ref({ ...user.value });
 
@@ -25,12 +26,18 @@ const schema = object({
     .email("Email must be a valid email address"),
 });
 
+const passwordSchema = object({
+  newPassword: string().required("Password is required"),
+});
+
 const { mutate: updateUserMutation } = useMutation(UpdateUser);
+const { mutate: changePasswordMutation } = useMutation(changePassword);
 
 const editProfile = () => {
   isEditing.value = true;
   editableUser.value = { ...user.value };
 };
+const passwords = ref({ currentPassword: "", newPassword: "" });
 
 const saveProfile = async (values) => {
   try {
@@ -50,15 +57,35 @@ const saveProfile = async (values) => {
   }
 };
 
+const changePassword = async (values) => {
+  try {
+    const { data } = await changePasswordMutation({
+      newPassword: values.newPassword,
+      currentPassword: values.currentPassword,
+    });
+
+    user.value = { ...editableUser.value };
+
+    toast.success("Your password has been changed successfully!");
+    isChangePassword.value = false;
+  } catch (err) {
+    toast.error("Error changing password, try again");
+    console.error("Error changing password: ", err);
+  }
+};
+
 const cancelEdit = () => {
   isEditing.value = false;
+};
+
+const openChangePassword = () => {
+  isChangePassword = !isChangePassword;
 };
 
 definePageMeta({
   layout: "authenticated",
 });
 </script>
-
 
 <template>
   <div
@@ -68,8 +95,11 @@ definePageMeta({
       class="bg-white shadow-xl rounded-lg p-8 w-full max-w-4xl mt-24 mx-8 transform transition-transform duration-300 ease-in-out hover:scale-105"
     >
       <div class="flex justify-end">
-        <button @click="navigateTo('/user')" aria-label="Close">
-          <font-awesome-icon :icon="['fas', 'times']" />
+        <button
+          @click="navigateTo('/user')"
+          class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 pr-4 pt-2"
+        >
+          <i class="fas fa-times text-2xl"></i>
         </button>
       </div>
       <div class="flex flex-col justify-center items-center">
@@ -119,6 +149,42 @@ definePageMeta({
                 type="text"
                 disabled
               />
+            </div>
+            <div v-if="isChangePassword">
+              <Form
+                :validation-schema="passwordSchema"
+                @submit="changePassword"
+                v-slot="{ errors }"
+              >
+                <div class="pl-8 mt-6">
+                  <label class="text-gray-800 font-semibold"
+                    >Current Password</label
+                  >
+                  <Field
+                    name="currentPassword"
+                    v-model="passwords.currentPassword"
+                    class="border border-gray-300 rounded p-2 w-full mt-2"
+                    type="password"
+                  />
+
+                  <span class="text-red-500">{{ errors.currentPassword }}</span>
+                </div>
+                <div class="pl-8 mt-6">
+                  <label class="text-gray-800 font-semibold"
+                    >New Password</label
+                  >
+                  <Field
+                    name="newPassword"
+                    v-model="passwords.newPassword"
+                    class="border border-gray-300 rounded p-2 w-full mt-2"
+                    type="password"
+                  />
+                  <span class="text-red-500">{{ errors.newPassword }}</span>
+                </div>
+              </Form>
+            </div>
+            <div v-else class="mt-24 pl-8">
+              <button @click="openChangePassword">Change Password</button>
             </div>
             <div class="mt-12 flex justify-center items-center">
               <button

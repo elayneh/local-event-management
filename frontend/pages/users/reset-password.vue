@@ -1,6 +1,102 @@
+<script setup>
+import { ref } from "vue";
+import { useMutation } from "@vue/apollo-composable";
+import ResetPassword from "~/graphql/mutations/users/resetPassword.gql";
+import { toast } from "vue3-toastify";
+import { useRoute, useRouter } from "vue-router";
+
+const route = useRoute();
+const router = useRouter();
+const resetToken = route.query.reset_token || "";
+
+// Reactive form state
+const form = ref({
+  newPassword: "",
+  confirmPassword: "",
+});
+
+// Reactive error state
+const errors = ref({
+  newPassword: "",
+  confirmPassword: "",
+});
+
+const { mutate: resetPasswordMutation } = useMutation(ResetPassword);
+
+// Validate the form fields
+const validateForm = () => {
+  errors.value = {
+    newPassword: "",
+    confirmPassword: "",
+  };
+
+  let valid = true;
+
+  if (!form.value.newPassword) {
+    errors.value.newPassword = "New password is required";
+    valid = false;
+  }
+
+  if (!form.value.confirmPassword) {
+    errors.value.confirmPassword = "Please confirm your password";
+    valid = false;
+  }
+
+  if (form.value.newPassword !== form.value.confirmPassword) {
+    errors.value.confirmPassword = "Passwords do not match";
+    valid = false;
+  }
+
+  return valid;
+};
+
+// Handle form submission
+const handleSubmit = async () => {
+  if (validateForm()) {
+    try {
+      const response = await resetPasswordMutation({
+        reset_token: resetToken,
+        new_password: form.value.newPassword,
+      });
+      toast.success(response.data.updatePassword.message, {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      router.push("/users/login");
+    } catch (error) {
+      console.error("Password reset request failed:", error);
+      toast.error("Error updating password", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+    }
+  }
+};
+
+const handleClose = () => {
+  router.push("/");
+};
+</script>
+
 <template>
-  <div class="flex items-center justify-center min-h-screen bg-gray-100">
-    <div class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
+  <div
+    class="flex items-center justify-center min-h-screen bg-gray-100 moving-clouds-bg"
+  >
+    <div class="relative bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
+      <button
+        @click="handleClose"
+          class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 pr-4 pt-2"
+      >
+        <i class="fas fa-times text-2xl"></i>
+      </button>
       <h2 class="text-2xl font-bold mb-6 text-center text-gray-700">
         Update Password
       </h2>
@@ -55,83 +151,25 @@
     </div>
   </div>
 </template>
+<style scoped>
+.side-to-side-animation {
+  animation: sideToSideAnimation 5s ease-in-out infinite;
+}
 
-<script setup>
-import { ref } from "vue";
-import { useMutation } from "@vue/apollo-composable";
-import ResetPassword from "~/graphql/mutations/users/resetPassword.gql";
-import { useRoute } from "vue-router";
+.moving-clouds-bg {
+  background-image: url("~/assets/images/clouds.png");
+  background-size: cover;
+  background-position: 0 0;
+  background-repeat: repeat-x;
+  animation: moveClouds 30s linear infinite;
+}
 
-// Extract the route parameters
-const route = useRoute();
-const resetToken = route.query.reset_token || "";
-
-// Reactive form state
-const form = ref({
-  newPassword: "",
-  confirmPassword: "",
-});
-
-// Reactive error state
-const errors = ref({
-  newPassword: "",
-  confirmPassword: "",
-});
-
-const {
-  mutate: resetPasswordMutation,
-  onDone,
-  onError,
-} = useMutation(ResetPassword);
-
-// Validate the form fields
-const validateForm = () => {
-  errors.value = {
-    newPassword: "",
-    confirmPassword: "",
-  };
-
-  let valid = true;
-
-  if (!form.value.newPassword) {
-    errors.value.newPassword = "New password is required";
-    valid = false;
+@keyframes moveClouds {
+  0% {
+    background-position: 0 0;
   }
-
-  if (!form.value.confirmPassword) {
-    errors.value.confirmPassword = "Please confirm your password";
-    valid = false;
+  100% {
+    background-position: 100% 0;
   }
-
-  if (form.value.newPassword !== form.value.confirmPassword) {
-    errors.value.confirmPassword = "Passwords do not match";
-    valid = false;
-  }
-
-  return valid;
-};
-
-// Handle form submission
-const handleSubmit = async () => {
-  if (validateForm()) {
-    try {
-      const response = await resetPasswordMutation({
-        reset_token: resetToken,
-        new_password: form.value.newPassword,
-      });
-    } catch (error) {
-      console.error("Password reset request failed:", error);
-    }
-  }
-};
-
-// Handle mutation completion
-onDone((response) => {
-  console.log("Mutation completed:", response.data);
-});
-
-// Handle mutation errors
-onError((error) => {
-  console.error("Mutation error:", error);
-});
-</script>
+}
+</style>

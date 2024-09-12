@@ -8,12 +8,11 @@ import getEvents from "~/graphql/queries/events/getEvents.gql";
 import { useAuthStore } from "~/stores";
 import useFetchData from "~/composables/useFetchData";
 
-const user_id = useAuthStore().id;
 
+const events = ref([]);
 const searchQuery = ref("");
 const isModalVisible = ref(false);
-const events = ref([]);
-const limit = ref(10);
+const limit = ref(4);
 const offset = ref(0);
 const hasMoreEvents = ref(true);
 
@@ -28,7 +27,7 @@ const filters = ref({
 const { categories, tags } = useFetchData();
 
 const openFilterModalHandler = () => {
-  isModalVisible.value = true;
+  isModalVisible.value = !isModalVisible.value;
 };
 
 const filter = computed(() => {
@@ -126,7 +125,7 @@ definePageMeta({ layout: "authenticated" });
             class="relative max-w-xl mx-auto mt-12 p-8 bg-white shadow-lg rounded-lg h-[50vh] overflow-y-auto"
           >
             <button
-              @click="closeModal"
+              @click="openFilterModalHandler"
               class="absolute top-4 right-4 p-2 bg-gray-200 hover:bg-red-100 rounded-full shadow-md transition-transform transform hover:scale-110 hover:shadow-lg text-gray-600 hover:text-gray-800"
             >
               <font-awesome-icon :icon="['fas', 'times']" class="text-lg" />
@@ -226,34 +225,37 @@ definePageMeta({ layout: "authenticated" });
         </div>
       </div>
       <div
-        class="flex justify-center items-center gap-16 p-1 bg-gray-100 rounded-lg shadow-md"
+        class="fixed flex flex-col md:flex-row justify-center items-center pt-5"
       >
-        <ul class="mx-2">
-          <li class="relative flex items-center">
+        <div
+          class="flex flex-col md:flex-row justify-center items-center space-x-0 md:space-x-4 w-full md:w-auto"
+        >
+          <div class="relative w-full md:w-96 mb-4 md:mb-0">
             <input
-              class="w-96 h-12 rounded-full pl-6 pr-12 bg-gray-200 text-gray-800 placeholder-gray-500 border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 ease-in-out"
+              class="w-full h-10 rounded-full pl-4 pr-10 flex items-center focus:outline-none px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 ease-in-out"
               v-model="searchQuery"
               @input="fetchEvents"
               placeholder="Search..."
             />
             <font-awesome-icon
               :icon="['fas', 'search']"
-              class="text-gray-500 absolute right-4"
+              class="text-gray-600 absolute right-4 top-2"
             />
-          </li>
-        </ul>
+          </div>
 
-        <ul class="m-2">
-          <li class="relative">
+          <div class="relative">
             <button
               @click="openFilterModalHandler"
-              class="flex items-center bg-blue-500 text-white px-6 py-3 rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-300 ease-in-out"
+              class="flex items-center bg-gray-100 py-2 px-4 rounded-full shadow-md hover:bg-gray-200 transition duration-300"
             >
-              <font-awesome-icon :icon="['fas', 'filter']" class="text-white" />
-              <span class="ml-4 font-semibold">Filter</span>
+              <font-awesome-icon
+                :icon="['fas', 'filter']"
+                class="text-gray-600"
+              />
+              <span class="ml-2 text-gray-500">Filter</span>
             </button>
-          </li>
-        </ul>
+          </div>
+        </div>
       </div>
     </div>
 

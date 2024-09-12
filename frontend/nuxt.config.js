@@ -1,4 +1,3 @@
-// nuxt.config.js
 export default {
   devtools: { enabled: false },
   ssr: false,
@@ -58,6 +57,36 @@ export default {
 
   app: {
     head: {
+      title: "local event management at minab",
+      meta: [
+        { charset: "utf-8" },
+        { name: "viewport", content: "width=device-width, initial-scale=1" },
+        {
+          name: "description",
+          content:
+            "A comprehensive platform designed to streamline the planning and management of events. It offers features for organizing, scheduling, and promoting events, managing ticket sales, and tracking attendee engagement. Users can easily create and customize events, handle registrations, and manage event-related communications. The system provides a user-friendly interface for both event organizers and attendees, enhancing the overall experience with real-time updates and interactive tools.",
+        },
+      ],
+      link: [
+        { rel: "icon", type: "image/x-icon", href: "/favicon.ico" },
+        {
+          rel: "apple-touch-icon",
+          sizes: "180x180",
+          href: "/apple-touch-icon.png",
+        },
+        {
+          rel: "icon",
+          type: "image/png",
+          sizes: "32x32",
+          href: "/favicon-32x32.png",
+        },
+        {
+          rel: "icon",
+          type: "image/png",
+          sizes: "16x16",
+          href: "/favicon-16x16.png",
+        },
+      ],
       link: [
         {
           rel: "stylesheet",
@@ -68,7 +97,9 @@ export default {
   },
 
   plugins: ["~/plugins/fontawesome.js", "~/plugins/click-outside.js"],
-
+  router: {
+    middleware: ["scroll-to-top"],
+  },
   image: {
     inject: true,
     quality: 80,

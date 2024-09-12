@@ -1,4 +1,3 @@
-
 <script setup>
 import { ref } from "vue";
 import CustomCard from "~/components/CustomCard.vue";
@@ -73,47 +72,52 @@ function submitHandler(values) {
     class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50"
   >
     <div>
-      <CustomCard title="Login" class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+      <CustomCard
+        title="Login"
+        class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md"
+      >
         <template #body>
           <DynamicForm
             ref="DynamicForm"
             :schema="formSchema"
             :submitHandler="submitHandler"
           >
-            <div class="mt-24">
-              <div class="flex items-center justify-center gap-4 mt-4">
-                <button
-                  type="submit"
-                  class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            <div>
+              <p>
+                <NuxtLink
+                  class="text-blue-500 hover:text-blue-700 font-semibold"
+                  to="/users/forgot-password"
                 >
-                  Login
-                </button>
-                <button
-                  type="button"
-                  @click="navigateTo('/')"
-                  class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                >
-                  Cancel
-                </button>
-              </div>
-              <div class="mt-10 text-gray-700 text-center">
-                <p class="mb-2">
-                  Don't have an account?
-                  <NuxtLink
-                    class="text-blue-500 hover:text-blue-700 font-semibold ml-1"
-                    to="/users/register"
+                  Forgot Password?
+                </NuxtLink>
+              </p>
+              <div class="mt-24">
+                <div class="flex items-center justify-center gap-4 mt-4">
+                  <button
+                    type="submit"
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                   >
-                    Register
-                  </NuxtLink>
-                </p>
-                <p>
-                  <NuxtLink
-                    class="text-blue-500 hover:text-blue-700 font-semibold"
-                    to="/users/forgot-password"
+                    Login
+                  </button>
+                  <button
+                    type="button"
+                    @click="navigateTo('/')"
+                    class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                   >
-                    Forgot Password?
-                  </NuxtLink>
-                </p>
+                    Cancel
+                  </button>
+                </div>
+                <div class="mt-10 text-gray-700 text-center">
+                  <p class="mb-2">
+                    Don't have an account?
+                    <NuxtLink
+                      class="text-blue-500 hover:text-blue-700 font-semibold ml-1"
+                      to="/users/register"
+                    >
+                      Register
+                    </NuxtLink>
+                  </p>
+                </div>
               </div>
             </div>
           </DynamicForm>

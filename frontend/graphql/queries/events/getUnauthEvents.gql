@@ -1,0 +1,30 @@
+query GetEvents($limit: Int, $offset: Int, $filter: events_bool_exp) {
+  events(
+    limit: $limit
+    offset: $offset
+    where: $filter
+    order_by: { end_date: asc }
+  ) {
+    address
+    capacity
+    category_id
+    description
+    end_date
+    event_images
+    events_category {
+      description
+      id
+      name
+    }
+
+    id
+    location
+    is_free
+    price
+    start_date
+    title
+    uid
+    venue
+    created_at
+  }
+}

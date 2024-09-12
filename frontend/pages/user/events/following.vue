@@ -8,12 +8,22 @@ import useUserFetchData from "~/composables/useUserFetchData";
 import useFetchData from "~/composables/useFetchData";
 import { useAuthStore } from "~/stores";
 import HomepageImage from "~/components/HomepageImage.vue";
+
 const isAuthnticated = useAuthStore();
-
-const userId = isAuthnticated.id;
-
-const { followingEvents } = useUserFetchData(userId);
 const { tags, categories } = useFetchData();
+
+const user_id = isAuthnticated.id;
+
+const { followingEvents } = useUserFetchData(user_id, {
+  fetchPolicy: "no-cache",
+  clientId: "authClient",
+  context: {
+    headers: {
+      "x-hasura-role": "user",
+      "x-hasura-is-email-verified": true,
+    },
+  },
+});
 
 const visibleEvents = ref([]);
 const itemsPerPage = 3;

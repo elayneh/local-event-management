@@ -3,8 +3,9 @@ query GetTickets($id: uuid!) {
     event_id
     id
     created_at
-    quantity
     status
     user_id
+    amount
+    tx_ref
   }
 }

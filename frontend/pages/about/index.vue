@@ -1,5 +1,62 @@
+<style scoped>
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Adding animation classes */
+.animate-fadeIn {
+  animation: fadeIn 1s ease-out;
+}
+
+.animate-fadeInUp {
+  animation: fadeInUp 1s ease-out;
+}
+
+.animation-delay-1 {
+  animation-delay: 0.2s;
+}
+
+.animation-delay-2 {
+  animation-delay: 0.4s;
+}
+
+.animation-delay-3 {
+  animation-delay: 0.6s;
+}
+
+.animation-delay-4 {
+  animation-delay: 0.8s;
+}
+
+.animation-delay-5 {
+  animation-delay: 1s;
+}
+
+.animation-delay-6 {
+  animation-delay: 1.2s;
+}
+</style>
+
 <template>
-  <div class="min-h-screen bg-gradient-to-b from-yellow-50 to-yellow-100 p-6">
+  <div class="bg-gray-100 min-h-screen p-6">
     <header class="text-center py-24">
       <h1 class="text-5xl font-extrabold mb-4 text-yellow-600 animate-pulse">
         About Minab
@@ -117,66 +174,3 @@
     <CustomFooter />
   </div>
 </template>
-
-<script>
-export default {
-  name: "AboutPage",
-};
-</script>
-
-<style scoped>
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Adding animation classes */
-.animate-fadeIn {
-  animation: fadeIn 1s ease-out;
-}
-
-.animate-fadeInUp {
-  animation: fadeInUp 1s ease-out;
-}
-
-.animation-delay-1 {
-  animation-delay: 0.2s;
-}
-
-.animation-delay-2 {
-  animation-delay: 0.4s;
-}
-
-.animation-delay-3 {
-  animation-delay: 0.6s;
-}
-
-.animation-delay-4 {
-  animation-delay: 0.8s;
-}
-
-.animation-delay-5 {
-  animation-delay: 1s;
-}
-
-.animation-delay-6 {
-  animation-delay: 1.2s;
-}
-</style>

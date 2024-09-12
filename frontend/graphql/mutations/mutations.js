@@ -13,12 +13,11 @@ export const DeleteFollowers = gql`
 `;
 
 export const InsertFollowers = gql`
-  mutation InsertFollowers($user_id: uuid!, $event_id: uuid!) {
-    insert_followers(objects: { event_id: $event_id, user_id: $user_id }) {
+  mutation InsertFollowers($event_id: uuid!) {
+    insert_followers(objects: { event_id: $event_id }) {
       returning {
         event_id
         id
-        user_id
       }
     }
   }
@@ -37,11 +36,10 @@ export const DeleteBookmarks = gql`
 `;
 
 export const InsertBookmarks = gql`
-  mutation InsertBookmarks($user_id: uuid!, $event_id: uuid!) {
-    insert_bookmarks(objects: { event_id: $event_id, user_id: $user_id }) {
+  mutation InsertBookmarks($$event_id: uuid!) {
+    insert_bookmarks(objects: { event_id: $event_id }) {
       returning {
         event_id
-        user_id
         id
       }
     }

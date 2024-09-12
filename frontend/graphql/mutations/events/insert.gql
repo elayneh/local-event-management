@@ -11,7 +11,6 @@ mutation InsertEvent(
   $venue: String!
   $event_images: String!
   $capacity: numeric!
-  $uid: uuid!
 ) {
   insert_events(
     objects: {
@@ -27,7 +26,6 @@ mutation InsertEvent(
       venue: $venue
       event_images: $event_images
       capacity: $capacity
-      uid: $uid
     }
   ) {
     returning {

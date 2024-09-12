@@ -71,6 +71,7 @@ const {
     headers: {
       "x-hasura-role": "user",
       "x-hasura-is-email-verified": true,
+      "x-hasura-user-id": user_id,
     },
   },
 });
@@ -232,7 +233,6 @@ const submitSecondStep = async (values) => {
 
     const eventData = {
       ...firstSchemaData.value,
-      uid: user_id,
       address: locationData.value.address,
       location: locationData.value
         ? `${locationData.value.latitude},${locationData.value.longitude}`
@@ -243,7 +243,6 @@ const submitSecondStep = async (values) => {
       event_images: `{${uploadedImages.join(",")}}`,
     };
 
-    console.log("Submit second step: ", eventData);
     const result = await insertEventMutation(eventData);
     eventId.value = result.data.insert_events.returning[0].id;
     isEventCreated.value = true;
