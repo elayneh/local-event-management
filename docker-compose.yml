@@ -28,7 +28,6 @@ services:
       HASURA_GRAPHQL_UNAUTHORIZED_ROLE: "anonymous"
       HASURA_GRAPHQL_ADMIN_SECRET: "myadminsecretkey"
       HASURA_GRAPHQL_JWT_SECRET: '{ "type": "HS256", "key": "oursupersecretsupersecurekey1234567890" }'
-
     ports:
       - "8080:8080"
     depends_on:
@@ -38,6 +37,11 @@ services:
       - minabnetwork
     restart: always
     container_name: hasura
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/healthz || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   backend:
     build:
@@ -50,7 +54,10 @@ services:
     ports:
       - "5050:5050"
     depends_on:
-      - database
+      database:
+        condition: service_healthy
+      hasura:
+        condition: service_healthy
     networks:
       - minabnetwork
     restart: always
