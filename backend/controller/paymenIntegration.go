@@ -104,6 +104,8 @@ func InitializePayment(w http.ResponseWriter, r *http.Request) {
 	`)
 
 	req.Header.Set("x-hasura-role", "admin")
+	req.Header.Set("x-hasura-admin-secret", adminSecret)
+
 	req.Var("objects", []map[string]interface{}{
 		{
 			"amount":    requestBody.Amount,
@@ -187,8 +189,9 @@ func updatePaymentStatus(txRef string, status string) error {
 	if err != nil {
 		return err
 	}
+	req.Header.Set("x-hasura-role", "admin")
+	req.Header.Set("x-hasura-admin-secret", adminSecret)
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("x-hasura-admin-secret", "myadminsecretkey")
 
 	client := &http.Client{}
 	resp, err := client.Do(req)

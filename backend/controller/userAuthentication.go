@@ -9,12 +9,9 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/machinebox/graphql"
 )
-
-var secretKey = []byte(os.Getenv("JWT_SECRET"))
 
 func sendToken(w http.ResponseWriter, role string, response AuthResponse, is_email_verified bool) {
 	token, err := utils.GetToken(response.ID, role, is_email_verified)
@@ -69,6 +66,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
     `)
 
 	req.Header.Set("x-hasura-role", "admin")
+	req.Header.Set("x-hasura-admin-secret", adminSecret)
 	req.Var("email", loginCredentials.Email)
 
 	var respData struct {
@@ -100,12 +98,12 @@ func Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func Register(w http.ResponseWriter, r *http.Request) {
+
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Error reading request body", http.StatusInternalServerError)
 		return
 	}
-
 	r.Body = io.NopCloser(bytes.NewBuffer(body))
 
 	var reqBody RequestBody
@@ -115,7 +113,6 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	newUser := reqBody.Input.UserInput
-
 	password, err := utils.HashPassword(newUser.Password)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -137,7 +134,9 @@ func Register(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	`)
+
 	req.Header.Set("x-hasura-role", "admin")
+	req.Header.Set("x-hasura-admin-secret", adminSecret)
 
 	req.Var("objects", []map[string]interface{}{
 		{
@@ -159,11 +158,10 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	client := utils.Client()
-
 	err = client.Run(context.Background(), req, &respData)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
-		fmt.Println("Error executing GraphQL mutation: ", err)
+		fmt.Println("Error executing GraphQL mutation:", err)
 		return
 	}
 
@@ -210,6 +208,9 @@ func ResetPassword(w http.ResponseWriter, r *http.Request) {
             }
         }
     `)
+	reqGraphQL.Header.Set("x-hasura-role", "admin")
+	reqGraphQL.Header.Set("x-hasura-admin-secret", adminSecret)
+
 	reqGraphQL.Var("email", email)
 	reqGraphQL.Var("reset_token", resetToken)
 
@@ -230,11 +231,11 @@ func ResetPassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Respond with a success message
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"message": "Password reset email sent"})
+	json.NewEncoder(w).Encode(map[string]string{"message": "Password reset email sent successfully!!"})
 }
+
 func UpdatePassword(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -242,7 +243,6 @@ func UpdatePassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Reset r.Body for further reading
 	r.Body = io.NopCloser(bytes.NewBuffer(body))
 
 	var req UpdatePasswordRequest
@@ -265,8 +265,6 @@ func UpdatePassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Println("Email: ", email)
-
 	hashedPassword, err := utils.HashPassword(newPassword)
 	if err != nil {
 		log.Println("Error hashing password: ", err)
@@ -281,6 +279,10 @@ func UpdatePassword(w http.ResponseWriter, r *http.Request) {
             }
         }
     `)
+
+	reqGraphQL.Header.Set("x-hasura-role", "admin")
+	reqGraphQL.Header.Set("x-hasura-admin-secret", adminSecret)
+
 	reqGraphQL.Var("email", email)
 	reqGraphQL.Var("password", hashedPassword)
 
@@ -301,8 +303,89 @@ func UpdatePassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Println("Response data: ", respData.UpdateUsers.AffectedRows)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"message": "Password updated successfully"})
+	json.NewEncoder(w).Encode(map[string]string{"message": "Password updated successfully!!"})
+}
+
+func EmailConfirmationWebhook(w http.ResponseWriter, r *http.Request) {
+	var event EventPayload
+	if err := json.NewDecoder(r.Body).Decode(&event); err != nil {
+		http.Error(w, "Invalid event payload", http.StatusBadRequest)
+		return
+	}
+
+	newUser := event.Event.Data.New
+
+	if err := EmailSender(true, newUser.Email, newUser.Confirmation_Token); err != nil {
+		http.Error(w, "Failed to send confirmation email", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Email confirmation sent successfully"))
+}
+
+func ConfirmEmail(w http.ResponseWriter, r *http.Request) {
+	var reqData struct {
+		Action struct {
+			Name string `json:"name"`
+		} `json:"action"`
+		Input struct {
+			ConfirmationToken string `json:"confirmationToken"`
+		} `json:"input"`
+	}
+
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&reqData); err != nil {
+		http.Error(w, `{"message": "Invalid request body"}`, http.StatusBadRequest)
+		return
+	}
+
+	fmt.Println("Received confirmation token:", reqData.Input.ConfirmationToken)
+
+	client := utils.Client()
+	if client == nil {
+		http.Error(w, `{"message": "GraphQL client initialization failed"}`, http.StatusInternalServerError)
+		return
+	}
+
+	req := graphql.NewRequest(`
+		mutation VerifyEmail($confirmationToken: String!) {
+			update_users(
+				where: { confirmation_token: { _eq: $confirmationToken } }
+				_set: { is_email_verified: true }
+			) {
+				affected_rows
+			}
+		}
+	`)
+
+	req.Header.Set("x-hasura-role", "admin")
+	req.Header.Set("x-hasura-admin-secret", adminSecret)
+
+	req.Var("confirmationToken", reqData.Input.ConfirmationToken)
+
+	fmt.Println("GraphQL Request:", req)
+
+	var respData struct {
+		UpdateUsers struct {
+			AffectedRows int `json:"affected_rows"`
+		} `json:"update_users"`
+	}
+
+	if err := client.Run(context.Background(), req, &respData); err != nil {
+		fmt.Println("GraphQL client error:", err)
+		http.Error(w, `{"message": "Error confirming email"}`, http.StatusInternalServerError)
+		return
+	}
+
+	fmt.Println("Hasura response data:", respData)
+
+	if respData.UpdateUsers.AffectedRows == 0 {
+		http.Error(w, `{"message": "Invalid token or user not found"}`, http.StatusNotFound)
+		return
+	}
+
+	w.Write([]byte(`{"message": "Email confirmed successfully"}`))
 }

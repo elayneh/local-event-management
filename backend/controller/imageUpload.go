@@ -6,22 +6,45 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/cloudinary/cloudinary-go/v2"
 	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
 )
 
-var cld *cloudinary.Cloudinary
+var (
+	CLD_API_KEY string
+	CLD_NAME    string
+	CLD_SECRET  string
+	cld         *cloudinary.Cloudinary
+)
 
 func init() {
-	// CLD_SECRET := os.Getenv("CLD_SECRET")
-	// CLD_NAME := os.Getenv("CLD_NAME")
-	// CLD_API_KEY := os.Getenv("CLD_API_KEY")
+	CLD_SECRET := os.Getenv("CLD_SECRET")
+	CLD_NAME := os.Getenv("CLD_NAME")
+	CLD_API_KEY := os.Getenv("CLD_API_KEY")
 
 	var err error
-	cld, err = cloudinary.NewFromParams("dci964xm7", "419582463847597", "R_IXfnVEVFIydSiWVJPaYT32j0w")
+	cld, err = cloudinary.NewFromParams(CLD_NAME, CLD_API_KEY, CLD_SECRET)
 	if err != nil {
 		fmt.Println("Error initializing Cloudinary:", err)
+	}
+
+	// Load environment variables
+	CLD_API_KEY = os.Getenv("CLD_API_KEY")
+	CLD_NAME = os.Getenv("CLD_NAME")
+	CLD_SECRET = os.Getenv("CLD_SECRET")
+
+	// Check if any of the environment variables are empty
+	if CLD_API_KEY == "" || CLD_NAME == "" || CLD_SECRET == "" {
+		fmt.Println("Error: Cloudinary environment variables are not set properly")
+		return
+	}
+
+	cld, err = cloudinary.NewFromParams(CLD_NAME, CLD_API_KEY, CLD_SECRET)
+	if err != nil {
+		fmt.Println("Error initializing Cloudinary:", err)
+		return
 	}
 }
 
@@ -41,7 +64,7 @@ func UploadImagesHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, `{"error": "No file data provided"}`, http.StatusBadRequest)
 		return
 	}
-	fmt.Println("this is from backend1")
+
 	var imageUrls []string
 	for _, fileData := range req.Input.UserInput.Files {
 		decodedFile, err := base64.StdEncoding.DecodeString(fileData)

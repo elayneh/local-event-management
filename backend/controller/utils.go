@@ -130,28 +130,89 @@ func generatePasswordResetEmailHTML(reset_token string) string {
 	passwordResetLink := fmt.Sprintf("http://localhost:3000/users/reset-password?reset_token=%s", reset_token)
 	return fmt.Sprintf(`
 		<!DOCTYPE html>
-		<html lang="en">
-		<head>
-			<meta charset="UTF-8" />
-			<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-			<title>Reset Password</title>
-			<style>
-				/* Styles omitted for brevity */
-			</style>
-		</head>
-		<body>
-			<div class="container">
-				<div class="header">
-					<img src="https://via.placeholder.com/100x100" alt="Company Logo" />
-					<h1>Reset Password</h1>
-				</div>
-				<div class="content">
-					<p>Please reset your password by clicking the button below:</p>
-					<a href="%s" class="button">Reset Password</a>
-				</div>
-			</div>
-		</body>
-		</html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reset Password</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background-color: #4a90e2;
+            color: #ffffff;
+            padding: 20px;
+            text-align: center;
+        }
+        .header img {
+            width: 100px;
+            height: auto;
+            margin-bottom: 10px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .content {
+            padding: 20px;
+            text-align: center;
+        }
+        .content p {
+            font-size: 16px;
+            color: #333333;
+            margin-bottom: 20px;
+        }
+        .button {
+            display: inline-block;
+            background-color: #4a90e2;
+            color: #ffffff;
+            padding: 15px 25px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: #357ab8;
+        }
+        .footer {
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #777777;
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="https://via.placeholder.com/100x100" alt="Company Logo" />
+            <h1>Reset Password</h1>
+        </div>
+        <div class="content">
+            <p>Please reset your password by clicking the button below:</p>
+            <a href="%s" class="button">Reset Password</a>
+        </div>
+        <div class="footer">
+            <p>If you did not request this email, please ignore it.</p>
+            <p>&copy; 2024 Your Company Name. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>
 	`, passwordResetLink)
 }
 

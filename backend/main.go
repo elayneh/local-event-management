@@ -40,7 +40,7 @@ func main() {
 	router.HandleFunc("/login", controller.Login).Methods("POST")
 	router.HandleFunc("/uploadImage", controller.UploadImagesHandler).Methods("POST")
 	router.HandleFunc("/sendConfirmationEmail", controller.EmailConfirmationWebhook).Methods("POST")
-	router.HandleFunc("/verifyEmail", controller.ConfirmEmail).Methods("GET")
+	router.HandleFunc("/verifyEmail", controller.ConfirmEmail).Methods("POST")
 	router.HandleFunc("/ticketPayment", controller.InitializePayment).Methods("POST")
 	router.HandleFunc("/password-reset", controller.ResetPassword)
 	router.HandleFunc("/update-password", controller.UpdatePassword)
