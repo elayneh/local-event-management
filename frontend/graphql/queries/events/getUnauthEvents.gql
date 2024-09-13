@@ -16,7 +16,6 @@ query GetEvents($limit: Int, $offset: Int, $filter: events_bool_exp) {
       id
       name
     }
-
     id
     location
     is_free

@@ -23,6 +23,7 @@
     "@vee-validate/nuxt": "^4.13.2",
     "@vueuse/core": "^11.0.3",
     "@vueuse/nuxt": "^10.5.0",
+    "animate.css": "^4.1.1",
     "axios": "^1.7.5",
     "date-fns": "^3.6.0",
     "graphql": "^16.9.0",
